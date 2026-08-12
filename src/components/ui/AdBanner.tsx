@@ -11,12 +11,16 @@ export const AdBanner: React.FC = () => {
         {/* Subtle background image overlay */}
         <div 
           className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
-          style={{ backgroundImage: "url('/ad_poster_big.png')" }}
+          style={{ backgroundImage: "url('/image2.webp')" }}
         />
 
         {/* Decorative star animations matching landing page */}
-        <div className="absolute top-3 right-4 text-[#a8d45e] text-xl star-spin select-none" aria-hidden="true">✳</div>
-        <div className="absolute bottom-2 left-6 text-[#a8d45e] text-lg star-spin select-none" aria-hidden="true" style={{ animationDelay: '2s' }}>✳</div>
+        <div className="absolute top-3 right-4 text-[#a8d45e] star-spin select-none opacity-60" aria-hidden="true">
+          <Sparkles className="w-5 h-5" />
+        </div>
+        <div className="absolute bottom-4 left-8 text-[#a8d45e] star-spin select-none opacity-50" aria-hidden="true" style={{ animationDelay: '2s' }}>
+          <Sparkles className="w-4 h-4" />
+        </div>
 
         <div className="relative z-10 max-w-xl">
           <div className="inline-flex items-center space-x-1.5 bg-[#3d6b2e]/90 text-[#a8d45e] px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-3">

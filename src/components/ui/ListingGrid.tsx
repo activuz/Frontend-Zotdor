@@ -1,4 +1,5 @@
 import React from 'react';
+import { SearchX } from 'lucide-react';
 import { Listing } from '../../types';
 import { ListingCard } from './ListingCard';
 
@@ -18,7 +19,7 @@ export const ListingGrid: React.FC<ListingGridProps> = ({
   if (listings.length === 0) {
     return (
       <div className="text-center py-12 px-4 bg-white/60 rounded-3xl border border-[#c5d4a8] mx-4 my-6">
-        <span className="text-4xl block mb-2">🐮</span>
+        <SearchX className="w-10 h-10 text-[#4a5e3a]/60 mx-auto mb-3" />
         <h4 className="text-base font-bold text-[#1e3a0f] font-display">{emptyMessage}</h4>
         <p className="text-xs text-[#4a5e3a] mt-1">Boshqa filtr yoki qidiruv so'zini sinab ko'ring</p>
       </div>

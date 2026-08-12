@@ -4,6 +4,7 @@ import { useListings, useToggleLike } from '../api/hooks/useListings';
 import { ListingGrid } from '../components/ui/ListingGrid';
 import { CategoryId } from '../types';
 import { Search, Filter, ShieldCheck, RefreshCw } from 'lucide-react';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 export const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,13 +90,13 @@ export const SearchPage: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 flex items-center gap-1 transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer ${
                 selectedCategory === cat.id
                   ? 'bg-[#1e3a0f] text-[#eef2dc]'
                   : 'bg-white text-[#1e3a0f] border border-[#c5d4a8]'
               }`}
             >
-              <span>{cat.icon}</span>
+              <CategoryIcon id={cat.id} className="w-3.5 h-3.5" />
               <span>{cat.shortName}</span>
             </button>
           ))}

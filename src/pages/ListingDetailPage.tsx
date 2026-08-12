@@ -21,6 +21,7 @@ import {
   Tag,
   ArrowRightLeft,
   CircleCheck,
+  Star,
 } from 'lucide-react';
 
 export const ListingDetailPage: React.FC = () => {
@@ -273,8 +274,12 @@ export const ListingDetailPage: React.FC = () => {
                   <UserCheck className="w-4 h-4 text-[#3d6b2e]" />
                 )}
               </div>
-              <span className="text-[10px] text-[#6b8f4e] block">
-                A'zo: {listing.seller.memberSince} • Rating: ⭐ {listing.seller.rating}
+              <span className="text-[10px] text-[#6b8f4e] flex items-center gap-1 mt-0.5">
+                <span>A'zo: {listing.seller.memberSince}</span>
+                <span>•</span>
+                <span className="flex items-center gap-0.5">
+                  Reyting: <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" /> {listing.seller.rating}
+                </span>
               </span>
             </div>
           </div>

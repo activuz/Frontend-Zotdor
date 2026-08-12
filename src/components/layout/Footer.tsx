@@ -89,27 +89,27 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs font-medium text-[#dce8c8]/85">
               <li>
                 <Link to="/category/gosht" className="hover:text-white transition-colors">
-                  🥩 Go'sht yo'nalishi (Qoramol, Qo'y)
+                  Go'sht yo'nalishi (Qoramol, Qo'y)
                 </Link>
               </li>
               <li>
                 <Link to="/category/sut-tuxum" className="hover:text-white transition-colors">
-                  🥛 Sut va tuxum yo'nalishi
+                  Sut va tuxum yo'nalishi
                 </Link>
               </li>
               <li>
                 <Link to="/category/korkam" className="hover:text-white transition-colors">
-                  🦚 Ko'rkam va dekorativ hayvonlar
+                  Ko'rkam va dekorativ hayvonlar
                 </Link>
               </li>
               <li>
                 <Link to="/category/sport-transport" className="hover:text-white transition-colors">
-                  🐎 Sport va uloq otlari
+                  Sport va uloq otlari
                 </Link>
               </li>
               <li>
                 <Link to="/category/pet" className="hover:text-white transition-colors">
-                  🐱 Uy hayvonlari (Pet)
+                  Uy hayvonlari (Pet)
                 </Link>
               </li>
             </ul>

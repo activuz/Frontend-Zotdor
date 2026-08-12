@@ -5,6 +5,7 @@ import { useListings, useToggleLike } from '../api/hooks/useListings';
 import { ListingGrid } from '../components/ui/ListingGrid';
 import { CategoryId } from '../types';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 export const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: CategoryId }>();
@@ -33,7 +34,9 @@ export const CategoryPage: React.FC = () => {
       {currentCat && (
         <div className="bg-white p-5 mx-4 rounded-3xl border border-[#c5d4a8] shadow-sm space-y-2">
           <div className="flex items-center space-x-3">
-            <span className="text-4xl p-2 bg-[#dce8c8]/50 rounded-2xl">{currentCat.icon}</span>
+            <div className="p-2 bg-[#dce8c8]/50 rounded-2xl shrink-0">
+              <CategoryIcon id={currentCat.id} className="w-9 h-9 text-[#3d6b2e]" />
+            </div>
             <div>
               <h1 className="text-xl font-bold font-display text-[#1e3a0f]">
                 {currentCat.name}

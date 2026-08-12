@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Search, Bell, Plus, User, Globe, MapPin, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, Plus, User, Globe, MapPin, ChevronDown, Sparkles, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCategories } from '../../api/hooks/useCategories';
+import { CategoryIcon } from '../ui/CategoryIcon';
 
 export const Header: React.FC = () => {
   const [unreadCount] = useState(1);
@@ -200,7 +201,7 @@ export const Header: React.FC = () => {
                     : 'border-transparent hover:border-[#c5d4a8]'
                 }`}
               >
-                <span className="text-sm">{cat.icon}</span>
+                <CategoryIcon id={cat.id} className="w-3.5 h-3.5" />
                 <span>{cat.name}</span>
               </Link>
             ))}
@@ -211,7 +212,8 @@ export const Header: React.FC = () => {
             to="/search?pedigreeOnly=true"
             className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-[#a8d45e]/40 hover:bg-[#a8d45e]/70 text-[#1e3a0f] border border-[#3d6b2e]/30 shrink-0"
           >
-            <span>🛡️ Zotdor Sertifikatli</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-[#3d6b2e]" />
+            <span>Zotdor Sertifikatli</span>
           </Link>
         </div>
       </div>

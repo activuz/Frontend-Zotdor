@@ -74,7 +74,7 @@ export const listingService = {
         priceFormatted: `${(listingData.price || 0).toLocaleString()} UZS`,
         isNegotiable: listingData.isNegotiable ?? true,
         images: listingData.images || ['/image0.webp'],
-        attributes: listingData.attributes || { direction: 'gosht', directionLabel: "🥩 Go'sht yo'nalishi" },
+        attributes: listingData.attributes || { direction: 'gosht', directionLabel: "Go'sht yo'nalishi" },
         description: listingData.description || '',
         location: listingData.location || { region: 'Toshkent', city: 'Shahar' },
         createdAt: 'Hozirgina',
