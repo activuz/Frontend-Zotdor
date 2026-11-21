@@ -1,0 +1,15 @@
+"""Word roots treated as profanity in auction descriptions (Uzbek Latin/Cyrillic, Russian).
+
+Matching is prefix-based on lower-cased words, so keep roots specific enough not to hit
+ordinary words. Extend this list when moderators report misses.
+"""
+
+PROFANITY_ROOTS: tuple[str, ...] = (
+    # Russian (Cyrillic and common Latin transliterations)
+    "хуй", "хуё", "хуе", "пизд", "ебат", "ебан", "ебал", "ебло", "уеб", "блят", "бляд", "сука", "сучк",
+    "мудак", "мудил", "пидор", "пидар", "гандон", "залуп", "шлюх",
+    "xuy", "xuyl", "pizd", "yeban", "eban", "blyat", "blyad", "suka", "mudak", "pidor", "pidar", "gandon", "shlyux",
+    # Uzbek
+    "jalab", "qanjiq", "dalbayob", "dalbayop", "haromi", "itvachcha", "onangni",
+    "жалаб", "қанжиқ", "далбаёб", "ҳароми", "итвачча", "онангни",
+)

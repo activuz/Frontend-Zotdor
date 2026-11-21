@@ -171,6 +171,50 @@ def capture_commission(
     return CommissionCharge(total=amount, from_bonus=from_bonus, from_main=from_main)
 
 
+@transaction.atomic
+def refund_commission(user: User, charge_ref_type: str, charge_ref_id: uuid.UUID, *, actor: User) -> int:
+    """Return a charged commission to the buckets it came from (approved "deal failed" claim, BR-34)."""
+    wallet = _locked_wallet(user)
+    charged = WalletEntry.objects.filter(
+        user=user, type=EntryType.COMMISSION, ref_type=charge_ref_type, ref_id=charge_ref_id
+    )
+    if WalletEntry.objects.filter(
+        user=user, type=EntryType.COMMISSION_REFUND, ref_type=charge_ref_type, ref_id=charge_ref_id
+    ).exists():
+        raise DomainError("already_refunded", "Bu komissiya allaqachon qaytarilgan.", status.HTTP_409_CONFLICT)
+    total = 0
+    for entry in charged:
+        _post(
+            wallet,
+            Bucket(entry.bucket),
+            EntryType.COMMISSION_REFUND,
+            -entry.amount,
+            ref_type=charge_ref_type,
+            ref_id=charge_ref_id,
+            actor=actor,
+        )
+        total += -entry.amount
+    return total
+
+
+@transaction.atomic
+def credit_topup(user: User, amount: int, payment_id: uuid.UUID) -> WalletEntry:
+    """A confirmed payment (Click or the fake provider) adds to the main balance."""
+    wallet = _locked_wallet(user)
+    return _post(wallet, Bucket.MAIN, EntryType.TOPUP, amount, ref_type="payment", ref_id=payment_id)
+
+
+@transaction.atomic
+def debit_refund_payout(user: User, amount: int, refund_id: uuid.UUID, *, actor: User) -> WalletEntry:
+    """Staff paid money back outside the system (BR-45); remove it from the main balance."""
+    wallet = _locked_wallet(user)
+    if wallet.main_balance - wallet.held_amount < amount and wallet.main_balance < amount:
+        raise DomainError("insufficient_balance", "Asosiy balansda bu summa yoʻq.", status.HTTP_409_CONFLICT)
+    return _post(
+        wallet, Bucket.MAIN, EntryType.REFUND_PAYOUT, -amount, ref_type="refund_request", ref_id=refund_id, actor=actor
+    )
+
+
 # --- manual operations (staff panel, phase 7) -----------------------------------------------
 
 

@@ -51,6 +51,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Optional, rounded to ~10 m; only used for distance sorting (docs/ARCHITECTURE.md D-10).
     lat = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
     lng = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
+    rating_avg = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    rating_count = models.PositiveIntegerField(default=0)
+    deals_count = models.PositiveIntegerField(default=0)
     is_blocked = models.BooleanField(default=False)
     blocked_reason = models.TextField(blank=True)
     # Django admin access only (emergency superuser); product staff use `role`.

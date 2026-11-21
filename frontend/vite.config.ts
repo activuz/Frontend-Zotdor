@@ -15,7 +15,7 @@ export default defineConfig({
     host: true,
     // Same-origin in development so the session cookie is first-party (docs/ARCHITECTURE.md §8).
     proxy: {
-      '/api': { target: 'http://localhost:8000', changeOrigin: false },
+      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: false },
     },
   },
 });

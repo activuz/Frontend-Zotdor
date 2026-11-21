@@ -3,6 +3,24 @@ from __future__ import annotations
 from django.db import models
 
 
+class StaffAuditLog(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    actor = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="+")
+    action = models.CharField(max_length=60)
+    target_type = models.CharField(max_length=30)
+    target_id = models.CharField(max_length=64)
+    before = models.JSONField(default=dict, blank=True)
+    after = models.JSONField(default=dict, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "staff_audit_log"
+
+    def __str__(self) -> str:
+        return f"{self.action} {self.target_type}:{self.target_id}"
+
+
 class PlatformSettings(models.Model):
     """Single-row business settings (docs/DATABASE.md "platform_settings"), edited by admins.
 
