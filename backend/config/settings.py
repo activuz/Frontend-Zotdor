@@ -89,7 +89,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env.get("MEDIA_ROOT", str(BASE_DIR / "media")))
 
 # --- Security -------------------------------------------------------------

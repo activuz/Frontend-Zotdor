@@ -37,7 +37,9 @@ class Rating(models.Model):
     id = models.BigAutoField(primary_key=True)
     deal = models.ForeignKey(Deal, on_delete=models.CASCADE, related_name="ratings")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
-    target = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="ratings_received")
+    target = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="ratings_received"
+    )
     score = models.PositiveSmallIntegerField()
     comment = models.TextField(blank=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)

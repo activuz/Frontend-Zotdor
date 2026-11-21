@@ -43,7 +43,9 @@ class RefundRequest(models.Model):
         REJECTED = "rejected"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="refund_requests")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="refund_requests"
+    )
     amount = models.BigIntegerField()
     click_reference = models.CharField(max_length=64)
     reason = models.TextField(max_length=1000)

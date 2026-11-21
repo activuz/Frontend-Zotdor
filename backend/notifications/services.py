@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 MAX_ATTEMPTS = 5
 
 
-def notify(user: User, type: str, title: str, body: str = "", link: str = "", *, telegram: bool = True) -> None:
+def notify(
+    user: User, type: str, title: str, body: str = "", link: str = "", *, telegram: bool = True
+) -> None:
     Notification.objects.create(user=user, type=type, title=title, body=body, link=link)
     if telegram and user.telegram_user_id:
         text = title if not body else f"{title}\n\n{body}"
@@ -57,7 +59,10 @@ def send_pending(limit: int = 50) -> int:
         )
         for msg in batch:
             try:
-                call("sendMessage", {"chat_id": msg.chat_id, "text": msg.text, "disable_web_page_preview": True})
+                call(
+                    "sendMessage",
+                    {"chat_id": msg.chat_id, "text": msg.text, "disable_web_page_preview": True},
+                )
             except TelegramError as exc:
                 msg.attempts += 1
                 msg.error = str(exc)[:500]

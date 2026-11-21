@@ -48,7 +48,9 @@ class MarkReadView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        request=inline_serializer("MarkRead", {"ids": serializers.ListField(child=serializers.IntegerField(), required=False)}),
+        request=inline_serializer(
+            "MarkRead", {"ids": serializers.ListField(child=serializers.IntegerField(), required=False)}
+        ),
         responses={204: None},
     )
     def post(self, request: Request) -> Response:

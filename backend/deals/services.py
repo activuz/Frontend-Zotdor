@@ -52,7 +52,9 @@ def refresh_user_stats(user: User) -> None:
     agg = Rating.objects.filter(target=user).aggregate(avg=Avg("score"), n=Count("id"))
     user.rating_avg = Decimal(str(round(agg["avg"], 2))) if agg["avg"] is not None else None
     user.rating_count = agg["n"]
-    user.deals_count = Deal.objects.filter(Q(seller=user) | Q(buyer=user)).exclude(status=Deal.DealStatus.FAILED).count()
+    user.deals_count = (
+        Deal.objects.filter(Q(seller=user) | Q(buyer=user)).exclude(status=Deal.DealStatus.FAILED).count()
+    )
     user.save(update_fields=["rating_avg", "rating_count", "deals_count"])
 
 
@@ -70,7 +72,9 @@ def rate(deal_id: uuid.UUID, user: User, score: int, comment: str = "") -> Ratin
         raise DomainError("profanity", "Izohda haqoratli soʻz bor.")
     target = deal.buyer if user.id == deal.seller_id else deal.seller
     try:
-        rating = Rating.objects.create(deal=deal, author=user, target=target, score=score, comment=comment.strip())
+        rating = Rating.objects.create(
+            deal=deal, author=user, target=target, score=score, comment=comment.strip()
+        )
     except IntegrityError as exc:
         raise DomainError("cannot_rate", "Siz bu bitimni allaqachon baholagansiz.", 409) from exc
     refresh_user_stats(target)

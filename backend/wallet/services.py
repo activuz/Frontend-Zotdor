@@ -181,7 +181,9 @@ def refund_commission(user: User, charge_ref_type: str, charge_ref_id: uuid.UUID
     if WalletEntry.objects.filter(
         user=user, type=EntryType.COMMISSION_REFUND, ref_type=charge_ref_type, ref_id=charge_ref_id
     ).exists():
-        raise DomainError("already_refunded", "Bu komissiya allaqachon qaytarilgan.", status.HTTP_409_CONFLICT)
+        raise DomainError(
+            "already_refunded", "Bu komissiya allaqachon qaytarilgan.", status.HTTP_409_CONFLICT
+        )
     total = 0
     for entry in charged:
         _post(
@@ -211,7 +213,13 @@ def debit_refund_payout(user: User, amount: int, refund_id: uuid.UUID, *, actor:
     if wallet.main_balance - wallet.held_amount < amount and wallet.main_balance < amount:
         raise DomainError("insufficient_balance", "Asosiy balansda bu summa yoʻq.", status.HTTP_409_CONFLICT)
     return _post(
-        wallet, Bucket.MAIN, EntryType.REFUND_PAYOUT, -amount, ref_type="refund_request", ref_id=refund_id, actor=actor
+        wallet,
+        Bucket.MAIN,
+        EntryType.REFUND_PAYOUT,
+        -amount,
+        ref_type="refund_request",
+        ref_id=refund_id,
+        actor=actor,
     )
 
 

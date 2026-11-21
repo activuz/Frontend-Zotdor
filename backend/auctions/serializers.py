@@ -78,9 +78,25 @@ class AuctionListSerializer(serializers.ModelSerializer[Auction]):
     class Meta:
         model = Auction
         fields = [
-            "id", "title", "status", "cover", "asking_price", "top_bid_amount", "bidders_count",
-            "active_bids_count", "starts_at", "ends_at", "region", "district", "distance_km",
-            "animal_type", "animal_class", "age_label", "weight_kg", "weight_is_estimated", "is_watched",
+            "id",
+            "title",
+            "status",
+            "cover",
+            "asking_price",
+            "top_bid_amount",
+            "bidders_count",
+            "active_bids_count",
+            "starts_at",
+            "ends_at",
+            "region",
+            "district",
+            "distance_km",
+            "animal_type",
+            "animal_class",
+            "age_label",
+            "weight_kg",
+            "weight_is_estimated",
+            "is_watched",
         ]
 
     @extend_schema_field(CoverSerializer(allow_null=True))
@@ -133,9 +149,23 @@ class AuctionDetailSerializer(AuctionListSerializer):
     class Meta(AuctionListSerializer.Meta):
         fields = [
             *AuctionListSerializer.Meta.fields,
-            "media", "description", "direction", "breed", "breed_other", "age_months", "min_bid", "max_bid",
-            "seller", "my_bid", "owner", "deal_id", "is_owner", "start_now", "duration_minutes",
-            "decision_deadline", "published_at",
+            "media",
+            "description",
+            "direction",
+            "breed",
+            "breed_other",
+            "age_months",
+            "min_bid",
+            "max_bid",
+            "seller",
+            "my_bid",
+            "owner",
+            "deal_id",
+            "is_owner",
+            "start_now",
+            "duration_minutes",
+            "decision_deadline",
+            "published_at",
         ]
 
     def _viewer(self) -> User | None:
@@ -168,7 +198,8 @@ class AuctionDetailSerializer(AuctionListSerializer):
         return {
             "hold_amount": obj.hold_amount,
             "decision_deadline": obj.decision_deadline,
-            "can_cancel": obj.status in ("pending_review", "scheduled") or (obj.status == "live" and not has_bids),
+            "can_cancel": obj.status in ("pending_review", "scheduled")
+            or (obj.status == "live" and not has_bids),
             "can_accept_now": allowed and has_bids,
             "early_accept_from": early_from,
             "rejection_reason": obj.rejection_reason,
@@ -184,17 +215,35 @@ class AuctionDetailSerializer(AuctionListSerializer):
 
 
 class DraftSerializer(serializers.Serializer[Any]):
-    direction_id = serializers.PrimaryKeyRelatedField(queryset=Direction.objects.filter(is_active=True), source="direction", required=False, allow_null=True)
-    animal_type_id = serializers.PrimaryKeyRelatedField(queryset=AnimalType.objects.filter(is_active=True), source="animal_type", required=False, allow_null=True)
-    animal_class_id = serializers.PrimaryKeyRelatedField(queryset=AnimalClass.objects.filter(is_active=True), source="animal_class", required=False, allow_null=True)
-    breed_id = serializers.PrimaryKeyRelatedField(queryset=Breed.objects.filter(is_active=True), source="breed", required=False, allow_null=True)
+    direction_id = serializers.PrimaryKeyRelatedField(
+        queryset=Direction.objects.filter(is_active=True), source="direction", required=False, allow_null=True
+    )
+    animal_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=AnimalType.objects.filter(is_active=True),
+        source="animal_type",
+        required=False,
+        allow_null=True,
+    )
+    animal_class_id = serializers.PrimaryKeyRelatedField(
+        queryset=AnimalClass.objects.filter(is_active=True),
+        source="animal_class",
+        required=False,
+        allow_null=True,
+    )
+    breed_id = serializers.PrimaryKeyRelatedField(
+        queryset=Breed.objects.filter(is_active=True), source="breed", required=False, allow_null=True
+    )
     breed_other = serializers.CharField(max_length=64, required=False, allow_blank=True)
     age_months = serializers.IntegerField(min_value=0, max_value=480, required=False, allow_null=True)
     weight_kg = serializers.IntegerField(min_value=0, max_value=3000, required=False, allow_null=True)
     weight_is_estimated = serializers.BooleanField(required=False)
     description = serializers.CharField(max_length=2000, required=False, allow_blank=True)
-    asking_price = serializers.IntegerField(min_value=1000, max_value=10_000_000_000, required=False, allow_null=True)
-    district_id = serializers.PrimaryKeyRelatedField(queryset=District.objects.all(), source="district", required=False, allow_null=True)
+    asking_price = serializers.IntegerField(
+        min_value=1000, max_value=10_000_000_000, required=False, allow_null=True
+    )
+    district_id = serializers.PrimaryKeyRelatedField(
+        queryset=District.objects.all(), source="district", required=False, allow_null=True
+    )
     start_now = serializers.BooleanField(required=False)
     starts_at = serializers.DateTimeField(required=False, allow_null=True)
     duration_minutes = serializers.IntegerField(min_value=1, max_value=1440, required=False, allow_null=True)

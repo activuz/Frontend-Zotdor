@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
-import subprocess  # noqa: S404 - fixed argv, no shell
+import subprocess
 import uuid
 from pathlib import Path
 
@@ -109,7 +109,16 @@ def process_video(media: AuctionMedia, max_seconds: int) -> None:
     source = Path(settings.MEDIA_ROOT) / media.original_path
     try:
         probe = _run(
-            [settings.FFPROBE_BIN, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(source)],
+            [
+                settings.FFPROBE_BIN,
+                "-v",
+                "error",
+                "-print_format",
+                "json",
+                "-show_format",
+                "-show_streams",
+                str(source),
+            ],
             timeout=30,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -133,17 +142,50 @@ def process_video(media: AuctionMedia, max_seconds: int) -> None:
     try:
         result = _run(
             [
-                settings.FFMPEG_BIN, "-y", "-v", "error", "-i", str(source),
-                "-t", str(max_seconds + VIDEO_MAX_S_GRACE),
-                "-vf", "scale='min(1280,iw)':-2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "28",
-                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", str(out),
+                settings.FFMPEG_BIN,
+                "-y",
+                "-v",
+                "error",
+                "-i",
+                str(source),
+                "-t",
+                str(max_seconds + VIDEO_MAX_S_GRACE),
+                "-vf",
+                "scale='min(1280,iw)':-2",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast",
+                "-crf",
+                "28",
+                "-pix_fmt",
+                "yuv420p",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "96k",
+                "-movflags",
+                "+faststart",
+                str(out),
             ],
             timeout=180,
         )
         if result.returncode != 0:
             raise MediaError("Videoni qayta ishlab boʻlmadi.")
         frame = _run(
-            [settings.FFMPEG_BIN, "-y", "-v", "error", "-ss", "1", "-i", str(out), "-frames:v", "1", str(poster)],
+            [
+                settings.FFMPEG_BIN,
+                "-y",
+                "-v",
+                "error",
+                "-ss",
+                "1",
+                "-i",
+                str(out),
+                "-frames:v",
+                "1",
+                str(poster),
+            ],
             timeout=60,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
