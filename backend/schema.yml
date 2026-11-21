@@ -18,8 +18,214 @@ paths:
               schema:
                 $ref: '#/components/schemas/Health'
           description: ''
+  /api/v1/auth/csrf:
+    get:
+      operationId: v1_auth_csrf_retrieve
+      description: Sets the csrftoken cookie; the frontend calls it once on startup.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/logout:
+    post:
+      operationId: v1_auth_logout_create
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/telegram/start:
+    post:
+      operationId: v1_auth_telegram_start_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginStartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginStartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginStartRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginStartResponse'
+          description: ''
+  /api/v1/auth/telegram/status/{request_id}:
+    get:
+      operationId: v1_auth_telegram_status_retrieve
+      parameters:
+      - in: path
+        name: request_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginStatus'
+          description: ''
+  /api/v1/me:
+    get:
+      operationId: v1_me_retrieve
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+    patch:
+      operationId: v1_me_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/v1/reference/regions:
+    get:
+      operationId: v1_reference_regions_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Region'
+          description: ''
+  /api/v1/reference/taxonomy:
+    get:
+      operationId: v1_reference_taxonomy_retrieve
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Taxonomy'
+          description: ''
 components:
   schemas:
+    AnimalClass:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        age_hint:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - name
+      - sex
+    AnimalType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 64
+        direction_ids:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        classes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnimalClass'
+          readOnly: true
+        breeds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Breed'
+          readOnly: true
+      required:
+      - breeds
+      - classes
+      - direction_ids
+      - id
+      - name
+      - slug
+    Breed:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - name
     DbEnum:
       enum:
       - ok
@@ -28,11 +234,40 @@ components:
       description: |-
         * `ok` - ok
         * `down` - down
+    Direction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - name
+      - slug
+    District:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - name
     Health:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/HealthStatusEnum'
         db:
           $ref: '#/components/schemas/DbEnum'
         worker:
@@ -41,7 +276,7 @@ components:
       - db
       - status
       - worker
-    StatusEnum:
+    HealthStatusEnum:
       enum:
       - ok
       - degraded
@@ -51,6 +286,183 @@ components:
         * `ok` - ok
         * `degraded` - degraded
         * `down` - down
+    LoginStartRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+      required:
+      - phone
+    LoginStartResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        deep_link:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - deep_link
+      - expires_at
+      - request_id
+    LoginStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/LoginStatusStatusEnum'
+        fail_reason:
+          type: string
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/Me'
+      required:
+      - status
+    LoginStatusStatusEnum:
+      enum:
+      - pending
+      - verified
+      - failed
+      - expired
+      type: string
+      description: |-
+        * `pending` - pending
+        * `verified` - verified
+        * `failed` - failed
+        * `expired` - expired
+    Me:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        telegram_username:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Place'
+          readOnly: true
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Place'
+          readOnly: true
+          nullable: true
+        needs_profile:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - district
+      - first_name
+      - id
+      - last_name
+      - needs_profile
+      - phone
+      - region
+      - role
+      - telegram_username
+    PatchedProfileUpdateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        last_name:
+          type: string
+          maxLength: 64
+        region_id:
+          type: integer
+        district_id:
+          type: integer
+    Place:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
+    Region:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+        districts:
+          type: array
+          items:
+            $ref: '#/components/schemas/District'
+          readOnly: true
+      required:
+      - districts
+      - id
+      - name
+    RoleEnum:
+      enum:
+      - user
+      - moderator
+      - admin
+      type: string
+      description: |-
+        * `user` - Foydalanuvchi
+        * `moderator` - Moderator
+        * `admin` - Admin
+    SexEnum:
+      enum:
+      - male
+      - female
+      - any
+      type: string
+      description: |-
+        * `male` - Erkak
+        * `female` - Urgʻochi
+        * `any` - Har ikkisi
+    Taxonomy:
+      type: object
+      properties:
+        directions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Direction'
+        animal_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnimalType'
+      required:
+      - animal_types
+      - directions
     WorkerEnum:
       enum:
       - ok
@@ -61,3 +473,8 @@ components:
         * `ok` - ok
         * `stale` - stale
         * `unknown` - unknown
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

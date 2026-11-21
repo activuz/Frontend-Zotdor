@@ -1,0 +1,1318 @@
+[
+ {
+  "name": "Qoraqalpogʻiston Respublikasi",
+  "sort": 1,
+  "osm_id": 196241,
+  "districts": [
+   {
+    "name": "Amudaryo tumani",
+    "osm_id": 2095807,
+    "lat": 42.1369,
+    "lng": 60.0259
+   },
+   {
+    "name": "Beruniy tumani",
+    "osm_id": 2095997,
+    "lat": 42.3886,
+    "lng": 60.9701
+   },
+   {
+    "name": "Bozatov tumani",
+    "osm_id": 10041797,
+    "lat": 43.0736,
+    "lng": 59.4137
+   },
+   {
+    "name": "Chimboy tumani",
+    "osm_id": 2095789,
+    "lat": 43.0683,
+    "lng": 59.7195
+   },
+   {
+    "name": "Ellikqalʼa tumani",
+    "osm_id": 2095999,
+    "lat": 42.3321,
+    "lng": 61.5048
+   },
+   {
+    "name": "Kegeyli tumani",
+    "osm_id": 2095788,
+    "lat": 42.7584,
+    "lng": 59.7175
+   },
+   {
+    "name": "Moʻynoq tumani",
+    "osm_id": 2094483,
+    "lat": 44.3733,
+    "lng": 59.6563
+   },
+   {
+    "name": "Nukus shahri",
+    "osm_id": 7284021,
+    "lat": 42.3206,
+    "lng": 59.9211
+   },
+   {
+    "name": "Nukus tumani",
+    "osm_id": 2094540,
+    "lat": 42.5577,
+    "lng": 59.5135
+   },
+   {
+    "name": "Qonlikoʻl tumani",
+    "osm_id": 2094502,
+    "lat": 42.7649,
+    "lng": 59.0886
+   },
+   {
+    "name": "Qoraoʻzak tumani",
+    "osm_id": 2095797,
+    "lat": 42.7454,
+    "lng": 60.2627
+   },
+   {
+    "name": "Qoʻngʻirot tumani",
+    "osm_id": 2094349,
+    "lat": 43.4158,
+    "lng": 57.5928
+   },
+   {
+    "name": "Shumanay tumani",
+    "osm_id": 2094497,
+    "lat": 42.709,
+    "lng": 58.9383
+   },
+   {
+    "name": "Taxiatosh tumani",
+    "osm_id": 7505068,
+    "lat": 42.3373,
+    "lng": 59.5356
+   },
+   {
+    "name": "Taxtakoʻpir tumani",
+    "osm_id": 2095849,
+    "lat": 43.3118,
+    "lng": 61.3214
+   },
+   {
+    "name": "Toʻrtkoʻl tumani",
+    "osm_id": 2095998,
+    "lat": 41.5391,
+    "lng": 61.6719
+   },
+   {
+    "name": "Xoʻjayli tumani",
+    "osm_id": 2094524,
+    "lat": 42.4702,
+    "lng": 59.3761
+   }
+  ]
+ },
+ {
+  "name": "Andijon viloyati",
+  "sort": 2,
+  "osm_id": 178016,
+  "districts": [
+   {
+    "name": "Andijon shahri",
+    "osm_id": 15534510,
+    "lat": 40.7626,
+    "lng": 72.3622
+   },
+   {
+    "name": "Andijon tumani",
+    "osm_id": 15534511,
+    "lat": 40.7897,
+    "lng": 72.423
+   },
+   {
+    "name": "Asaka tumani",
+    "osm_id": 15534829,
+    "lat": 40.6575,
+    "lng": 72.2269
+   },
+   {
+    "name": "Baliqchi tumani",
+    "osm_id": 15534236,
+    "lat": 40.8486,
+    "lng": 71.9924
+   },
+   {
+    "name": "Boʻston tumani",
+    "osm_id": 15534185,
+    "lat": 40.6927,
+    "lng": 71.9114
+   },
+   {
+    "name": "Buloqboshi tumani",
+    "osm_id": 15534706,
+    "lat": 40.6171,
+    "lng": 72.4734
+   },
+   {
+    "name": "Izboskan tumani",
+    "osm_id": 15534555,
+    "lat": 40.9181,
+    "lng": 72.2805
+   },
+   {
+    "name": "Jalaquduq tumani",
+    "osm_id": 15534554,
+    "lat": 40.7262,
+    "lng": 72.6459
+   },
+   {
+    "name": "Marhamat tumani",
+    "osm_id": 15534828,
+    "lat": 40.5141,
+    "lng": 72.3213
+   },
+   {
+    "name": "Oltinkoʻl tumani",
+    "osm_id": 15534807,
+    "lat": 40.7833,
+    "lng": 72.1503
+   },
+   {
+    "name": "Paxtaobod tumani",
+    "osm_id": 15534556,
+    "lat": 40.967,
+    "lng": 72.4262
+   },
+   {
+    "name": "Qoʻrgʻontepa tumani",
+    "osm_id": 15534235,
+    "lat": 40.7597,
+    "lng": 72.7764
+   },
+   {
+    "name": "Shahrixon tumani",
+    "osm_id": 15534808,
+    "lat": 40.7106,
+    "lng": 72.036
+   },
+   {
+    "name": "Ulugʻnor tumani",
+    "osm_id": 15352128,
+    "lat": 40.7618,
+    "lng": 71.683
+   },
+   {
+    "name": "Xonobod shahri",
+    "osm_id": 15534184,
+    "lat": 40.7761,
+    "lng": 73.0814
+   },
+   {
+    "name": "Xoʻjaobod tumani",
+    "osm_id": 15534707,
+    "lat": 40.6229,
+    "lng": 72.5898
+   }
+  ]
+ },
+ {
+  "name": "Buxoro viloyati",
+  "sort": 3,
+  "osm_id": 1670973,
+  "districts": [
+   {
+    "name": "Buxoro shahri",
+    "osm_id": 13070474,
+    "lat": 39.7804,
+    "lng": 64.4486
+   },
+   {
+    "name": "Buxoro tumani",
+    "osm_id": 11180733,
+    "lat": 39.6366,
+    "lng": 64.5269
+   },
+   {
+    "name": "Gʻijduvon tumani",
+    "osm_id": 15627513,
+    "lat": 40.4834,
+    "lng": 64.9042
+   },
+   {
+    "name": "Jondor tumani",
+    "osm_id": 15638585,
+    "lat": 40.0012,
+    "lng": 63.5122
+   },
+   {
+    "name": "Kogon shahri",
+    "osm_id": 15624670,
+    "lat": 39.7244,
+    "lng": 64.5545
+   },
+   {
+    "name": "Kogon tumani",
+    "osm_id": 11177967,
+    "lat": 39.7403,
+    "lng": 64.566
+   },
+   {
+    "name": "Olot tumani",
+    "osm_id": 11178494,
+    "lat": 39.2386,
+    "lng": 64.1344
+   },
+   {
+    "name": "Peshku tumani",
+    "osm_id": 15635297,
+    "lat": 40.7281,
+    "lng": 63.304
+   },
+   {
+    "name": "Qorakoʻl tumani",
+    "osm_id": 15639559,
+    "lat": 39.875,
+    "lng": 63.19
+   },
+   {
+    "name": "Qorovulbozor tumani",
+    "osm_id": 11159957,
+    "lat": 39.4231,
+    "lng": 64.7957
+   },
+   {
+    "name": "Romitan tumani",
+    "osm_id": 15634764,
+    "lat": 40.4536,
+    "lng": 63.2937
+   },
+   {
+    "name": "Shofirkon tumani",
+    "osm_id": 15630286,
+    "lat": 40.5026,
+    "lng": 64.1855
+   },
+   {
+    "name": "Vobkent tumani",
+    "osm_id": 15626687,
+    "lat": 39.9895,
+    "lng": 64.5848
+   }
+  ]
+ },
+ {
+  "name": "Jizzax viloyati",
+  "sort": 4,
+  "osm_id": 196254,
+  "districts": [
+   {
+    "name": "Arnasoy tumani",
+    "osm_id": 6990291,
+    "lat": 40.5914,
+    "lng": 67.8279
+   },
+   {
+    "name": "Baxmal tumani",
+    "osm_id": 7587151,
+    "lat": 39.7264,
+    "lng": 67.8604
+   },
+   {
+    "name": "Doʻstlik tumani",
+    "osm_id": 6990314,
+    "lat": 40.5165,
+    "lng": 68.0392
+   },
+   {
+    "name": "Forish tumani",
+    "osm_id": 7629998,
+    "lat": 40.6524,
+    "lng": 67.3854
+   },
+   {
+    "name": "Gʻallaorol tumani",
+    "osm_id": 7592938,
+    "lat": 40.0542,
+    "lng": 67.3707
+   },
+   {
+    "name": "Mirzachoʻl tumani",
+    "osm_id": 7626174,
+    "lat": 40.7076,
+    "lng": 68.074
+   },
+   {
+    "name": "Paxtakor tumani",
+    "osm_id": 7629494,
+    "lat": 40.357,
+    "lng": 68.0379
+   },
+   {
+    "name": "Sharof Rashidov tumani",
+    "osm_id": 7593143,
+    "lat": 40.0718,
+    "lng": 67.7755
+   },
+   {
+    "name": "Yangiobod tumani",
+    "osm_id": 7590755,
+    "lat": 39.9972,
+    "lng": 68.8128
+   },
+   {
+    "name": "Zafarobod tumani",
+    "osm_id": 6990287,
+    "lat": 40.3799,
+    "lng": 67.7449
+   },
+   {
+    "name": "Zarbdor tumani",
+    "osm_id": 7591363,
+    "lat": 40.1634,
+    "lng": 68.155
+   },
+   {
+    "name": "Zomin tumani",
+    "osm_id": 7587152,
+    "lat": 39.8994,
+    "lng": 68.283
+   }
+  ]
+ },
+ {
+  "name": "Qashqadaryo viloyati",
+  "sort": 5,
+  "osm_id": 1670974,
+  "districts": [
+   {
+    "name": "Chiroqchi tumani",
+    "osm_id": 13342290,
+    "lat": 39.205,
+    "lng": 66.5855
+   },
+   {
+    "name": "Dehqonobod tumani",
+    "osm_id": 15607704,
+    "lat": 38.3692,
+    "lng": 66.6378
+   },
+   {
+    "name": "Gʻuzor tumani",
+    "osm_id": 15607705,
+    "lat": 38.546,
+    "lng": 66.1667
+   },
+   {
+    "name": "Kasbi tumani",
+    "osm_id": 11856183,
+    "lat": 38.9042,
+    "lng": 65.448
+   },
+   {
+    "name": "Kitob tumani",
+    "osm_id": 8655517,
+    "lat": 39.2271,
+    "lng": 67.1267
+   },
+   {
+    "name": "Koson tumani",
+    "osm_id": 15610731,
+    "lat": 39.1715,
+    "lng": 65.7669
+   },
+   {
+    "name": "Koʻkdala tumani",
+    "osm_id": 15603118,
+    "lat": 39.1349,
+    "lng": 66.1543
+   },
+   {
+    "name": "Mirishkor tumani",
+    "osm_id": 11857775,
+    "lat": 38.8262,
+    "lng": 64.946
+   },
+   {
+    "name": "Muborak tumani",
+    "osm_id": 15610732,
+    "lat": 39.2563,
+    "lng": 65.2631
+   },
+   {
+    "name": "Nishon tumani",
+    "osm_id": 10764730,
+    "lat": 38.5076,
+    "lng": 65.5177
+   },
+   {
+    "name": "Qamashi tumani",
+    "osm_id": 9037690,
+    "lat": 38.7948,
+    "lng": 66.8158
+   },
+   {
+    "name": "Qarshi shahri",
+    "osm_id": 15606915,
+    "lat": 38.8445,
+    "lng": 65.7961
+   },
+   {
+    "name": "Qarshi tumani",
+    "osm_id": 13618732,
+    "lat": 38.7642,
+    "lng": 65.7748
+   },
+   {
+    "name": "Shahrisabz shahri",
+    "osm_id": 15602076,
+    "lat": 39.0623,
+    "lng": 66.8354
+   },
+   {
+    "name": "Shahrisabz tumani",
+    "osm_id": 8660162,
+    "lat": 38.9799,
+    "lng": 67.1589
+   },
+   {
+    "name": "Yakkabogʻ tumani",
+    "osm_id": 8827580,
+    "lat": 38.8998,
+    "lng": 66.8231
+   }
+  ]
+ },
+ {
+  "name": "Navoiy viloyati",
+  "sort": 6,
+  "osm_id": 196246,
+  "districts": [
+   {
+    "name": "Gʻozgʻon shahri",
+    "osm_id": 15614705,
+    "lat": 40.5834,
+    "lng": 65.4794
+   },
+   {
+    "name": "Karmana tumani",
+    "osm_id": 11158845,
+    "lat": 40.0334,
+    "lng": 65.2299
+   },
+   {
+    "name": "Konimex tumani",
+    "osm_id": 2186085,
+    "lat": 40.7688,
+    "lng": 64.6398
+   },
+   {
+    "name": "Navbahor tumani",
+    "osm_id": 11157435,
+    "lat": 40.3115,
+    "lng": 65.4066
+   },
+   {
+    "name": "Navoiy shahri",
+    "osm_id": 15613446,
+    "lat": 40.0996,
+    "lng": 65.3459
+   },
+   {
+    "name": "Nurota tumani",
+    "osm_id": 11158818,
+    "lat": 40.7051,
+    "lng": 66.063
+   },
+   {
+    "name": "Qiziltepa tumani",
+    "osm_id": 11158844,
+    "lat": 39.8587,
+    "lng": 64.933
+   },
+   {
+    "name": "Tomdi tumani",
+    "osm_id": 2186086,
+    "lat": 42.3359,
+    "lng": 65.1413
+   },
+   {
+    "name": "Uchquduq tumani",
+    "osm_id": 2186087,
+    "lat": 42.2905,
+    "lng": 63.1962
+   },
+   {
+    "name": "Xatirchi tumani",
+    "osm_id": 11158813,
+    "lat": 40.2192,
+    "lng": 65.9028
+   },
+   {
+    "name": "Zarafshon shahri",
+    "osm_id": 15623085,
+    "lat": 41.555,
+    "lng": 64.3916
+   }
+  ]
+ },
+ {
+  "name": "Namangan viloyati",
+  "sort": 7,
+  "osm_id": 178017,
+  "districts": [
+   {
+    "name": "Chortoq tumani",
+    "osm_id": 15550826,
+    "lat": 41.2399,
+    "lng": 71.8244
+   },
+   {
+    "name": "Chust tumani",
+    "osm_id": 15551712,
+    "lat": 41.0266,
+    "lng": 71.1797
+   },
+   {
+    "name": "Davlatobod tumani",
+    "osm_id": 14348867,
+    "lat": 41.0081,
+    "lng": 71.5827
+   },
+   {
+    "name": "Kosonsoy tumani",
+    "osm_id": 15551388,
+    "lat": 41.163,
+    "lng": 71.5332
+   },
+   {
+    "name": "Mingbuloq tumani",
+    "osm_id": 15544194,
+    "lat": 40.7971,
+    "lng": 71.3802
+   },
+   {
+    "name": "Namangan tumani",
+    "osm_id": 15550188,
+    "lat": 40.9296,
+    "lng": 71.6523
+   },
+   {
+    "name": "Norin tumani",
+    "osm_id": 15544193,
+    "lat": 40.9427,
+    "lng": 71.9572
+   },
+   {
+    "name": "Pop tumani",
+    "osm_id": 15551713,
+    "lat": 41.0573,
+    "lng": 70.8888
+   },
+   {
+    "name": "Toʻraqoʻrgʻon tumani",
+    "osm_id": 15551387,
+    "lat": 40.9943,
+    "lng": 71.4459
+   },
+   {
+    "name": "Uchqoʻrgʻon tumani",
+    "osm_id": 15544192,
+    "lat": 41.0484,
+    "lng": 72.0611
+   },
+   {
+    "name": "Uychi tumani",
+    "osm_id": 15550187,
+    "lat": 41.0386,
+    "lng": 71.9007
+   },
+   {
+    "name": "Yangi Namangan tumani",
+    "osm_id": 14354025,
+    "lat": 41.0738,
+    "lng": 71.674
+   },
+   {
+    "name": "Yangiqoʻrgʻon tumani",
+    "osm_id": 15550827,
+    "lat": 41.2977,
+    "lng": 71.713
+   }
+  ]
+ },
+ {
+  "name": "Samarqand viloyati",
+  "sort": 8,
+  "osm_id": 196249,
+  "districts": [
+   {
+    "name": "Bulungʻur tumani",
+    "osm_id": 15593551,
+    "lat": 39.7271,
+    "lng": 67.35
+   },
+   {
+    "name": "Ishtixon tumani",
+    "osm_id": 15597882,
+    "lat": 40.0468,
+    "lng": 66.5807
+   },
+   {
+    "name": "Jomboy tumani",
+    "osm_id": 15593552,
+    "lat": 39.784,
+    "lng": 67.1135
+   },
+   {
+    "name": "Kattaqoʻrgʻon shahri",
+    "osm_id": 15596345,
+    "lat": 39.9055,
+    "lng": 66.2693
+   },
+   {
+    "name": "Kattaqoʻrgʻon tumani",
+    "osm_id": 15600409,
+    "lat": 40.0266,
+    "lng": 66.2149
+   },
+   {
+    "name": "Narpay tumani",
+    "osm_id": 15601409,
+    "lat": 39.918,
+    "lng": 65.9898
+   },
+   {
+    "name": "Nurobod tumani",
+    "osm_id": 15601869,
+    "lat": 39.6186,
+    "lng": 66.0163
+   },
+   {
+    "name": "Oqdaryo tumani",
+    "osm_id": 15594144,
+    "lat": 39.8291,
+    "lng": 66.8182
+   },
+   {
+    "name": "Past Dargʻom tumani",
+    "osm_id": 15590527,
+    "lat": 39.7145,
+    "lng": 66.6616
+   },
+   {
+    "name": "Paxtachi tumani",
+    "osm_id": 12474376,
+    "lat": 39.9376,
+    "lng": 65.4941
+   },
+   {
+    "name": "Payariq tumani",
+    "osm_id": 15596342,
+    "lat": 40.1218,
+    "lng": 66.8687
+   },
+   {
+    "name": "Qoʻshrabot tumani",
+    "osm_id": 15598196,
+    "lat": 40.341,
+    "lng": 66.5083
+   },
+   {
+    "name": "Samarqand shahri",
+    "osm_id": 15589846,
+    "lat": 39.6714,
+    "lng": 66.941
+   },
+   {
+    "name": "Samarqand tumani",
+    "osm_id": 15589850,
+    "lat": 39.5927,
+    "lng": 66.9086
+   },
+   {
+    "name": "Toyloq tumani",
+    "osm_id": 15590675,
+    "lat": 39.5927,
+    "lng": 67.1939
+   },
+   {
+    "name": "Ugrut tumani",
+    "osm_id": 15590676,
+    "lat": 39.4154,
+    "lng": 67.1663
+   }
+  ]
+ },
+ {
+  "name": "Surxondaryo viloyati",
+  "sort": 9,
+  "osm_id": 196248,
+  "districts": [
+   {
+    "name": "Angor tumani",
+    "osm_id": 11184154,
+    "lat": 37.4584,
+    "lng": 67.2262
+   },
+   {
+    "name": "Bandixon tumani",
+    "osm_id": 11183885,
+    "lat": 37.8221,
+    "lng": 67.2868
+   },
+   {
+    "name": "Boysun tumani",
+    "osm_id": 11114153,
+    "lat": 38.1689,
+    "lng": 67.0888
+   },
+   {
+    "name": "Denov tumani",
+    "osm_id": 11180683,
+    "lat": 38.3114,
+    "lng": 67.7812
+   },
+   {
+    "name": "Jarqoʻrgʻon tumani",
+    "osm_id": 11184121,
+    "lat": 37.5461,
+    "lng": 67.5452
+   },
+   {
+    "name": "Muzrabot tumani",
+    "osm_id": 11184259,
+    "lat": 37.463,
+    "lng": 66.8211
+   },
+   {
+    "name": "Oltinsoy tumani",
+    "osm_id": 11149913,
+    "lat": 38.1856,
+    "lng": 67.6995
+   },
+   {
+    "name": "Qiziriq tumani",
+    "osm_id": 11184007,
+    "lat": 37.653,
+    "lng": 67.2678
+   },
+   {
+    "name": "Qumqoʻrgʻon tumani",
+    "osm_id": 11123658,
+    "lat": 37.937,
+    "lng": 67.7123
+   },
+   {
+    "name": "Sariosiyo tumani",
+    "osm_id": 11114152,
+    "lat": 38.6941,
+    "lng": 67.7335
+   },
+   {
+    "name": "Sherobod tumani",
+    "osm_id": 11184260,
+    "lat": 37.7288,
+    "lng": 66.8692
+   },
+   {
+    "name": "Shoʻrchi tumani",
+    "osm_id": 11180731,
+    "lat": 37.9649,
+    "lng": 67.8477
+   },
+   {
+    "name": "Termiz tumani",
+    "osm_id": 11137520,
+    "lat": 37.2843,
+    "lng": 67.4622
+   },
+   {
+    "name": "Uzun tumani",
+    "osm_id": 11180857,
+    "lat": 38.2366,
+    "lng": 67.9925
+   }
+  ]
+ },
+ {
+  "name": "Sirdaryo viloyati",
+  "sort": 10,
+  "osm_id": 196253,
+  "districts": [
+   {
+    "name": "Boyovut tumani",
+    "osm_id": 11086477,
+    "lat": 40.347,
+    "lng": 68.9713
+   },
+   {
+    "name": "Guliston shahri",
+    "osm_id": 8310445,
+    "lat": 40.5222,
+    "lng": 68.7674
+   },
+   {
+    "name": "Guliston tumani",
+    "osm_id": 11087519,
+    "lat": 40.5125,
+    "lng": 68.9227
+   },
+   {
+    "name": "Mirzaobod tumani",
+    "osm_id": 11087046,
+    "lat": 40.4718,
+    "lng": 68.6254
+   },
+   {
+    "name": "Oqoltin tumani",
+    "osm_id": 11087238,
+    "lat": 40.5261,
+    "lng": 68.3364
+   },
+   {
+    "name": "Sardoba tumani",
+    "osm_id": 11087239,
+    "lat": 40.3611,
+    "lng": 68.2848
+   },
+   {
+    "name": "Sayxunobod tumani",
+    "osm_id": 11087853,
+    "lat": 40.6776,
+    "lng": 68.8916
+   },
+   {
+    "name": "Sirdaryo tumani",
+    "osm_id": 11087876,
+    "lat": 40.8116,
+    "lng": 68.7028
+   },
+   {
+    "name": "Xovos tumani",
+    "osm_id": 11086994,
+    "lat": 40.2809,
+    "lng": 68.788
+   },
+   {
+    "name": "Yangiyer shahri",
+    "osm_id": 11086479,
+    "lat": 40.2603,
+    "lng": 68.8142
+   }
+  ]
+ },
+ {
+  "name": "Toshkent viloyati",
+  "sort": 11,
+  "osm_id": 196251,
+  "districts": [
+   {
+    "name": "Angren shahri",
+    "osm_id": 7774377,
+    "lat": 41.0259,
+    "lng": 70.1172
+   },
+   {
+    "name": "Bekobod shahri",
+    "osm_id": 7726940,
+    "lat": 40.2243,
+    "lng": 69.2319
+   },
+   {
+    "name": "Bekobod tumani",
+    "osm_id": 5750396,
+    "lat": 40.4572,
+    "lng": 69.1999
+   },
+   {
+    "name": "Boʻka tumani",
+    "osm_id": 5750395,
+    "lat": 40.737,
+    "lng": 69.1627
+   },
+   {
+    "name": "Boʻstonliq tumani",
+    "osm_id": 2120216,
+    "lat": 41.7595,
+    "lng": 70.4277
+   },
+   {
+    "name": "Chinoz tumani",
+    "osm_id": 5748414,
+    "lat": 41.0171,
+    "lng": 68.8076
+   },
+   {
+    "name": "Chirchiq shahri",
+    "osm_id": 7723809,
+    "lat": 41.4758,
+    "lng": 69.5836
+   },
+   {
+    "name": "Nurafshon shahri",
+    "osm_id": 18507227,
+    "lat": 41.0281,
+    "lng": 69.346
+   },
+   {
+    "name": "Ohangaron shahri",
+    "osm_id": 18507147,
+    "lat": 40.9138,
+    "lng": 69.6393
+   },
+   {
+    "name": "Ohangaron tumani",
+    "osm_id": 5745852,
+    "lat": 40.9881,
+    "lng": 69.9671
+   },
+   {
+    "name": "Olmaliq shahri",
+    "osm_id": 7726941,
+    "lat": 40.8009,
+    "lng": 69.5946
+   },
+   {
+    "name": "Oqqoʻrgʻon tumani",
+    "osm_id": 5750388,
+    "lat": 40.8307,
+    "lng": 69.0641
+   },
+   {
+    "name": "Oʻrtachirchiq tumani",
+    "osm_id": 5748378,
+    "lat": 41.0442,
+    "lng": 69.3164
+   },
+   {
+    "name": "Parkent tumani",
+    "osm_id": 5745823,
+    "lat": 41.2845,
+    "lng": 69.799
+   },
+   {
+    "name": "Piskent tumani",
+    "osm_id": 5750391,
+    "lat": 40.8089,
+    "lng": 69.4991
+   },
+   {
+    "name": "Qibray tumani",
+    "osm_id": 5745803,
+    "lat": 41.5183,
+    "lng": 69.5165
+   },
+   {
+    "name": "Quyichirchiq tumani",
+    "osm_id": 5748465,
+    "lat": 40.9803,
+    "lng": 68.9816
+   },
+   {
+    "name": "Toshkent tumani",
+    "osm_id": 11071441,
+    "lat": 41.3913,
+    "lng": 69.2207
+   },
+   {
+    "name": "Yangiyoʻl shahri",
+    "osm_id": 7163853,
+    "lat": 41.1237,
+    "lng": 69.0585
+   },
+   {
+    "name": "Yangiyoʻl tumani",
+    "osm_id": 5748407,
+    "lat": 41.1112,
+    "lng": 69.0351
+   },
+   {
+    "name": "Yuqorichirchiq tumani",
+    "osm_id": 5745839,
+    "lat": 41.2564,
+    "lng": 69.5245
+   },
+   {
+    "name": "Zangiota tumani",
+    "osm_id": 4060435,
+    "lat": 41.2629,
+    "lng": 69.1128
+   }
+  ]
+ },
+ {
+  "name": "Fargʻona viloyati",
+  "sort": 12,
+  "osm_id": 178018,
+  "districts": [
+   {
+    "name": "Bagʻdod tumani",
+    "osm_id": 15541457,
+    "lat": 40.4854,
+    "lng": 71.2062
+   },
+   {
+    "name": "Beshariq tumani",
+    "osm_id": 15537297,
+    "lat": 40.376,
+    "lng": 70.5406
+   },
+   {
+    "name": "Buvayda tumani",
+    "osm_id": 15537688,
+    "lat": 40.6457,
+    "lng": 71.1383
+   },
+   {
+    "name": "Dangʻara tumani",
+    "osm_id": 15537513,
+    "lat": 40.6371,
+    "lng": 70.8512
+   },
+   {
+    "name": "Fargʻona shahri",
+    "osm_id": 15537982,
+    "lat": 40.3948,
+    "lng": 71.7889
+   },
+   {
+    "name": "Fargʻona tumani",
+    "osm_id": 15537981,
+    "lat": 40.1814,
+    "lng": 71.6983
+   },
+   {
+    "name": "Furqat tumani",
+    "osm_id": 15537511,
+    "lat": 40.5198,
+    "lng": 70.7478
+   },
+   {
+    "name": "Margʻilon shahri",
+    "osm_id": 15540055,
+    "lat": 40.4436,
+    "lng": 71.7253
+   },
+   {
+    "name": "Oltiariq tumani",
+    "osm_id": 15541459,
+    "lat": 40.4913,
+    "lng": 71.4401
+   },
+   {
+    "name": "Oʻzbekiston tumani",
+    "osm_id": 15537512,
+    "lat": 40.3507,
+    "lng": 70.8618
+   },
+   {
+    "name": "Qoʻqon shahri",
+    "osm_id": 15537298,
+    "lat": 40.5235,
+    "lng": 70.9404
+   },
+   {
+    "name": "Qoʻshtepa tumani",
+    "osm_id": 15541456,
+    "lat": 40.5224,
+    "lng": 71.6026
+   },
+   {
+    "name": "Quva tumani",
+    "osm_id": 15540054,
+    "lat": 40.5127,
+    "lng": 72.0406
+   },
+   {
+    "name": "Quvasoy shahri",
+    "osm_id": 15537983,
+    "lat": 40.3681,
+    "lng": 71.9539
+   },
+   {
+    "name": "Rishton tumani",
+    "osm_id": 15541458,
+    "lat": 40.385,
+    "lng": 71.2195
+   },
+   {
+    "name": "Soʻx tumani",
+    "osm_id": 3772474,
+    "lat": 40.0351,
+    "lng": 71.1124
+   },
+   {
+    "name": "Toshloq tumani",
+    "osm_id": 15540056,
+    "lat": 40.535,
+    "lng": 71.8312
+   },
+   {
+    "name": "Uchkoʻprik tumani",
+    "osm_id": 15537687,
+    "lat": 40.5101,
+    "lng": 71.0374
+   },
+   {
+    "name": "Yozyovon tumani",
+    "osm_id": 15540057,
+    "lat": 40.6487,
+    "lng": 71.6131
+   }
+  ]
+ },
+ {
+  "name": "Xorazm viloyati",
+  "sort": 13,
+  "osm_id": 196242,
+  "districts": [
+   {
+    "name": "Bogʻot tumani",
+    "osm_id": 2097711,
+    "lat": 41.343,
+    "lng": 60.8684
+   },
+   {
+    "name": "Gurlan tumani",
+    "osm_id": 2097623,
+    "lat": 41.8761,
+    "lng": 60.3284
+   },
+   {
+    "name": "Hazorasp tumani",
+    "osm_id": 2097814,
+    "lat": 41.2847,
+    "lng": 61.124
+   },
+   {
+    "name": "Qoʻshkoʻpir tumani",
+    "osm_id": 2097689,
+    "lat": 41.5161,
+    "lng": 60.3094
+   },
+   {
+    "name": "Showot tumani",
+    "osm_id": 2097624,
+    "lat": 41.6955,
+    "lng": 60.2545
+   },
+   {
+    "name": "Tuproqqalʼa tumani",
+    "osm_id": 11992833,
+    "lat": 40.9526,
+    "lng": 61.8307
+   },
+   {
+    "name": "Urganch tumani",
+    "osm_id": 2097690,
+    "lat": 41.5972,
+    "lng": 60.6159
+   },
+   {
+    "name": "Xiva tumani",
+    "osm_id": 2097691,
+    "lat": 41.3722,
+    "lng": 60.3993
+   },
+   {
+    "name": "Xonqa tumani",
+    "osm_id": 2097712,
+    "lat": 41.4811,
+    "lng": 60.8088
+   },
+   {
+    "name": "Yangiariq tumani",
+    "osm_id": 2097692,
+    "lat": 41.3293,
+    "lng": 60.5888
+   },
+   {
+    "name": "Yangibozor tumani",
+    "osm_id": 2097625,
+    "lat": 41.7189,
+    "lng": 60.5035
+   }
+  ]
+ },
+ {
+  "name": "Toshkent shahri",
+  "sort": 14,
+  "osm_id": 2216724,
+  "districts": [
+   {
+    "name": "Bektemir tumani",
+    "osm_id": 2447560,
+    "lat": 41.2284,
+    "lng": 69.3348
+   },
+   {
+    "name": "Chilonzor tumani",
+    "osm_id": 2441810,
+    "lat": 41.2673,
+    "lng": 69.2044
+   },
+   {
+    "name": "Mirobod tumani",
+    "osm_id": 2447634,
+    "lat": 41.2749,
+    "lng": 69.2953
+   },
+   {
+    "name": "Mirzo Ulugʻbek tumani",
+    "osm_id": 5620904,
+    "lat": 41.3643,
+    "lng": 69.3751
+   },
+   {
+    "name": "Olmazor tumani",
+    "osm_id": 2441651,
+    "lat": 41.3601,
+    "lng": 69.2173
+   },
+   {
+    "name": "Sergeli tumani",
+    "osm_id": 2447546,
+    "lat": 41.2321,
+    "lng": 69.2581
+   },
+   {
+    "name": "Shayhontohur tumani",
+    "osm_id": 2439529,
+    "lat": 41.3249,
+    "lng": 69.2174
+   },
+   {
+    "name": "Uchtepa tumani",
+    "osm_id": 2434059,
+    "lat": 41.2962,
+    "lng": 69.1599
+   },
+   {
+    "name": "Yakkasaroy tumani",
+    "osm_id": 2443769,
+    "lat": 41.2821,
+    "lng": 69.2435
+   },
+   {
+    "name": "Yangi Toshkent tumani",
+    "osm_id": 17389398,
+    "lat": 41.2393,
+    "lng": 69.4063
+   },
+   {
+    "name": "Yangi hayot tumani",
+    "osm_id": 12030887,
+    "lat": 41.2021,
+    "lng": 69.2407
+   },
+   {
+    "name": "Yashnobod tumani",
+    "osm_id": 1751444,
+    "lat": 41.2936,
+    "lng": 69.379
+   },
+   {
+    "name": "Yunusobod tumani",
+    "osm_id": 2448072,
+    "lat": 41.354,
+    "lng": 69.286
+   }
+  ]
+ }
+]

@@ -8,8 +8,8 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 
 ## Joriy holat (2026-11-21)
 
-- `frontend/` — hali demo, `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi. Mock fallback 1-bosqichda olib tashlanadi.
-- `backend/` — 0-bosqich skeleti: `/api/health`, xato formati, minimal `User` modeli, worker heartbeat. Biznes funksiyalari hali yo‘q.
+- `backend/` — 1-bosqich tugadi: Telegram orqali kirish, profil, viloyat va tumanlar, toifalar (`reference`). Hamyon, auksionlar va bitimlar hali yo‘q.
+- `frontend/` — kirish, profil va `/me/setup` sahifalari haqiqiy API bilan ishlaydi. E'lon va auksion ekranlari 3–4-bosqichlargacha **ochiq demo** rejimida: `src/mocks/` ishlatiladi va `DemoNotice` ogohlantirishi ko‘rinadi. Haqiqiy API kelganda `src/mocks/`, `DemoNotice` va `AppLayout` dagi `REAL_DATA_PATHS` olib tashlanadi.
 - `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
@@ -42,7 +42,9 @@ Lokal muhit Docker'siz ishlaydi: PostgreSQL to‘g‘ridan-to‘g‘ri o‘rnati
 # backend (birinchi marta: py -3.13 -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt;
 #          cp .env.example .env va qiymatlarni to‘ldirish)
 cd backend && .venv/Scripts/python manage.py migrate
+cd backend && .venv/Scripts/python manage.py load_reference           # viloyat/tuman/toifalar (idempotent)
 cd backend && .venv/Scripts/python manage.py runserver 8000
+cd backend && .venv/Scripts/python manage.py telegram_poll            # botni lokal ishga tushirish (webhook'ni o‘chiradi!)
 cd backend && .venv/Scripts/python manage.py procrastinate worker     # fon vazifalari
 cd backend && .venv/Scripts/pytest
 cd backend && .venv/Scripts/ruff check . && .venv/Scripts/ruff format --check . && .venv/Scripts/mypy .
@@ -53,7 +55,7 @@ cd frontend && npm run dev | npm run lint | npm run build
 cd frontend && npm run api:types        # backend/schema.yml → src/api/schema.d.ts
 ```
 
-API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikkalasi ham o‘sha commit'ga qo‘shiladi. Frontend testlari (`npm test`) va `telegram_poll` buyrug‘i 1-bosqichda qo‘shiladi.
+API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikkalasi ham o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
 
 ## Backend qoidalari
 
@@ -70,7 +72,7 @@ API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikka
 ## Frontend qoidalari
 
 - API tiplari `src/api/schema.d.ts` dan olinadi va bu fayl generatsiya qilinadi. Server javobi uchun tipni qo‘lda yozmang.
-- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. Mock'lar faqat testlarda (MSW) ishlatiladi.
+- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. HTTP faqat `src/api/http.ts` orqali yuboriladi. Yagona istisno — yuqorida aytilgan ochiq demo ekranlari. Yangi demo ekran qo‘shilmaydi.
 - So‘rov qiladigan har bir ekranda loading, empty, error va success holatlari bo‘lishi shart.
 - `alert()`, `confirm()` va `any` ishlatilmaydi.
 - Ranglar faqat Tailwind tokenlari orqali beriladi (DESIGN.md §2). `[#xxxxxx]` ishlatilmaydi. 13 px dan kichik matn bo‘lmaydi.

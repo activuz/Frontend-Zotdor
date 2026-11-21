@@ -30,7 +30,9 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "procrastinate.contrib.django",
     "core",
+    "reference",
     "accounts",
+    "telegram_bot",
 ]
 
 MIDDLEWARE = [
@@ -116,6 +118,16 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
 }
+
+# --- Telegram login (docs/ARCHITECTURE.md §6) ----------------------------
+# Empty values are allowed so tests and tooling run without a bot; the auth
+# endpoints refuse to start a login when the bot is not configured.
+TELEGRAM_BOT_TOKEN = env.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_USERNAME = env.get("TELEGRAM_BOT_USERNAME", "").lstrip("@")
+TELEGRAM_WEBHOOK_SECRET = env.get("TELEGRAM_WEBHOOK_SECRET", "")
+LOGIN_REQUEST_TTL_SECONDS = 600
+LOGIN_RATE_PER_PHONE_PER_HOUR = 5
+LOGIN_RATE_PER_IP_PER_HOUR = 20
 
 # --- Worker ---------------------------------------------------------------
 WORKER_HEARTBEAT_STALE_SECONDS = 180

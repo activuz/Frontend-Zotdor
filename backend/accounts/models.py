@@ -46,6 +46,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=64, blank=True)
     last_name = models.CharField(max_length=64, blank=True)
     role = models.CharField(max_length=16, choices=Role.choices, default=Role.USER)
+    region = models.ForeignKey("reference.Region", on_delete=models.PROTECT, null=True, blank=True)
+    district = models.ForeignKey("reference.District", on_delete=models.PROTECT, null=True, blank=True)
+    # Optional, rounded to ~10 m; only used for distance sorting (docs/ARCHITECTURE.md D-10).
+    lat = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
+    lng = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
     blocked_reason = models.TextField(blank=True)
     # Django admin access only (emergency superuser); product staff use `role`.
@@ -72,3 +77,43 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_moderator_or_admin(self) -> bool:
         return self.role in {self.Role.MODERATOR, self.Role.ADMIN}
+
+    @property
+    def needs_profile(self) -> bool:
+        return not (self.first_name and self.region_id and self.district_id)
+
+
+class LoginRequest(models.Model):
+    """One Telegram login attempt (docs/ARCHITECTURE.md §6). Only hashes of secrets are stored."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending"
+        VERIFIED = "verified"
+        FAILED = "failed"
+        CONSUMED = "consumed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone = models.CharField(max_length=13, validators=[phone_validator])
+    token_hash = models.CharField(max_length=64, unique=True)
+    poll_secret_hash = models.CharField(max_length=64)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    fail_reason = models.CharField(max_length=32, blank=True)
+    telegram_user_id = models.BigIntegerField(null=True, blank=True)
+    telegram_username = models.CharField(max_length=64, blank=True)
+    telegram_first_name = models.CharField(max_length=64, blank=True)
+    telegram_last_name = models.CharField(max_length=64, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "login_requests"
+        indexes = [
+            models.Index(fields=["phone", "created_at"]),
+            models.Index(fields=["ip", "created_at"]),
+            models.Index(fields=["telegram_user_id", "status"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.phone} {self.status}"

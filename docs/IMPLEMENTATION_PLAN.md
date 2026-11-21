@@ -16,12 +16,14 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 **Natija:** lokal PostgreSQL bilan bo‘sh API va hozirgi frontend ishga tushadi, CI yashil.
 
 ## 1-bosqich. Foydalanuvchi va kirish
-- [ ] `accounts`, `reference`: modellar, viloyat va tumanlar fixture'i (OSM'dan import) ⛔ tuman ro‘yxatini tasdiqlash
-- [ ] Toifalar fixture'i — manba: [TAXONOMY_DRAFT.md](TAXONOMY_DRAFT.md) ⛔ mahsulot egasi tasdiqlashi kerak
-- [ ] `telegram_bot`: webhook, `/start <token>`, kontaktni tekshirish, `telegram_poll` buyrug‘i ⛔ bot @BotFather orqali yaratiladi va token beriladi
-- [ ] Auth endpointlari, sessiya, CSRF, rate limit
-- [ ] Frontend: `/login`, profilni to‘ldirish, `useMe`, himoyalangan marshrutlar
-- [ ] Frontend'dan mock fallback'ni olib tashlash, xato holatlari uchun komponentlar
+- [x] `accounts`, `reference`: modellar. 14 ta hudud va 203 ta tuman OSM'dan import qilindi (`load_reference`). Mahsulot egasi yondashuvni tasdiqladi. Xorazmdagi Urganch shahri va Xiva shahri yetishmaydi, ular panelda qo‘shiladi
+- [x] Toifalar seed'i ([TAXONOMY_DRAFT.md](TAXONOMY_DRAFT.md) asosida, mahsulot egasi tahrir qilgan). Qolgan sozlashlar panelda qilinadi
+- [x] `telegram_bot`: webhook (URL secret va header bilan), `/start <token>`, kontaktni tekshirish, `telegram_poll` buyrug‘i. Bot: @ZotdorPlatformBot
+- [x] Auth endpointlari, sessiya, CSRF, rate limit (DB asosida)
+- [x] Frontend: `/login`, `/me/setup`, `useMe`, `RequireAuth` (`/add`, `/profile`), haqiqiy ma'lumotli profil sahifasi va chiqish
+- [x] Yashirin mock fallback olib tashlandi (`src/api/http.ts`). **Vaqtinchalik:** e'lon va auksion ekranlari 3–4-bosqichlargacha ochiq demo rejimida ishlaydi va har bir sahifada `DemoNotice` ogohlantirishi ko‘rinadi
+- [ ] Haqiqiy telefon va bot bilan qo‘lda sinov (mahsulot egasi bilan birga)
+- [ ] Ro‘yxatdan o‘tishda bonus berish 2-bosqichga ko‘chirildi, chunki hamyon hali yo‘q (`accounts.services.complete_login` dagi izohga qarang)
 
 **Natija:** haqiqiy Telegram bot orqali kirish va chiqish ishlaydi. Raqam mos kelmasa, kirish rad etiladi.
 

@@ -24,12 +24,19 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 |---|---|---|
 | GET | `/auth/csrf` | CSRF cookie'ni o‘rnatadi |
 | POST | `/auth/telegram/start` | `{phone}` → `201 {request_id, deep_link, expires_at}` va `zd_login` cookie'si |
-| GET | `/auth/telegram/status/{request_id}` | `{status: pending\|verified\|failed\|expired, fail_reason?}`. `verified` bo‘lsa sessiya ochiladi va `{user}` qaytadi |
-| POST | `/auth/logout` | |
-| GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` |
-| PATCH | `/me` | `{first_name, last_name, region_id, district_id, lat?, lng?}` |
+| GET | `/auth/telegram/status/{request_id}` | `zd_login` cookie talab qilinadi. Javob: `{status: pending\|verified\|failed\|expired, fail_reason?, message?, user?}`. `verified` bo‘lsa sessiya ochiladi va `user` qaytadi. So‘rov bir martalik |
+| POST | `/auth/logout` | `204` |
+| GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`) |
+| PATCH | `/me` | `{first_name?, last_name?, region_id?, district_id?}`. Tuman tanlangan viloyatga tegishli bo‘lishi kerak |
 
-Xato kodlari: `invalid_phone`, `login_expired`, `phone_mismatch`, `foreign_contact`, `user_blocked`.
+Xato kodlari:
+- `invalid_phone` (400);
+- `rate_limited` (429);
+- `login_unavailable` (503, bot sozlanmagan);
+- `login_not_found` (404, noto‘g‘ri id yoki `zd_login` cookie'si yo‘q);
+- `user_blocked` (403).
+
+`fail_reason` qiymatlari: `foreign_contact`, `phone_mismatch`, `account_conflict`. `message` maydonida foydalanuvchi uchun matn keladi.
 
 ## Ma'lumotnomalar (ochiq, keshlanadi)
 

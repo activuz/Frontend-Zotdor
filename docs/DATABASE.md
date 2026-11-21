@@ -52,19 +52,22 @@ users 1─* notifications, telegram_outbox, watchlist, reports;  staff_audit_log
 | phone | varchar(13) | |
 | token_hash | char(64) UNIQUE | sha256 |
 | poll_secret_hash | char(64) | |
-| status | varchar(16) | `pending` \| `verified` \| `failed` \| `expired` \| `consumed` |
-| telegram_user_id | bigint NULL | |
-| fail_reason | varchar(32) NULL | `phone_mismatch`, `foreign_contact`… |
+| status | varchar(16) | `pending` \| `verified` \| `failed` \| `consumed`. Muddati o‘tgani `expires_at` orqali aniqlanadi va alohida holat sifatida saqlanmaydi |
+| telegram_user_id | bigint NULL | `/start` bosilganda bog‘lanadi |
+| telegram_username, telegram_first_name, telegram_last_name | varchar(64) | kontakt tasdiqlanganda yoziladi va yangi foydalanuvchiga ko‘chiriladi |
+| fail_reason | varchar(32) | `foreign_contact`, `phone_mismatch`, `account_conflict` |
 | expires_at, verified_at, created_at | timestamptz | |
-| ip | inet | |
+| ip | inet NULL | rate limit uchun |
+
+Rate limit alohida kesh bilan emas, shu jadvaldagi so‘nggi bir soatlik qatorlarni sanash orqali ishlaydi: bir raqamga soatiga 5 ta, bir IP'ga soatiga 20 ta urinish.
 
 ### reference
-- **regions** (id, name, sort)
-- **districts** (id, region_id, name, lat, lng). Koordinatalar ochiq manbadan import qilinadi (OpenStreetMap). Manba `backend/reference/fixtures/README.md` da qayd etiladi.
+- **regions** (id, name UNIQUE, sort, osm_id UNIQUE NULL)
+- **districts** (id, region_id, name, lat, lng, osm_id UNIQUE NULL). UNIQUE (region_id, name). Koordinatalar tuman markazi bo‘lib, OpenStreetMap'dan import qilingan. Manba va qo‘lda kiritilgan tuzatishlar `backend/reference/data/README.md` da qayd etilgan. Ma'lumot `manage.py load_reference` buyrug‘i bilan yuklanadi. U idempotent ishlaydi va xodimlar kiritgan o‘zgarishlarni o‘chirmaydi.
 - **directions** (id, slug, name, sort, is_active)
 - **animal_types** (id, slug, name, sort, is_active)
 - **animal_type_directions** (animal_type_id, direction_id) PK juft
-- **animal_classes** (id, animal_type_id, name, sex `male|female|any`, sort, is_active). Masalan, qoramol uchun: buzoq, tana, gʻunajin, sigir, ho‘kiz, buqa
+- **animal_classes** (id, animal_type_id, name, sex `male|female|any`, age_hint, sort, is_active). UNIQUE (animal_type_id, name). `age_hint` formada ko‘rsatiladigan maslahat, masalan "0–12 oy". Masalan, qoramol uchun: buzoq, tana, gʻunajin, sigir, ho‘kiz, buqa
 - **breeds** (id, animal_type_id, name, is_active)
 
 Boshlang‘ich qiymatlar fixture sifatida beriladi. **Mahsulot egasi tasdiqlamaguncha ular qoralama hisoblanadi.**
