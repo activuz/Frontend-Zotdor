@@ -1,0 +1,129 @@
+"""Django settings for the Zotdor backend. All environment-specific values come from env."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import django_stubs_ext
+
+from config import env
+
+# Allows generic annotations such as admin.ModelAdmin[User] at runtime.
+django_stubs_ext.monkeypatch()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+env.load_dotenv(BASE_DIR / ".env")
+
+DEBUG = env.get_bool("DJANGO_DEBUG", default=False)
+SECRET_KEY = env.get("DJANGO_SECRET_KEY")
+ALLOWED_HOSTS = env.get_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "corsheaders",
+    "rest_framework",
+    "drf_spectacular",
+    "procrastinate.contrib.django",
+    "core",
+    "accounts",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "config.urls"
+WSGI_APPLICATION = "config.wsgi.application"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
+DATABASES = {"default": env.database_from_url(env.get("DATABASE_URL"))}
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "accounts.User"
+
+# Users never set passwords (login is via Telegram); only the emergency
+# superuser for Django admin does.
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 12}},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+]
+
+LANGUAGE_CODE = "uz"
+TIME_ZONE = "Asia/Tashkent"  # display zone; values are stored in UTC
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "media/"
+MEDIA_ROOT = Path(env.get("MEDIA_ROOT", str(BASE_DIR / "media")))
+
+# --- Security -------------------------------------------------------------
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_TRUSTED_ORIGINS = env.get_list("CSRF_TRUSTED_ORIGINS")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+CORS_ALLOWED_ORIGINS = env.get_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+
+# --- API ------------------------------------------------------------------
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "core.errors.exception_handler",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Zotdor API",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+
+# --- Worker ---------------------------------------------------------------
+WORKER_HEARTBEAT_STALE_SECONDS = 180
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    "root": {"handlers": ["console"], "level": env.get("LOG_LEVEL", "INFO")},
+}

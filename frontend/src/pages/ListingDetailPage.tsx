@@ -30,6 +30,7 @@ export const ListingDetailPage: React.FC = () => {
   const { data: listing, isLoading } = useListingDetail(id);
   const toggleLikeMutation = useToggleLike();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   if (isLoading) {
     return (
@@ -73,8 +74,7 @@ export const ListingDetailPage: React.FC = () => {
         url: window.location.href,
       }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Havola buferga nusxalandi!");
+      navigator.clipboard.writeText(window.location.href).then(() => setLinkCopied(true)).catch(() => {});
     }
   };
 
@@ -109,9 +109,9 @@ export const ListingDetailPage: React.FC = () => {
             <button
               onClick={handleShare}
               className="p-2 rounded-full bg-[#f5f8eb] text-[#1e3a0f] hover:bg-[#dce8c8] transition-colors"
-              title="Ulashish"
+              title={linkCopied ? 'Havola nusxalandi' : 'Ulashish'}
             >
-              <Share2 className="w-4 h-4" />
+              {linkCopied ? <CircleCheck className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             </button>
             <button
               onClick={handleToggleLike}

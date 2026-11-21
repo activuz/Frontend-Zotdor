@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Zotdor API
+  version: 0.1.0
+paths:
+  /api/health:
+    get:
+      operationId: health_retrieve
+      description: 'Liveness for monitoring: 503 if the database is unreachable.'
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+components:
+  schemas:
+    DbEnum:
+      enum:
+      - ok
+      - down
+      type: string
+      description: |-
+        * `ok` - ok
+        * `down` - down
+    Health:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        db:
+          $ref: '#/components/schemas/DbEnum'
+        worker:
+          $ref: '#/components/schemas/WorkerEnum'
+      required:
+      - db
+      - status
+      - worker
+    StatusEnum:
+      enum:
+      - ok
+      - degraded
+      - down
+      type: string
+      description: |-
+        * `ok` - ok
+        * `degraded` - degraded
+        * `down` - down
+    WorkerEnum:
+      enum:
+      - ok
+      - stale
+      - unknown
+      type: string
+      description: |-
+        * `ok` - ok
+        * `stale` - stale
+        * `unknown` - unknown

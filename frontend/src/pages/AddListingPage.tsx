@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../api/hooks/useCategories';
 import { useCreateListing } from '../api/hooks/useListings';
-import { CategoryId } from '../types';
+import { AnimalGender, CategoryId } from '../types';
 import { Camera, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export const AddListingPage: React.FC = () => {
@@ -14,7 +14,7 @@ export const AddListingPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [breed, setBreed] = useState('');
-  const [gender, setGender] = useState<string>('Buqa');
+  const [gender, setGender] = useState<AnimalGender>('Buqa');
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
   const [region, setRegion] = useState('Toshkent viloyati');
@@ -23,10 +23,7 @@ export const AddListingPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price) {
-      alert("Iltimos, sarlavha va narxni kiriting!");
-      return;
-    }
+    if (!title || !price) return; // inputs are `required`; the browser shows the message
 
     const selectedCatObj = categories.find((c) => c.id === direction);
 
@@ -42,7 +39,7 @@ export const AddListingPage: React.FC = () => {
         direction,
         directionLabel: `${selectedCatObj?.icon || '🐾'} ${selectedCatObj?.name || 'Yo\'nalish'}`,
         breed: breed || 'Toza zot',
-        gender: gender as any,
+        gender,
         age: age || '2 yosh',
         weight: weight ? `${weight} kg` : '800 kg',
         pedigree: hasPedigree,
@@ -53,10 +50,7 @@ export const AddListingPage: React.FC = () => {
         city: 'Tuman markazi',
       },
     }, {
-      onSuccess: () => {
-        alert("E'loningiz muvaffaqiyatli joylashtirildi!");
-        navigate('/');
-      }
+      onSuccess: () => navigate('/'),
     });
   };
 
@@ -178,7 +172,7 @@ export const AddListingPage: React.FC = () => {
               <label className="text-[10px] font-bold text-[#6b8f4e] block mb-1">Jinsi</label>
               <select
                 value={gender}
-                onChange={(e) => setGender(e.target.value)}
+                onChange={(e) => setGender(e.target.value as AnimalGender)}
                 className="w-full p-2 bg-[#f5f8eb] rounded-xl border border-[#c5d4a8] text-xs font-bold"
               >
                 <option value="Buqa">Buqa</option>

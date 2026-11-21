@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Bell, Plus, User, Globe, MapPin, ChevronDown, Sparkles, ShieldCheck } from 'lucide-react';
+import { Search, Plus, User, Globe, MapPin, ChevronDown, Sparkles, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCategories } from '../../api/hooks/useCategories';
 import { CategoryIcon } from '../ui/CategoryIcon';
 
 export const Header: React.FC = () => {
-  const [unreadCount] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [currentLang, setCurrentLang] = useState<'uz' | 'cyrl'>('uz');
@@ -150,20 +149,6 @@ export const Header: React.FC = () => {
           >
             <Globe className="w-3.5 h-3.5" />
             <span>{currentLang === 'uz' ? 'Latin' : 'Кирилл'}</span>
-          </button>
-
-          {/* Notification Bell Icon */}
-          <button 
-            onClick={() => alert("Sizda 1 ta yangi bildirishnoma bor: Auksion boshlandi!")}
-            className="relative p-2 rounded-full bg-[#dce8c8]/60 hover:bg-[#dce8c8] text-[#1e3a0f] transition-colors cursor-pointer"
-            title="Bildirishnomalar"
-          >
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-[#3d6b2e] text-[#eef2dc] text-[10px] font-bold rounded-full flex items-center justify-center border border-[#eef2dc]">
-                {unreadCount}
-              </span>
-            )}
           </button>
 
           {/* Add Listing CTA Button (Desktop Primary CTA) */}

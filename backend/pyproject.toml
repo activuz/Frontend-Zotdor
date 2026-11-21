@@ -1,0 +1,40 @@
+[project]
+name = "zotdor-backend"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 110
+target-version = "py313"
+extend-exclude = [".venv", "*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "SIM", "RUF"]
+# RUF001-003: Uzbek text legitimately uses ʻ and ʼ.
+# RUF012: Django/DRF class attributes (Meta.constraints, permission_classes) are idiomatic.
+ignore = ["RUF001", "RUF002", "RUF003", "RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = ["\\.venv/", "migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["procrastinate.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["*.tests.*"]
+disallow_untyped_defs = false
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+addopts = "-q --strict-markers"
