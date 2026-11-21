@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, MapPin, Pencil, Phone } from 'lucide-react';
+import { ChevronRight, LogOut, MapPin, Pencil, Phone, Wallet as WalletIcon } from 'lucide-react';
 import { useLogout, useMe } from '../features/auth/api';
 import { PageLoading } from '../components/ui/PageState';
 
@@ -40,6 +40,17 @@ export const ProfilePage: React.FC = () => {
           Profilni tahrirlash
         </Link>
       </section>
+
+      <Link
+        to="/wallet"
+        className="flex items-center justify-between min-h-touch px-5 py-4 bg-surface rounded-2xl border border-line text-[15px] font-semibold text-ink"
+      >
+        <span className="flex items-center gap-2">
+          <WalletIcon className="w-5 h-5 text-brand" aria-hidden="true" />
+          Hamyon
+        </span>
+        <ChevronRight className="w-5 h-5 text-ink-muted" aria-hidden="true" />
+      </Link>
 
       {logout.isError && (
         <p role="alert" className="text-[15px] text-danger">

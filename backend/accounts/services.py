@@ -22,6 +22,7 @@ from rest_framework import status
 from accounts.models import LoginRequest, User
 from accounts.phone import normalize_phone
 from core.errors import DomainError
+from wallet.services import grant_signup_bonus
 
 
 def _hash(value: str) -> str:
@@ -188,7 +189,7 @@ def complete_login(request_id: uuid.UUID, poll_secret: str | None) -> LoginStatu
             first_name=request.telegram_first_name,
             last_name=request.telegram_last_name,
         )
-        # Signup bonus (BR-43) is granted here once the wallet exists (phase 2).
+        grant_signup_bonus(user)  # BR-43; same transaction, once per account
     if user.is_blocked:
         raise DomainError("user_blocked", "Akkauntingiz bloklangan.", status.HTTP_403_FORBIDDEN)
 

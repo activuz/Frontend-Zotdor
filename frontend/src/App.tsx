@@ -12,6 +12,7 @@ import { CategoryPage } from './pages/CategoryPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { ProfileSetupPage } from './features/auth/ProfileSetupPage';
 import { RequireAuth } from './features/auth/RequireAuth';
+import { WalletPage } from './features/wallet/WalletPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,14 @@ export const App: React.FC = () => {
               element={
                 <RequireAuth>
                   <ProfilePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/wallet"
+              element={
+                <RequireAuth>
+                  <WalletPage />
                 </RequireAuth>
               }
             />

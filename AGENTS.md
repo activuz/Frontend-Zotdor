@@ -8,8 +8,8 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 
 ## Joriy holat (2026-11-21)
 
-- `backend/` — 1-bosqich tugadi: Telegram orqali kirish, profil, viloyat va tumanlar, toifalar (`reference`). Hamyon, auksionlar va bitimlar hali yo‘q.
-- `frontend/` — kirish, profil va `/me/setup` sahifalari haqiqiy API bilan ishlaydi. E'lon va auksion ekranlari 3–4-bosqichlargacha **ochiq demo** rejimida: `src/mocks/` ishlatiladi va `DemoNotice` ogohlantirishi ko‘rinadi. Haqiqiy API kelganda `src/mocks/`, `DemoNotice` va `AppLayout` dagi `REAL_DATA_PATHS` olib tashlanadi.
+- `backend/` — 1-bosqich tugadi: Telegram orqali kirish, profil, viloyat va tumanlar, toifalar (`reference`). 2-bosqich: hamyon (ledger, rezervlar, bonus, reconcile). Auksionlar va bitimlar hali yo‘q.
+- `frontend/` — kirish, profil, `/me/setup` va `/wallet` sahifalari haqiqiy API bilan ishlaydi. E'lon va auksion ekranlari 3–4-bosqichlargacha **ochiq demo** rejimida: `src/mocks/` ishlatiladi va `DemoNotice` ogohlantirishi ko‘rinadi. Haqiqiy API kelganda `src/mocks/`, `DemoNotice` va `AppLayout` dagi `REAL_DATA_PATHS` olib tashlanadi.
 - `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 

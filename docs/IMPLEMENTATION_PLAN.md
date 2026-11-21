@@ -23,14 +23,15 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [x] Frontend: `/login`, `/me/setup`, `useMe`, `RequireAuth` (`/add`, `/profile`), haqiqiy ma'lumotli profil sahifasi va chiqish
 - [x] Yashirin mock fallback olib tashlandi (`src/api/http.ts`). **Vaqtinchalik:** e'lon va auksion ekranlari 3–4-bosqichlargacha ochiq demo rejimida ishlaydi va har bir sahifada `DemoNotice` ogohlantirishi ko‘rinadi
 - [x] Haqiqiy telefon va bot bilan qo‘lda sinov — mahsulot egasi tasdiqladi (2026-11-21)
-- [ ] Ro‘yxatdan o‘tishda bonus berish 2-bosqichga ko‘chirildi, chunki hamyon hali yo‘q (`accounts.services.complete_login` dagi izohga qarang)
+- [x] Ro‘yxatdan o‘tishda bonus berish — 2-bosqichda bajarildi
 
 **Natija:** haqiqiy Telegram bot orqali kirish va chiqish ishlaydi. Raqam mos kelmasa, kirish rad etiladi.
 
 ## 2-bosqich. Hamyon
-- [ ] `wallet`: modellar, `hold`, `release`, `capture`, `grant_bonus`, `expire_bonuses`, `adjust`, reconcile buyrug‘i
-- [ ] Ro‘yxatdan o‘tganda bonus berish
-- [ ] `/wallet` API va ekran (to‘ldirishsiz)
+- [x] `wallet`: modellar, `hold`, `release_hold`, `capture_commission`, `grant_signup_bonus`, `expire_bonuses`, `adjust`, `reconcile`. Kunlik vazifalar: bonuslarni yoqish (03:00) va reconcile (03:30). Buyruq: `manage.py wallet_reconcile`
+- [x] `core.PlatformSettings`: bonus summasi, komissiya stavkasi va boshqa biznes sozlamalari (bitta qator, keyin panelda tahrirlanadi)
+- [x] Ro‘yxatdan o‘tganda bonus berish
+- [x] `/wallet` API va ekran (to‘ldirishsiz, balansni hozircha faqat administrator to‘ldira oladi)
 
 **Natija:** balans va operatsiyalar tarixi ko‘rinadi. Ledger testlari, jumladan bir vaqtdagi operatsiyalar testlari, o‘tadi.
 

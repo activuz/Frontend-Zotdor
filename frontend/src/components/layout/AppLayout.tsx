@@ -10,7 +10,7 @@ interface AppLayoutProps {
 }
 
 /** Screens backed by the real API; every other screen still shows sample data. */
-const REAL_DATA_PATHS = ['/login', '/me/setup', '/profile'];
+const REAL_DATA_PATHS = ['/login', '/me/setup', '/profile', '/wallet'];
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();

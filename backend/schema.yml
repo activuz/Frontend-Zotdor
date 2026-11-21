@@ -159,6 +159,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/Taxonomy'
           description: ''
+  /api/v1/wallet:
+    get:
+      operationId: v1_wallet_retrieve
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: ''
+  /api/v1/wallet/entries:
+    get:
+      operationId: v1_wallet_entries_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWalletEntryList'
+          description: ''
 components:
   schemas:
     AnimalClass:
@@ -226,6 +267,16 @@ components:
       required:
       - id
       - name
+    BucketEnum:
+      enum:
+      - main
+      - bonus
+      - hold
+      type: string
+      description: |-
+        * `main` - Main
+        * `bonus` - Bonus
+        * `hold` - Hold
     DbEnum:
       enum:
       - ok
@@ -387,6 +438,25 @@ components:
       - region
       - role
       - telegram_username
+    PaginatedWalletEntryList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletEntry'
     PatchedProfileUpdateRequest:
       type: object
       properties:
@@ -463,6 +533,97 @@ components:
       required:
       - animal_types
       - directions
+    TypeEnum:
+      enum:
+      - topup
+      - bonus_grant
+      - bonus_expire
+      - hold
+      - hold_release
+      - commission
+      - commission_refund
+      - refund_payout
+      - adjustment
+      type: string
+      description: |-
+        * `topup` - Topup
+        * `bonus_grant` - Bonus Grant
+        * `bonus_expire` - Bonus Expire
+        * `hold` - Hold
+        * `hold_release` - Hold Release
+        * `commission` - Commission
+        * `commission_refund` - Commission Refund
+        * `refund_payout` - Refund Payout
+        * `adjustment` - Adjustment
+    Wallet:
+      type: object
+      properties:
+        main_balance:
+          type: integer
+          readOnly: true
+        bonus_balance:
+          type: integer
+          readOnly: true
+        bonus_expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        held_amount:
+          type: integer
+          readOnly: true
+        available:
+          type: integer
+          readOnly: true
+        has_debt:
+          type: boolean
+          readOnly: true
+      required:
+      - available
+      - bonus_balance
+      - bonus_expires_at
+      - has_debt
+      - held_amount
+      - main_balance
+    WalletEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        bucket:
+          allOf:
+          - $ref: '#/components/schemas/BucketEnum'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        balance_after:
+          type: integer
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - balance_after
+      - bucket
+      - created_at
+      - id
+      - note
+      - title
+      - type
     WorkerEnum:
       enum:
       - ok

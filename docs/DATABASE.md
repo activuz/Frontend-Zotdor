@@ -189,7 +189,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 | note | text NULL | |
 | created_at | timestamptz | |
 
-**holds** (id, user_id, auction_id UNIQUE, amount, status `active|released|captured`, created_at, closed_at)
+**holds** (id, user_id, ref_type, ref_id, amount, status `active|released|captured`, created_at, closed_at). UNIQUE (ref_type, ref_id), ya'ni bitta obyektga bitta rezerv. Hamyon `auctions` app'iga bog‘liq bo‘lmasligi uchun FK o‘rniga umumiy `ref_type`/`ref_id` havolasi ishlatiladi. Auksion uchun `ref_type="auction"`.
 
 **refund_requests** (id, user_id, amount, click_reference, reason, status `open|done|rejected`, handled_by_id, note, created_at, handled_at)
 

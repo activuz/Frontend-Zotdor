@@ -134,6 +134,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_wallet_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wallet/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_wallet_entries_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -156,6 +188,13 @@ export interface components {
             readonly id: number;
             name: string;
         };
+        /**
+         * @description * `main` - Main
+         *     * `bonus` - Bonus
+         *     * `hold` - Hold
+         * @enum {string}
+         */
+        BucketEnum: "main" | "bonus" | "hold";
         /**
          * @description * `ok` - ok
          *     * `down` - down
@@ -222,6 +261,19 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        PaginatedWalletEntryList: {
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cD00ODY%3D"
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+             */
+            previous?: string | null;
+            results: components["schemas"]["WalletEntry"][];
+        };
         PatchedProfileUpdateRequest: {
             first_name?: string;
             last_name?: string;
@@ -254,6 +306,39 @@ export interface components {
         Taxonomy: {
             directions: components["schemas"]["Direction"][];
             animal_types: components["schemas"]["AnimalType"][];
+        };
+        /**
+         * @description * `topup` - Topup
+         *     * `bonus_grant` - Bonus Grant
+         *     * `bonus_expire` - Bonus Expire
+         *     * `hold` - Hold
+         *     * `hold_release` - Hold Release
+         *     * `commission` - Commission
+         *     * `commission_refund` - Commission Refund
+         *     * `refund_payout` - Refund Payout
+         *     * `adjustment` - Adjustment
+         * @enum {string}
+         */
+        TypeEnum: "topup" | "bonus_grant" | "bonus_expire" | "hold" | "hold_release" | "commission" | "commission_refund" | "refund_payout" | "adjustment";
+        Wallet: {
+            readonly main_balance: number;
+            readonly bonus_balance: number;
+            /** Format: date-time */
+            readonly bonus_expires_at: string | null;
+            readonly held_amount: number;
+            readonly available: number;
+            readonly has_debt: boolean;
+        };
+        WalletEntry: {
+            readonly id: number;
+            readonly bucket: components["schemas"]["BucketEnum"];
+            readonly type: components["schemas"]["TypeEnum"];
+            readonly title: string;
+            readonly amount: number;
+            readonly balance_after: number;
+            readonly note: string;
+            /** Format: date-time */
+            readonly created_at: string;
         };
         /**
          * @description * `ok` - ok
@@ -450,6 +535,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Taxonomy"];
+                };
+            };
+        };
+    };
+    v1_wallet_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wallet"];
+                };
+            };
+        };
+    };
+    v1_wallet_entries_list: {
+        parameters: {
+            query?: {
+                /** @description The pagination cursor value. */
+                cursor?: string;
+                /** @description Number of results to return per page. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedWalletEntryList"];
                 };
             };
         };

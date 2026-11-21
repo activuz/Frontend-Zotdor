@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "reference",
     "accounts",
     "telegram_bot",
+    "wallet",
 ]
 
 MIDDLEWARE = [

@@ -9,6 +9,7 @@ urlpatterns = [
     path("api/health", HealthView.as_view(), name="health"),
     path("api/v1/reference/", include("reference.urls")),
     path("api/v1/", include("accounts.urls")),
+    path("api/v1/", include("wallet.urls")),
     path("api/telegram/webhook/<str:secret>", TelegramWebhookView.as_view(), name="telegram-webhook"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Emergency-only superuser access; staff work happens in the separate panel app.

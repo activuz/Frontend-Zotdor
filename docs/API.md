@@ -133,8 +133,8 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 
 | Metod | Yo‘l | Tavsif |
 |---|---|---|
-| GET | `/wallet` | `{main_balance, bonus_balance, bonus_expires_at, held_amount, available}` |
-| GET | `/wallet/entries` | Operatsiyalar tarixi, foydalanuvchiga tushunarli `title` bilan |
+| GET | `/wallet` | `{main_balance, bonus_balance, bonus_expires_at, held_amount, available, has_debt}` |
+| GET | `/wallet/entries` | Operatsiyalar tarixi, eng yangisi birinchi. Cursor sahifalash: `?cursor=&limit=` (standart 20, ko‘pi bilan 50). Har bir element: `{id, bucket, type, title, amount, balance_after, note, created_at}` |
 | POST | `/wallet/topups` | `{amount}` (10 000 – 10 000 000) → `{payment_id, redirect_url}` |
 | POST | `/wallet/refund-requests` | `{amount, click_reference, reason}` |
 | GET | `/wallet/refund-requests` | |
