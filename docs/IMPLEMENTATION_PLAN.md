@@ -22,7 +22,7 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [x] Auth endpointlari, sessiya, CSRF, rate limit (DB asosida)
 - [x] Frontend: `/login`, `/me/setup`, `useMe`, `RequireAuth` (`/add`, `/profile`), haqiqiy ma'lumotli profil sahifasi va chiqish
 - [x] Yashirin mock fallback olib tashlandi (`src/api/http.ts`). **Vaqtinchalik:** e'lon va auksion ekranlari 3–4-bosqichlargacha ochiq demo rejimida ishlaydi va har bir sahifada `DemoNotice` ogohlantirishi ko‘rinadi
-- [ ] Haqiqiy telefon va bot bilan qo‘lda sinov (mahsulot egasi bilan birga)
+- [x] Haqiqiy telefon va bot bilan qo‘lda sinov — mahsulot egasi tasdiqladi (2026-11-21)
 - [ ] Ro‘yxatdan o‘tishda bonus berish 2-bosqichga ko‘chirildi, chunki hamyon hali yo‘q (`accounts.services.complete_login` dagi izohga qarang)
 
 **Natija:** haqiqiy Telegram bot orqali kirish va chiqish ishlaydi. Raqam mos kelmasa, kirish rad etiladi.
