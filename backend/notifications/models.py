@@ -1,0 +1,50 @@
+"""In-app notifications and the Telegram outbox (docs/DATABASE.md "notifications")."""
+
+from __future__ import annotations
+
+from django.conf import settings
+from django.db import models
+
+
+class Notification(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
+    type = models.CharField(max_length=40)
+    title = models.CharField(max_length=160)
+    body = models.TextField(blank=True)
+    link = models.CharField(max_length=200, blank=True)  # in-app path, e.g. /a/<id>
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "notifications"
+        indexes = [models.Index(fields=["user", "read_at", "-created_at"])]
+
+    def __str__(self) -> str:
+        return f"{self.type} → {self.user_id}"
+
+
+class TelegramOutbox(models.Model):
+    """Messages are queued in the DB and sent by the worker, never inside a request transaction."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending"
+        SENT = "sent"
+        FAILED = "failed"
+
+    id = models.BigAutoField(primary_key=True)
+    chat_id = models.BigIntegerField()
+    text = models.TextField()
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    next_attempt_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "telegram_outbox"
+        indexes = [models.Index(fields=["status", "next_attempt_at"])]
+
+    def __str__(self) -> str:
+        return f"outbox {self.id} {self.status}"

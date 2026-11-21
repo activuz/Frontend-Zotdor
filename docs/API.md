@@ -24,12 +24,19 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 |---|---|---|
 | GET | `/auth/csrf` | CSRF cookie'ni o‘rnatadi |
 | POST | `/auth/telegram/start` | `{phone}` → `201 {request_id, deep_link, expires_at}` va `zd_login` cookie'si |
-| GET | `/auth/telegram/status/{request_id}` | `{status: pending\|verified\|failed\|expired, fail_reason?}`. `verified` bo‘lsa sessiya ochiladi va `{user}` qaytadi |
-| POST | `/auth/logout` | |
-| GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` |
-| PATCH | `/me` | `{first_name, last_name, region_id, district_id, lat?, lng?}` |
+| GET | `/auth/telegram/status/{request_id}` | `zd_login` cookie talab qilinadi. Javob: `{status: pending\|verified\|failed\|expired, fail_reason?, message?, user?}`. `verified` bo‘lsa sessiya ochiladi va `user` qaytadi. So‘rov bir martalik |
+| POST | `/auth/logout` | `204` |
+| GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`) |
+| PATCH | `/me` | `{first_name?, last_name?, region_id?, district_id?}`. Tuman tanlangan viloyatga tegishli bo‘lishi kerak |
 
-Xato kodlari: `invalid_phone`, `login_expired`, `phone_mismatch`, `foreign_contact`, `user_blocked`.
+Xato kodlari:
+- `invalid_phone` (400);
+- `rate_limited` (429);
+- `login_unavailable` (503, bot sozlanmagan);
+- `login_not_found` (404, noto‘g‘ri id yoki `zd_login` cookie'si yo‘q);
+- `user_blocked` (403).
+
+`fail_reason` qiymatlari: `foreign_contact`, `phone_mismatch`, `account_conflict`. `message` maydonida foydalanuvchi uchun matn keladi.
 
 ## Ma'lumotnomalar (ochiq, keshlanadi)
 
@@ -126,8 +133,8 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 
 | Metod | Yo‘l | Tavsif |
 |---|---|---|
-| GET | `/wallet` | `{main_balance, bonus_balance, bonus_expires_at, held_amount, available}` |
-| GET | `/wallet/entries` | Operatsiyalar tarixi, foydalanuvchiga tushunarli `title` bilan |
+| GET | `/wallet` | `{main_balance, bonus_balance, bonus_expires_at, held_amount, available, has_debt}` |
+| GET | `/wallet/entries` | Operatsiyalar tarixi, eng yangisi birinchi. Cursor sahifalash: `?cursor=&limit=` (standart 20, ko‘pi bilan 50). Har bir element: `{id, bucket, type, title, amount, balance_after, note, created_at}` |
 | POST | `/wallet/topups` | `{amount}` (10 000 – 10 000 000) → `{payment_id, redirect_url}` |
 | POST | `/wallet/refund-requests` | `{amount, click_reference, reason}` |
 | GET | `/wallet/refund-requests` | |

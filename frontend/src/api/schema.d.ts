@@ -21,18 +21,197 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/csrf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Sets the csrftoken cookie; the frontend calls it once on startup. */
+        get: operations["v1_auth_csrf_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_auth_logout_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/telegram/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_auth_telegram_start_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/telegram/status/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_auth_telegram_status_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_me_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["v1_me_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/reference/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_reference_regions_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reference/taxonomy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_reference_taxonomy_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_wallet_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wallet/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_wallet_entries_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AnimalClass: {
+            readonly id: number;
+            name: string;
+            sex: components["schemas"]["SexEnum"];
+            age_hint?: string;
+        };
+        AnimalType: {
+            readonly id: number;
+            slug: string;
+            name: string;
+            readonly direction_ids: number[];
+            readonly classes: components["schemas"]["AnimalClass"][];
+            readonly breeds: components["schemas"]["Breed"][];
+        };
+        Breed: {
+            readonly id: number;
+            name: string;
+        };
+        /**
+         * @description * `main` - Main
+         *     * `bonus` - Bonus
+         *     * `hold` - Hold
+         * @enum {string}
+         */
+        BucketEnum: "main" | "bonus" | "hold";
         /**
          * @description * `ok` - ok
          *     * `down` - down
          * @enum {string}
          */
         DbEnum: "ok" | "down";
+        Direction: {
+            readonly id: number;
+            slug: string;
+            name: string;
+        };
+        District: {
+            readonly id: number;
+            name: string;
+        };
         Health: {
-            status: components["schemas"]["StatusEnum"];
+            status: components["schemas"]["HealthStatusEnum"];
             db: components["schemas"]["DbEnum"];
             worker: components["schemas"]["WorkerEnum"];
         };
@@ -42,7 +221,125 @@ export interface components {
          *     * `down` - down
          * @enum {string}
          */
-        StatusEnum: "ok" | "degraded" | "down";
+        HealthStatusEnum: "ok" | "degraded" | "down";
+        LoginStartRequest: {
+            phone: string;
+        };
+        LoginStartResponse: {
+            /** Format: uuid */
+            request_id: string;
+            /** Format: uri */
+            deep_link: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        LoginStatus: {
+            status: components["schemas"]["LoginStatusStatusEnum"];
+            fail_reason?: string;
+            message?: string;
+            user?: components["schemas"]["Me"];
+        };
+        /**
+         * @description * `pending` - pending
+         *     * `verified` - verified
+         *     * `failed` - failed
+         *     * `expired` - expired
+         * @enum {string}
+         */
+        LoginStatusStatusEnum: "pending" | "verified" | "failed" | "expired";
+        Me: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly phone: string;
+            readonly first_name: string;
+            readonly last_name: string;
+            readonly telegram_username: string;
+            readonly role: components["schemas"]["RoleEnum"];
+            readonly region: components["schemas"]["Place"] | null;
+            readonly district: components["schemas"]["Place"] | null;
+            readonly needs_profile: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        PaginatedWalletEntryList: {
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cD00ODY%3D"
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+             */
+            previous?: string | null;
+            results: components["schemas"]["WalletEntry"][];
+        };
+        PatchedProfileUpdateRequest: {
+            first_name?: string;
+            last_name?: string;
+            region_id?: number;
+            district_id?: number;
+        };
+        Place: {
+            id: number;
+            name: string;
+        };
+        Region: {
+            readonly id: number;
+            name: string;
+            readonly districts: components["schemas"]["District"][];
+        };
+        /**
+         * @description * `user` - Foydalanuvchi
+         *     * `moderator` - Moderator
+         *     * `admin` - Admin
+         * @enum {string}
+         */
+        RoleEnum: "user" | "moderator" | "admin";
+        /**
+         * @description * `male` - Erkak
+         *     * `female` - Urgʻochi
+         *     * `any` - Har ikkisi
+         * @enum {string}
+         */
+        SexEnum: "male" | "female" | "any";
+        Taxonomy: {
+            directions: components["schemas"]["Direction"][];
+            animal_types: components["schemas"]["AnimalType"][];
+        };
+        /**
+         * @description * `topup` - Topup
+         *     * `bonus_grant` - Bonus Grant
+         *     * `bonus_expire` - Bonus Expire
+         *     * `hold` - Hold
+         *     * `hold_release` - Hold Release
+         *     * `commission` - Commission
+         *     * `commission_refund` - Commission Refund
+         *     * `refund_payout` - Refund Payout
+         *     * `adjustment` - Adjustment
+         * @enum {string}
+         */
+        TypeEnum: "topup" | "bonus_grant" | "bonus_expire" | "hold" | "hold_release" | "commission" | "commission_refund" | "refund_payout" | "adjustment";
+        Wallet: {
+            readonly main_balance: number;
+            readonly bonus_balance: number;
+            /** Format: date-time */
+            readonly bonus_expires_at: string | null;
+            readonly held_amount: number;
+            readonly available: number;
+            readonly has_debt: boolean;
+        };
+        WalletEntry: {
+            readonly id: number;
+            readonly bucket: components["schemas"]["BucketEnum"];
+            readonly type: components["schemas"]["TypeEnum"];
+            readonly title: string;
+            readonly amount: number;
+            readonly balance_after: number;
+            readonly note: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         /**
          * @description * `ok` - ok
          *     * `stale` - stale
@@ -74,6 +371,213 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    v1_auth_csrf_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_auth_logout_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_auth_telegram_start_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginStartRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LoginStartRequest"];
+                "multipart/form-data": components["schemas"]["LoginStartRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStartResponse"];
+                };
+            };
+        };
+    };
+    v1_auth_telegram_status_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+        };
+    };
+    v1_me_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    v1_me_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedProfileUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProfileUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    v1_reference_regions_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Region"][];
+                };
+            };
+        };
+    };
+    v1_reference_taxonomy_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Taxonomy"];
+                };
+            };
+        };
+    };
+    v1_wallet_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wallet"];
+                };
+            };
+        };
+    };
+    v1_wallet_entries_list: {
+        parameters: {
+            query?: {
+                /** @description The pagination cursor value. */
+                cursor?: string;
+                /** @description Number of results to return per page. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedWalletEntryList"];
                 };
             };
         };

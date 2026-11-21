@@ -30,7 +30,16 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "procrastinate.contrib.django",
     "core",
+    "reference",
     "accounts",
+    "telegram_bot",
+    "wallet",
+    "notifications",
+    "auctions",
+    "moderation",
+    "deals",
+    "payments",
+    "panel_api",
 ]
 
 MIDDLEWARE = [
@@ -116,6 +125,40 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
 }
+
+# --- Telegram login (docs/ARCHITECTURE.md §6) ----------------------------
+# Empty values are allowed so tests and tooling run without a bot; the auth
+# endpoints refuse to start a login when the bot is not configured.
+TELEGRAM_BOT_TOKEN = env.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_USERNAME = env.get("TELEGRAM_BOT_USERNAME", "").lstrip("@")
+TELEGRAM_WEBHOOK_SECRET = env.get("TELEGRAM_WEBHOOK_SECRET", "")
+LOGIN_REQUEST_TTL_SECONDS = 600
+LOGIN_RATE_PER_PHONE_PER_HOUR = 5
+LOGIN_RATE_PER_IP_PER_HOUR = 20
+
+# --- Media (docs/ARCHITECTURE.md §7) ---------------------------------------
+FFMPEG_BIN = env.get("FFMPEG_BIN", "ffmpeg")
+FFPROBE_BIN = env.get("FFPROBE_BIN", "ffprobe")
+# Process videos inside the request in development (no worker needed); in production the
+# worker does it so uploads return quickly.
+MEDIA_PROCESS_SYNC = env.get_bool("MEDIA_PROCESS_SYNC", default=DEBUG)
+PHOTO_MAX_BYTES = 15 * 1024 * 1024
+VIDEO_MAX_BYTES = 60 * 1024 * 1024
+CAPTURE_SESSION_TTL_MINUTES = 20
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+# Public site origin, used in Telegram messages and payment return links.
+FRONTEND_URL = env.get("FRONTEND_URL", "http://localhost:3000")
+
+# --- Payments --------------------------------------------------------------
+PAYMENTS_PROVIDER = env.get("PAYMENTS_PROVIDER", "fake")  # "click" | "fake"
+CLICK_SERVICE_ID = env.get("CLICK_SERVICE_ID", "")
+CLICK_MERCHANT_ID = env.get("CLICK_MERCHANT_ID", "")
+CLICK_MERCHANT_USER_ID = env.get("CLICK_MERCHANT_USER_ID", "")
+CLICK_SECRET_KEY = env.get("CLICK_SECRET_KEY", "")
+TOPUP_MIN = 10_000
+TOPUP_MAX = 10_000_000
 
 # --- Worker ---------------------------------------------------------------
 WORKER_HEARTBEAT_STALE_SECONDS = 180

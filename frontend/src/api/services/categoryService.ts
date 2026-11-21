@@ -1,15 +1,12 @@
-import { apiClient } from '../client';
 import { Category } from '../../types';
 import { MOCK_CATEGORIES } from '../../mocks/categories';
 
+/**
+ * DEMO DATA — no backend call. Replaced by GET /reference/taxonomy in phase 3–4
+ * (docs/IMPLEMENTATION_PLAN.md). The UI labels these screens as sample data (DemoNotice).
+ */
 export const categoryService = {
   async getCategories(): Promise<Category[]> {
-    try {
-      const data = await apiClient.get<unknown, Category[]>('/categories');
-      if (Array.isArray(data) && data.length > 0) return data;
-      throw new Error('API offline');
-    } catch {
-      return MOCK_CATEGORIES;
-    }
-  }
+    return MOCK_CATEGORIES;
+  },
 };

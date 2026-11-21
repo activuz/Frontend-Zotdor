@@ -7,6 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Semantic tokens (docs/DESIGN.md §2). New code uses these, never raw hex.
+        ink: { DEFAULT: "#1e3a0f", muted: "#4a5e3a" },
+        brand: { DEFAULT: "#3d6b2e", soft: "#dce8c8" },
+        accent: "#a8d45e",
+        page: "#eef2dc",
+        surface: "#ffffff",
+        line: "#c5d4a8",
+        danger: { DEFAULT: "#b91c1c", soft: "#fef2f2" },
+        // Legacy demo palette; removed during the phase 9 design pass.
         zotdor: {
           dark: "#1e3a0f",
           green: {
