@@ -166,6 +166,8 @@ Barcha tekshiruv o‘tsa, auksion `scheduled` holatiga o‘tadi. Kamida bitta `w
 
 **Variant B — alohida hostlar:** frontend va panel istalgan statik hostingga qo‘yiladi, faqat `VITE_API_URL=https://api.zotdor.uz` beriladi. **Sharti:** barcha ilovalar bitta asosiy domen ostida bo‘lishi kerak (`*.zotdor.uz`). Aks holda sessiya cookie'si uchinchi tomon cookie'si bo‘lib qoladi va brauzerlar uni bloklaydi.
 
+*Hozirgi holat:* frontend Vercel'ga ulangan. Vercel loyihasida **Root Directory = `frontend`** bo‘lishi kerak. SPA marshrutlari `frontend/vercel.json` orqali sozlanadi. Backend ulangandan keyin login ishlashi uchun Vercel'ga `zotdor.uz` (yoki `app.zotdor.uz`) custom domeni ulanishi shart: `*.vercel.app` domenida sessiya cookie'si ishlamaydi.
+
 **Konfiguratsiya** faqat env orqali beriladi (`backend/.env.example`): `DJANGO_SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET`, `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY`, `CLICK_MERCHANT_USER_ID`, `PAYMENTS_PROVIDER=click|fake`, `MEDIA_ROOT`.
 
 **Zaxira nusxa:** har kecha `pg_dump` va `rsync` (media) boshqa serverga, 14 kunlik nusxalar saqlanadi. Tiklash protsedurasi `deploy/RESTORE.md` da yoziladi va har chorakda sinab ko‘riladi.
