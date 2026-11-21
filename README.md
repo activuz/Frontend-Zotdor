@@ -19,17 +19,29 @@ Uning foydalari:
 
 ### Joriy holat
 
-Repo hozir faqat **frontend demo**'dan iborat (React, TypeScript, Vite, Tailwind). Demo `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi. Backend (Django), moderator paneli va deploy konfiguratsiyasi [implementatsiya rejasi](docs/IMPLEMENTATION_PLAN.md) bo‘yicha quriladi.
+- `frontend/` — hozircha demo, `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi.
+- `backend/` — poydevor (0-bosqich): API skeleti va `/api/health`. Biznes funksiyalari [implementatsiya rejasi](docs/IMPLEMENTATION_PLAN.md) bo‘yicha qo‘shiladi.
 
-### Demo'ni ishga tushirish
+### Lokal ishga tushirish
 
-Node.js 20 yoki undan yangi versiya talab qilinadi.
+Talablar: Node.js 20+, Python 3.13, PostgreSQL 17+ (Docker kerak emas).
 
 ```bash
+# Backend
+cd backend
+py -3.13 -m venv .venv                       # Linux/macOS: python3.13 -m venv .venv
+.venv/Scripts/pip install -r requirements-dev.txt
+cp .env.example .env                         # qiymatlarni to‘ldiring
+.venv/Scripts/python manage.py migrate
+.venv/Scripts/python manage.py runserver 8000   # http://localhost:8000/api/health
+
+# Frontend
+cd frontend
 npm ci
-npm run dev      # http://localhost:3000
-npm run build    # dist/ ga production build
+npm run dev                                  # http://localhost:3000
 ```
+
+Batafsil buyruqlar: [AGENTS.md](AGENTS.md#buyruqlar).
 
 ### Maqsadli tuzilma
 

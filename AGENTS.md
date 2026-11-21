@@ -6,11 +6,12 @@ Bu fayl repo bilan ishlaydigan AI agentlar va dasturchilar uchun. Kod yozishdan 
 
 Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgilaydi, xaridorlar taklif beradi, sotuvchi g‘olibni tanlaydi. Platforma sotuvchining balansidan 0.2% komissiya oladi. Batafsil: [docs/PRD.md](docs/PRD.md).
 
-## Joriy holat (2026-11-20)
+## Joriy holat (2026-11-21)
 
-- Repo ildizida **faqat frontend demo** turibdi (React + Vite). U `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi.
-- Backend, `panel/` va `deploy/` hali yo‘q. Ular [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi 0-bosqichda yaratiladi, frontend esa `frontend/` ga ko‘chiriladi.
-- Ish boshlashdan oldin rejadagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
+- `frontend/` — hali demo, `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi. Mock fallback 1-bosqichda olib tashlanadi.
+- `backend/` — 0-bosqich skeleti: `/api/health`, xato formati, minimal `User` modeli, worker heartbeat. Biznes funksiyalari hali yo‘q.
+- `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
+- Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
 ## Hujjatlar
 
@@ -29,22 +30,30 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 
 ## Stack
 
-- **backend/**: Python 3.12, Django 5, DRF, PostgreSQL 16, Procrastinate, drf-spectacular, Pillow, ffmpeg.
+- **backend/**: Python 3.13, Django 5, DRF, PostgreSQL 17+, Procrastinate, drf-spectacular, Pillow, ffmpeg.
 - **frontend/**, **panel/**: React 18, TypeScript (strict), Vite, Tailwind 3, React Query 5, React Router 6, lucide-react.
 - Yangi dependency faqat aniq sabab bilan qo‘shiladi va sababi PR tavsifida yoziladi. Mavjud vositalar yetadigan joyda yangi kutubxona qo‘shilmaydi.
 
-## Buyruqlar (0-bosqichdan keyin)
+## Buyruqlar
+
+Lokal muhit Docker'siz ishlaydi: PostgreSQL to‘g‘ridan-to‘g‘ri o‘rnatiladi, backend esa `backend/.venv` virtual muhitida. Docker faqat VPS deploy'i uchun ishlatiladi (10-bosqich). Windows'da `.venv/Scripts/`, Linux va macOS'da `.venv/bin/` yo‘lidan foydalaniladi.
 
 ```bash
-docker compose -f deploy/docker-compose.dev.yml up      # postgres + api + worker
-cd backend && pytest                                     # backend testlari
-cd backend && ruff check . && ruff format --check . && mypy .
-cd backend && python manage.py telegram_poll             # botni lokal ishga tushirish
-cd frontend && npm run dev | npm run lint | npm test | npm run build
-cd frontend && npm run api:types                         # OpenAPI → src/api/schema.d.ts
+# backend (birinchi marta: py -3.13 -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt;
+#          cp .env.example .env va qiymatlarni to‘ldirish)
+cd backend && .venv/Scripts/python manage.py migrate
+cd backend && .venv/Scripts/python manage.py runserver 8000
+cd backend && .venv/Scripts/python manage.py procrastinate worker     # fon vazifalari
+cd backend && .venv/Scripts/pytest
+cd backend && .venv/Scripts/ruff check . && .venv/Scripts/ruff format --check . && .venv/Scripts/mypy .
+cd backend && .venv/Scripts/python manage.py spectacular --file schema.yml --validate   # API o‘zgarganda
+
+# frontend
+cd frontend && npm run dev | npm run lint | npm run build
+cd frontend && npm run api:types        # backend/schema.yml → src/api/schema.d.ts
 ```
 
-Hozircha, 0-bosqichdan oldin, repo ildizida faqat `npm run dev` va `npm run build` ishlaydi. `npm run lint` ishlamaydi, chunki ESLint o‘rnatilmagan.
+API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikkalasi ham o‘sha commit'ga qo‘shiladi. Frontend testlari (`npm test`) va `telegram_poll` buyrug‘i 1-bosqichda qo‘shiladi.
 
 ## Backend qoidalari
 

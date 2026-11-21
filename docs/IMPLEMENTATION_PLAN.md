@@ -5,14 +5,15 @@ Har bir bosqich ishlaydigan, test qilingan natija bilan tugaydi. Keyingi bosqich
 Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shartnoma kerak).
 
 ## 0-bosqich. Poydevor
-- [ ] Hozirgi frontend kodini `frontend/` ga ko‘chirish (`git mv`, tarix saqlanadi)
-- [ ] `backend/` skeleti: Django 5, DRF, drf-spectacular, Procrastinate, env sozlamalari, `/api/health`
-- [ ] `deploy/docker-compose.dev.yml`: postgres, api, worker
-- [ ] Linterlar: backend uchun Ruff va mypy (django-stubs), frontend uchun ESLint va Prettier. `npm run lint` ishlaydigan holatga keltiriladi
-- [ ] CI: lint, test va build
-- [ ] OpenAPI → TS tiplari generatsiyasi (`npm run api:types`)
+- [x] Hozirgi frontend kodini `frontend/` ga ko‘chirish (`git mv`, tarix saqlanadi)
+- [x] `backend/` skeleti: Django 5.2, DRF, drf-spectacular, Procrastinate, env sozlamalari, `/api/health`, yagona xato formati, minimal `User` modeli (birinchi migratsiyadan oldin bo‘lishi shart)
+- [x] ~~`deploy/docker-compose.dev.yml`~~ — **o‘zgartirildi (2026-11-21):** lokal muhit Docker'siz ishlaydi, PostgreSQL to‘g‘ridan-to‘g‘ri o‘rnatilgan (mahsulot egasining qarori). Docker faqat production deploy uchun, 10-bosqichda
+- [x] Linterlar: backend uchun Ruff va mypy (strict, django-stubs), frontend uchun ESLint. Demo kodidagi `alert()` va `any` tuzatildi. Prettier qo‘shilmadi, chunki u butun demo kodni qayta formatlab, katta diff hosil qiladi — 9-bosqichdagi dizayn o‘tishida qo‘shiladi
+- [x] Backend testlari lokal PostgreSQL'da yashil (14 ta); worker heartbeat'i qo‘lda tekshirildi
+- [ ] CI: lint, test va build (`.github/workflows/ci.yml` yozildi, GitHub'da hali ishga tushmagan)
+- [x] OpenAPI → TS tiplari generatsiyasi (`npm run api:types`)
 
-**Natija:** `docker compose up` buyrug‘i bilan bo‘sh API va hozirgi frontend ishga tushadi, CI yashil.
+**Natija:** lokal PostgreSQL bilan bo‘sh API va hozirgi frontend ishga tushadi, CI yashil.
 
 ## 1-bosqich. Foydalanuvchi va kirish
 - [ ] `accounts`, `reference`: modellar, viloyat va tumanlar fixture'i (OSM'dan import) ⛔ tuman ro‘yxatini tasdiqlash

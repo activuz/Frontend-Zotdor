@@ -28,7 +28,7 @@ Holat: qoralama v0.1. Bog‘liq hujjatlar: [PRD](PRD.md), [DATABASE](DATABASE.md
 Repo tuzilmasi (maqsad):
 
 ```
-/backend     Django loyihasi (Python 3.12)
+/backend     Django loyihasi (Python 3.13)
 /frontend    foydalanuvchi ilovasi (hozirgi demo kod shu yerga ko‘chadi)
 /panel       moderator va admin paneli
 /deploy      docker compose, nginx, backup skriptlari
@@ -42,7 +42,7 @@ Uchala ilova **alohida deploy qilinadi**: frontend va panel statik build, backen
 | # | Qaror | Sabab | Rad etilgan variant |
 |---|---|---|---|
 | D-1 | **Django 5 + DRF** | Auth, ORM, migratsiya, permission va throttling tayyor. Python talabiga mos | FastAPI: auth va migratsiya kabi qismlarni o‘zimiz yig‘ishimiz kerak bo‘lardi |
-| D-2 | **PostgreSQL 16** | Tranzaksiya, `SELECT … FOR UPDATE`, partial index, JSONB | SQLite: bir vaqtdagi takliflarga chidamaydi |
+| D-2 | **PostgreSQL 17+** | Tranzaksiya, `SELECT … FOR UPDATE`, partial index, JSONB | SQLite: bir vaqtdagi takliflarga chidamaydi |
 | D-3 | **Procrastinate** (Postgres asosidagi navbat) | Fon vazifalari va davriy vazifalar Redis va Celery'siz ishlaydi. Bitta servis kam | Celery + Redis: bu hajm uchun ortiqcha infratuzilma |
 | D-4 | **Django sessiya cookie** (httpOnly, Secure, SameSite=Lax) + CSRF | XSS orqali tokenni o‘g‘irlab bo‘lmaydi. Chiqish va bloklash darhol ishlaydi | JWT + localStorage (demo'dagi variant) |
 | D-5 | **Polling (5 s)** takliflar uchun | Bir necha soatlik auksionga yetarli. Qo‘shimcha servis kerak emas | WebSocket: keyingi bosqichga qoldirildi |

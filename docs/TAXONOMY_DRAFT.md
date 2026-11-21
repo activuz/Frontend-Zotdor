@@ -72,22 +72,22 @@ Javobni shu faylni tahrirlab yoki xuddi shu jadvallarni Excel'da to‘ldirib ber
 | Tovuq | Tovuq | urg‘ochi | | |
 | Tovuq | Xo‘roz | erkak | | |
 | Kurka | Jo‘ja | har ikkisi | 0–2 oy | |
-| Kurka | Urg‘ochi kurka | urg‘ochi | | |
-| Kurka | Erkak kurka | erkak | | ? xalq atamasi |
+| Kurka | Moda | urg‘ochi | | |
+| Kurka | Nar | erkak | | ? xalq atamasi |
 | O‘rdak | O‘rdakcha | har ikkisi | 0–2 oy | ? |
-| O‘rdak | Urg‘ochi o‘rdak | urg‘ochi | | |
-| O‘rdak | Erkak o‘rdak | erkak | | ? xalq atamasi |
-| G‘oz | G‘ozcha | har ikkisi | 0–2 oy | ? |
-| G‘oz | Urg‘ochi g‘oz | urg‘ochi | | |
-| G‘oz | Erkak g‘oz | erkak | | |
+| O‘rdak | Moda | urg‘ochi | | |
+| O‘rdak | Nar | erkak | | ? xalq atamasi |
+| G‘oz | Jo‘ja | har ikkisi | 0–2 oy | ? |
+| G‘oz | Moda | urg‘ochi | | |
+| G‘oz | Nar | erkak | | |
 | Bedana | Jo‘ja | har ikkisi | 0–1 oy | |
-| Bedana | Urg‘ochi | urg‘ochi | | |
-| Bedana | Erkak | erkak | | |
+| Bedana | Moda | urg‘ochi | | |
+| Bedana | Nar | erkak | | |
 | Kaptar | Polapon | har ikkisi | | ? |
-| Kaptar | Urg‘ochi | urg‘ochi | | |
-| Kaptar | Erkak | erkak | | |
-| Tovus | Urg‘ochi | urg‘ochi | | |
-| Tovus | Erkak | erkak | | |
+| Kaptar | Moda | urg‘ochi | | |
+| Kaptar | Nar | erkak | | |
+| Tovus | Moda | urg‘ochi | | |
+| Tovus | Nar | erkak | | |
 | Quyon | Quyonbachcha | har ikkisi | 0–3 oy | ? |
 | Quyon | Urg‘ochi | urg‘ochi | | |
 | Quyon | Erkak | erkak | | |

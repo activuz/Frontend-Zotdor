@@ -1,6 +1,6 @@
 # Ma'lumotlar bazasi — Zotdor.uz
 
-PostgreSQL 16. Migratsiyalar Django orqali boshqariladi. Bu hujjat maqsadli sxemani tasvirlaydi. Kod va hujjat o‘rtasida farq paydo bo‘lsa, manba — migratsiya. Lekin bu hujjat **o‘sha PR ichida** yangilanishi shart.
+PostgreSQL 17+. Migratsiyalar Django orqali boshqariladi. Bu hujjat maqsadli sxemani tasvirlaydi. Kod va hujjat o‘rtasida farq paydo bo‘lsa, manba — migratsiya. Lekin bu hujjat **o‘sha PR ichida** yangilanishi shart.
 
 ## Umumiy qoidalar
 

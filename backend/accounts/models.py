@@ -1,0 +1,74 @@
+"""User model (docs/DATABASE.md, "users").
+
+Created in phase 0 because Django requires the custom user model before the
+first migration. Region/district FKs, rating counters and Telegram login are
+added in phase 1.
+"""
+
+from __future__ import annotations
+
+import uuid
+from typing import Any, ClassVar
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.validators import RegexValidator
+from django.db import models
+
+phone_validator = RegexValidator(r"^\+998\d{9}$", "Telefon raqami +998XXXXXXXXX koʻrinishida boʻlishi kerak.")
+
+
+class UserManager(BaseUserManager["User"]):
+    def create_user(self, phone: str, **extra: Any) -> User:
+        user = self.model(phone=phone, **extra)
+        user.set_unusable_password()  # regular users log in via Telegram only
+        user.full_clean(exclude=["password"])
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, phone: str, password: str | None = None, **extra: Any) -> User:
+        """Emergency Django-admin account. Not a product role."""
+        user = self.model(phone=phone, role=User.Role.ADMIN, is_staff=True, is_superuser=True, **extra)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    class Role(models.TextChoices):
+        USER = "user", "Foydalanuvchi"
+        MODERATOR = "moderator", "Moderator"
+        ADMIN = "admin", "Admin"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone = models.CharField(max_length=13, unique=True, validators=[phone_validator])
+    telegram_user_id = models.BigIntegerField(unique=True, null=True, blank=True)
+    telegram_username = models.CharField(max_length=64, blank=True)
+    first_name = models.CharField(max_length=64, blank=True)
+    last_name = models.CharField(max_length=64, blank=True)
+    role = models.CharField(max_length=16, choices=Role.choices, default=Role.USER)
+    is_blocked = models.BooleanField(default=False)
+    blocked_reason = models.TextField(blank=True)
+    # Django admin access only (emergency superuser); product staff use `role`.
+    is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = "phone"
+    REQUIRED_FIELDS: ClassVar[list[str]] = []
+
+    class Meta:
+        db_table = "users"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(role__in=["user", "moderator", "admin"]), name="users_role_valid"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.phone
+
+    @property
+    def is_moderator_or_admin(self) -> bool:
+        return self.role in {self.Role.MODERATOR, self.Role.ADMIN}

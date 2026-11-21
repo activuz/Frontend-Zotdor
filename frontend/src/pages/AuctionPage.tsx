@@ -10,6 +10,8 @@ export const AuctionPage: React.FC = () => {
 
   const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
   const [customBid, setCustomBid] = useState('');
+  const [notice, setNotice] = useState<string | null>(null);
+  const [bidError, setBidError] = useState<string | null>(null);
 
   // Selected auction object
   const activeAuction = auctions.find((a) => a.id === selectedAuctionId);
@@ -17,9 +19,7 @@ export const AuctionPage: React.FC = () => {
   const handleQuickBid = (auctionId: string, currentBid: number, minStep: number) => {
     const nextAmount = currentBid + minStep;
     placeBidMutation.mutate({ auctionId, amount: nextAmount }, {
-      onSuccess: () => {
-        alert(`Stavka qabul qilindi: ${nextAmount.toLocaleString()} UZS`);
-      }
+      onSuccess: () => setNotice(`Taklif qabul qilindi: ${nextAmount.toLocaleString()} soʻm`),
     });
   };
 
@@ -29,13 +29,14 @@ export const AuctionPage: React.FC = () => {
 
     const amount = Number(customBid);
     if (activeAuction && amount <= activeAuction.currentBid) {
-      alert("Stavka summasi amaldagi narxdan yuqori bo'lishi kerak!");
+      setBidError('Taklif joriy eng yuqori taklifdan katta boʻlishi kerak.');
       return;
     }
+    setBidError(null);
 
     placeBidMutation.mutate({ auctionId: selectedAuctionId, amount }, {
       onSuccess: () => {
-        alert(`Muvaffaqiyatli stavka qo'yildi: ${amount.toLocaleString()} UZS`);
+        setNotice(`Taklif qabul qilindi: ${amount.toLocaleString()} soʻm`);
         setCustomBid('');
         setSelectedAuctionId(null);
       }
@@ -59,6 +60,12 @@ export const AuctionPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {notice && (
+        <p role="status" className="bg-white border border-[#c5d4a8] rounded-2xl px-4 py-3 text-sm font-semibold text-[#1e3a0f]">
+          {notice}
+        </p>
+      )}
 
       {/* Auction items list */}
       {isLoading ? (
@@ -201,6 +208,9 @@ export const AuctionPage: React.FC = () => {
                 <span className="text-[10px] text-[#6b8f4e] mt-1 block">
                   Kamlida {activeAuction.minStep.toLocaleString()} UZS yuqori stavka kiriting
                 </span>
+                {bidError && (
+                  <span role="alert" className="text-sm text-red-700 mt-1 block">{bidError}</span>
+                )}
               </div>
 
               <button
