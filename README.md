@@ -1,4 +1,4 @@
-/bt# Zotdor loyihasi
+# Zotdor loyihasi
 
 ## Biz odamlar o‘rgangan haqiqiy mol bozoridagi jonli savdolashuv muhitini onlayn formatga 1 ga 1 ko‘chirib, unga haqiqiy tasvir va adolatli narx nazorati orqali to‘liq ishonch olib kirdik. Bu
 
