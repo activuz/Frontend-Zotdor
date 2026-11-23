@@ -44,7 +44,7 @@ def url(rel_path: str) -> str:
     return f"{settings.MEDIA_URL.rstrip('/')}/{rel_path}" if rel_path else ""
 
 
-def store_original(auction_id: uuid.UUID, upload: UploadedFile, kind: str) -> tuple[Path, int]:
+def store_original(auction_id: uuid.UUID, upload: UploadedFile[bytes], kind: str) -> tuple[Path, int]:
     limit = settings.PHOTO_MAX_BYTES if kind == AuctionMedia.Kind.PHOTO else settings.VIDEO_MAX_BYTES
     if upload.size is None or upload.size > limit:
         raise MediaError("Fayl hajmi juda katta.")
@@ -58,7 +58,8 @@ def store_original(auction_id: uuid.UUID, upload: UploadedFile, kind: str) -> tu
 def dhash(image: Image.Image) -> int:
     """64-bit difference hash; near-identical photos differ by only a few bits."""
     small = image.convert("L").resize((9, 8), Image.Resampling.LANCZOS)
-    pixels = list(small.getdata())
+    flatten = getattr(small, "get_flattened_data", None) or small.getdata  # Pillow ≥13 / older
+    pixels = list(flatten())
     bits = 0
     for row in range(8):
         for col in range(8):

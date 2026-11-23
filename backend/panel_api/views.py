@@ -24,6 +24,7 @@ from auctions.serializers import AuctionDetailSerializer, AuctionListSerializer
 from auctions.views import base_queryset
 from core import audit
 from core.errors import DomainError
+from core.http import data_of
 from core.models import PlatformSettings, StaffAuditLog
 from deals import services as deal_services
 from deals.models import Deal, DealClaim
@@ -46,7 +47,7 @@ def _staff(request: Request) -> User:
 
 
 def _text(request: Request, key: str) -> str:
-    return str(request.data.get(key, "") or "").strip()
+    return str(data_of(request).get(key, "") or "").strip()
 
 
 class PanelPagination(LimitOffsetPagination):
@@ -57,7 +58,7 @@ class PanelPagination(LimitOffsetPagination):
 def _page(request: Request, view: APIView, qs: QuerySet[Any], serialize: Any) -> Response:
     paginator = PanelPagination()
     page = paginator.paginate_queryset(qs, request, view=view)
-    return paginator.get_paginated_response([serialize(x) for x in page])
+    return paginator.get_paginated_response([serialize(x) for x in page or []])
 
 
 class ModView(APIView):
@@ -136,7 +137,9 @@ class AuctionPanelDetailView(ModView):
         data = dict(AuctionDetailSerializer(a, context={"request": request}).data)
         last_run = a.checks.order_by("-created_at").values_list("run_id", flat=True).first()
         data["checks"] = list(
-            a.checks.filter(run_id=last_run).values("check_name", "result", "message", "details")
+            (a.checks.filter(run_id=last_run) if last_run else a.checks.none()).values(
+                "check_name", "result", "message", "details"
+            )
         )
         data["events"] = list(
             a.events.values("from_status", "to_status", "reason", "created_at", "actor__phone")
@@ -284,7 +287,7 @@ class ClaimResolveView(ModView):
         responses={200: None},
     )
     def post(self, request: Request, claim_id: uuid.UUID) -> Response:
-        approve = bool(request.data.get("approve"))
+        approve = bool(data_of(request).get("approve"))
         with transaction.atomic():
             c = deal_services.resolve_claim(claim_id, _staff(request), approve, _text(request, "note"))
             audit.log(
@@ -336,7 +339,7 @@ class RefundResolveView(ModView):
         responses={200: None},
     )
     def post(self, request: Request, refund_id: uuid.UUID) -> Response:
-        done = bool(request.data.get("done"))
+        done = bool(data_of(request).get("done"))
         with transaction.atomic():
             r = payment_services.resolve_refund(refund_id, _staff(request), done, _text(request, "note"))
             audit.log(
@@ -372,7 +375,7 @@ def _user_row(u: User) -> dict[str, Any]:
 
 
 class UserListView(ModView):
-    @extend_schema(responses={200: None})
+    @extend_schema(operation_id="panel_users_list", responses={200: None})
     def get(self, request: Request) -> Response:
         qs = User.objects.select_related("region", "district").order_by("-created_at")
         if q := request.query_params.get("q", "").strip():
@@ -424,7 +427,7 @@ class UserBlockView(ModView):
         responses={200: None},
     )
     def post(self, request: Request, user_id: uuid.UUID) -> Response:
-        blocked, reason = bool(request.data.get("blocked")), _text(request, "reason")
+        blocked, reason = bool(data_of(request).get("blocked")), _text(request, "reason")
         if blocked and not reason:
             raise DomainError("reason_required", "Bloklash sababini yozing.")
         with transaction.atomic():
@@ -499,7 +502,7 @@ class WalletAdjustView(AdminView):
         if bucket not in (Bucket.MAIN, Bucket.BONUS):
             raise DomainError("invalid", "Balans turini tanlang.")
         try:
-            amount = int(request.data.get("amount"))
+            amount = int(data_of(request).get("amount", ""))
         except (TypeError, ValueError) as exc:
             raise DomainError("invalid_amount", "Summani kiriting.") from exc
         if amount == 0:

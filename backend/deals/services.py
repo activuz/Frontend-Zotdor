@@ -65,7 +65,8 @@ def rate(deal_id: uuid.UUID, user: User, score: int, comment: str = "") -> Ratin
         raise DomainError("invalid_score", "Baho 1 dan 5 gacha boʻlishi kerak.")
     if not can_rate(deal, user):
         raise DomainError("cannot_rate", "Bu bitimni baholab boʻlmaydi.", http.HTTP_409_CONFLICT)
-    from moderation.checks import PROFANITY_ROOTS, _normalize  # reuse the description filter
+    from moderation.checks import _normalize
+    from moderation.wordlist import PROFANITY_ROOTS  # reuse the description filter
 
     words = _normalize(comment).split()
     if any(w.startswith(root) for w in words for root in PROFANITY_ROOTS):

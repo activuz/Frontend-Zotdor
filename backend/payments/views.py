@@ -11,8 +11,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import User
 from core.errors import DomainError
+from core.http import data_of, me
 from payments import services
 from payments.models import Payment, RefundRequest
 
@@ -44,10 +44,10 @@ class TopupView(APIView):
     )
     def post(self, request: Request) -> Response:
         try:
-            amount = int(request.data.get("amount"))
+            amount = int(data_of(request).get("amount", ""))
         except (TypeError, ValueError) as exc:
             raise DomainError("invalid_amount", "Summani kiriting.") from exc
-        payment, url = services.start_topup(request.user, amount)  # type: ignore[arg-type]
+        payment, url = services.start_topup(me(request), amount)
         return Response({"payment_id": payment.id, "redirect_url": url}, status=status.HTTP_201_CREATED)
 
 
@@ -56,7 +56,7 @@ class PaymentDetailView(APIView):
 
     @extend_schema(responses=PaymentSerializer)
     def get(self, request: Request, payment_id: uuid.UUID) -> Response:
-        return Response(PaymentSerializer(services.get_own(payment_id, request.user)).data)  # type: ignore[arg-type]
+        return Response(PaymentSerializer(services.get_own(payment_id, me(request))).data)
 
 
 class FakeCompleteView(APIView):
@@ -66,7 +66,7 @@ class FakeCompleteView(APIView):
 
     @extend_schema(request=None, responses=PaymentSerializer)
     def post(self, request: Request, payment_id: uuid.UUID) -> Response:
-        return Response(PaymentSerializer(services.complete_fake(payment_id, request.user)).data)  # type: ignore[arg-type]
+        return Response(PaymentSerializer(services.complete_fake(payment_id, me(request))).data)
 
 
 class _ClickBase(APIView):
@@ -75,7 +75,7 @@ class _ClickBase(APIView):
     parser_classes = [FormParser, MultiPartParser, JSONParser]
 
     def params(self, request: Request) -> dict[str, str]:
-        return {k: str(v) for k, v in request.data.items()}
+        return {k: str(v) for k, v in data_of(request).items()}
 
 
 @extend_schema(exclude=True)
@@ -95,7 +95,7 @@ class RefundRequestsView(APIView):
 
     @extend_schema(responses=RefundRequestSerializer(many=True))
     def get(self, request: Request) -> Response:
-        qs = RefundRequest.objects.filter(user=request.user).order_by("-created_at")[:50]  # type: ignore[misc]
+        qs = RefundRequest.objects.filter(user=me(request)).order_by("-created_at")[:50]
         return Response(RefundRequestSerializer(qs, many=True).data)
 
     @extend_schema(
@@ -110,7 +110,7 @@ class RefundRequestsView(APIView):
         responses={201: RefundRequestSerializer},
     )
     def post(self, request: Request) -> Response:
-        user: User = request.user  # type: ignore[assignment]
+        user = me(request)
         data: Any = request.data
         try:
             amount = int(data.get("amount"))

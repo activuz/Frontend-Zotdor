@@ -31,13 +31,14 @@ from auctions.serializers import (
     SubmitResultSerializer,
 )
 from core.errors import DomainError
+from core.http import data_of, me
 
 SORTS = ("nearest", "ending_soon", "most_active", "newest", "price_asc", "price_desc")
 
 
 def _user(request: Request) -> User | None:
     u = request.user
-    return u if u is not None and u.is_authenticated else None  # type: ignore[return-value]
+    return u if u is not None and u.is_authenticated else None
 
 
 def _int(value: str | None) -> int | None:
@@ -194,7 +195,7 @@ class AuctionListView(APIView):
     def post(self, request: Request) -> Response:
         payload = DraftSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
-        auction = services.create_draft(request.user, dict(payload.validated_data))  # type: ignore[arg-type]
+        auction = services.create_draft(me(request), dict(payload.validated_data))
         return Response(_detail(request, auction.id), status=status.HTTP_201_CREATED)
 
 
@@ -208,7 +209,7 @@ def _detail(request: Request, auction_id: uuid.UUID) -> dict[str, Any]:
     auction = qs.filter(id=auction_id).first()
     if auction is None:
         raise DomainError("not_found", "Auksion topilmadi.", status.HTTP_404_NOT_FOUND)
-    return AuctionDetailSerializer(auction, context={"request": request}).data  # type: ignore[return-value]
+    return AuctionDetailSerializer(auction, context={"request": request}).data
 
 
 class AuctionDetailView(APIView):
@@ -223,12 +224,12 @@ class AuctionDetailView(APIView):
     def patch(self, request: Request, auction_id: uuid.UUID) -> Response:
         payload = DraftSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
-        services.update_draft(auction_id, request.user, dict(payload.validated_data))  # type: ignore[arg-type]
+        services.update_draft(auction_id, me(request), dict(payload.validated_data))
         return Response(_detail(request, auction_id))
 
     @extend_schema(responses={204: None})
     def delete(self, request: Request, auction_id: uuid.UUID) -> Response:
-        services.delete_draft(auction_id, request.user)  # type: ignore[arg-type]
+        services.delete_draft(auction_id, me(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -237,7 +238,7 @@ class SubmitView(APIView):
 
     @extend_schema(request=None, responses=SubmitResultSerializer)
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
-        result = services.submit(auction_id, request.user)  # type: ignore[arg-type]
+        result = services.submit(auction_id, me(request))
         return Response(
             {
                 "outcome": result.outcome,
@@ -257,7 +258,7 @@ class CancelView(APIView):
         responses=AuctionDetailSerializer,
     )
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
-        services.cancel(auction_id, request.user, str(request.data.get("reason", "")))  # type: ignore[arg-type]
+        services.cancel(auction_id, me(request), str(data_of(request).get("reason", "")))
         return Response(_detail(request, auction_id))
 
 
@@ -283,12 +284,12 @@ class CaptureSessionView(APIView):
         from core.models import PlatformSettings
 
         try:
-            auction_id = uuid.UUID(str(request.data.get("auction_id")))
+            auction_id = uuid.UUID(str(data_of(request).get("auction_id")))
         except ValueError as exc:
             raise DomainError("invalid", "auction_id notoʻgʻri.") from exc
         session = services.open_capture_session(
-            auction_id, request.user, request.META.get("HTTP_USER_AGENT", "")
-        )  # type: ignore[arg-type]
+            auction_id, me(request), request.META.get("HTTP_USER_AGENT", "")
+        )
         s = PlatformSettings.load()
         return Response(
             {
@@ -327,19 +328,19 @@ class MediaUploadView(APIView):
         if upload is None:
             raise DomainError("invalid", "Fayl yuborilmadi.")
         try:
-            session_id = uuid.UUID(str(request.data.get("capture_session_id")))
+            session_id = uuid.UUID(str(data_of(request).get("capture_session_id")))
         except ValueError as exc:
             raise DomainError("capture_session_expired", "Kamera seansi topilmadi.") from exc
         try:
-            meta = json.loads(str(request.data.get("client_meta") or "{}"))
+            meta = json.loads(str(data_of(request).get("client_meta") or "{}"))
         except json.JSONDecodeError:
             meta = {}
         item = services.add_media(
             auction_id,
-            request.user,
+            me(request),
             upload,
-            str(request.data.get("kind")),
-            session_id,  # type: ignore[arg-type]
+            str(data_of(request).get("kind")),
+            session_id,
             meta if isinstance(meta, dict) else {},
         )
         item.refresh_from_db()
@@ -351,7 +352,7 @@ class MediaDeleteView(APIView):
 
     @extend_schema(responses={204: None})
     def delete(self, request: Request, auction_id: uuid.UUID, media_id: uuid.UUID) -> Response:
-        services.delete_media(auction_id, media_id, request.user)  # type: ignore[arg-type]
+        services.delete_media(auction_id, media_id, me(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -384,10 +385,10 @@ class BidsView(APIView):
     )
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
         try:
-            amount = int(request.data.get("amount"))
+            amount = int(data_of(request).get("amount", ""))
         except (TypeError, ValueError) as exc:
             raise DomainError("invalid", "Summani kiriting.") from exc
-        services.place_bid(auction_id, request.user, amount)  # type: ignore[arg-type]
+        services.place_bid(auction_id, me(request), amount)
         response = self.get(request, auction_id)
         response.status_code = status.HTTP_201_CREATED
         return response
@@ -398,7 +399,7 @@ class DecisionView(APIView):
 
     @extend_schema(responses=DecisionSerializer)
     def get(self, request: Request, auction_id: uuid.UUID) -> Response:
-        auction = Auction.objects.filter(id=auction_id, seller=request.user).first()
+        auction = Auction.objects.filter(id=auction_id, seller=me(request)).first()
         if auction is None:
             raise DomainError("not_found", "Auksion topilmadi.", status.HTTP_404_NOT_FOUND)
         allowed, early_from = services.can_accept_now(auction)
@@ -443,10 +444,10 @@ class AcceptView(APIView):
     )
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
         try:
-            bid_id = uuid.UUID(str(request.data.get("bid_id")))
+            bid_id = uuid.UUID(str(data_of(request).get("bid_id")))
         except ValueError as exc:
             raise DomainError("bid_not_active", "Taklif topilmadi.") from exc
-        deal = services.accept_bid(auction_id, request.user, bid_id)  # type: ignore[arg-type]
+        deal = services.accept_bid(auction_id, me(request), bid_id)
         return Response({"deal_id": deal.id}, status=status.HTTP_201_CREATED)
 
 
@@ -455,7 +456,7 @@ class RejectAllView(APIView):
 
     @extend_schema(request=None, responses=AuctionDetailSerializer)
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
-        services.reject_all(auction_id, request.user, str(request.data.get("reason", "")))  # type: ignore[arg-type]
+        services.reject_all(auction_id, me(request), str(data_of(request).get("reason", "")))
         return Response(_detail(request, auction_id))
 
 
@@ -464,12 +465,12 @@ class WatchView(APIView):
 
     @extend_schema(request=None, responses={204: None})
     def post(self, request: Request, auction_id: uuid.UUID) -> Response:
-        services.watch(auction_id, request.user)  # type: ignore[arg-type]
+        services.watch(auction_id, me(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(responses={204: None})
     def delete(self, request: Request, auction_id: uuid.UUID) -> Response:
-        services.unwatch(auction_id, request.user)  # type: ignore[arg-type]
+        services.unwatch(auction_id, me(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -478,7 +479,7 @@ class MyAuctionsView(APIView):
 
     @extend_schema(parameters=[OpenApiParameter("status", str)], responses=AuctionListSerializer(many=True))
     def get(self, request: Request) -> Response:
-        qs = base_queryset(request).filter(seller=request.user).order_by("-created_at")
+        qs = base_queryset(request).filter(seller=me(request)).order_by("-created_at")
         if st := request.query_params.get("status"):
             qs = qs.filter(status__in=st.split(","))
         return Response(AuctionListSerializer(qs[:200], many=True, context={"request": request}).data)
@@ -491,7 +492,7 @@ class WatchlistView(APIView):
     def get(self, request: Request) -> Response:
         qs = (
             base_queryset(request)
-            .filter(watchers__user=request.user)
+            .filter(watchers__user=me(request))
             .filter(services.visible_to(_user(request)))
             .order_by(F("ends_at").asc(nulls_last=True))
         )
@@ -503,7 +504,7 @@ class MyBidsView(APIView):
 
     @extend_schema(responses=MyBidRowSerializer(many=True))
     def get(self, request: Request) -> Response:
-        user: User = request.user  # type: ignore[assignment]
+        user = me(request)
         auction_ids = list(
             Bid.objects.filter(bidder=user)
             .exclude(status=Bid.BidStatus.VOID)

@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from accounts.models import User
 from auctions import media as media_store
 from auctions.serializers import display_name
+from core.http import data_of, me
 from deals import services
 from deals.models import Deal, DealClaim, Rating
 
@@ -81,7 +82,7 @@ class MyDealsView(APIView):
 
     @extend_schema(responses=DealSerializer(many=True))
     def get(self, request: Request) -> Response:
-        user: User = request.user  # type: ignore[assignment]
+        user = me(request)
         deals = (
             Deal.objects.filter(Q(seller=user) | Q(buyer=user))
             .select_related("auction", "seller", "buyer")
@@ -96,7 +97,7 @@ class DealDetailView(APIView):
 
     @extend_schema(responses=DealSerializer)
     def get(self, request: Request, deal_id: uuid.UUID) -> Response:
-        user: User = request.user  # type: ignore[assignment]
+        user = me(request)
         return Response(serialize(services.get_for_party(deal_id, user), user))
 
 
@@ -114,12 +115,12 @@ class RatingView(APIView):
         responses={201: DealSerializer},
     )
     def post(self, request: Request, deal_id: uuid.UUID) -> Response:
-        user: User = request.user  # type: ignore[assignment]
+        user = me(request)
         try:
-            score = int(request.data.get("score"))
+            score = int(data_of(request).get("score", ""))
         except (TypeError, ValueError):
             score = 0
-        services.rate(deal_id, user, score, str(request.data.get("comment", ""))[:500])
+        services.rate(deal_id, user, score, str(data_of(request).get("comment", ""))[:500])
         return Response(
             serialize(services.get_for_party(deal_id, user), user), status=status.HTTP_201_CREATED
         )
@@ -133,8 +134,8 @@ class ClaimView(APIView):
         responses={201: DealSerializer},
     )
     def post(self, request: Request, deal_id: uuid.UUID) -> Response:
-        user: User = request.user  # type: ignore[assignment]
-        services.file_claim(deal_id, user, str(request.data.get("reason", ""))[:1000])
+        user = me(request)
+        services.file_claim(deal_id, user, str(data_of(request).get("reason", ""))[:1000])
         return Response(
             serialize(services.get_for_party(deal_id, user), user), status=status.HTTP_201_CREATED
         )

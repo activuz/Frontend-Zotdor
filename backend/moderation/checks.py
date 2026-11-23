@@ -73,7 +73,8 @@ class TextContacts:
             return CheckResult(
                 self.name,
                 FAIL,
-                f"Tavsifda {', '.join(found)} bor. Kontaktlar faqat bitimdan keyin ochiladi — ularni olib tashlang.",
+                f"Tavsifda {', '.join(found)} bor. "
+                "Kontaktlar faqat bitimdan keyin ochiladi — ularni olib tashlang.",
             )
         return CheckResult(self.name, PASS)
 
@@ -163,7 +164,13 @@ class MediaDuplicate:
             .order_by("-received_at")
             .values_list("phash", "auction_id")[:20000]
         )
-        hits = {str(aid) for ph, aid in others for m in mine if hamming(m, ph) <= self.MAX_DISTANCE}
+        hits = {
+            str(aid)
+            for ph, aid in others
+            if ph is not None
+            for m in mine
+            if hamming(m, ph) <= self.MAX_DISTANCE
+        }
         if hits:
             return CheckResult(
                 self.name,

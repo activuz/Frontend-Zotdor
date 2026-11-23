@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import math
 import uuid
 from dataclasses import dataclass
@@ -214,7 +215,7 @@ def open_capture_session(auction_id: uuid.UUID, user: User, user_agent: str = ""
 def add_media(
     auction_id: uuid.UUID,
     user: User,
-    upload: UploadedFile,
+    upload: UploadedFile[bytes],
     kind: str,
     session_id: uuid.UUID,
     client_meta: dict[str, Any],
@@ -295,12 +296,13 @@ def _validate_ready(a: Auction, s: PlatformSettings) -> None:
     ]
     if missing:
         raise DomainError("incomplete", "Toʻldirilmagan maydonlar: " + ", ".join(missing) + ".")
-    assert a.animal_type is not None and a.animal_class is not None and a.direction is not None
+    if a.animal_type is None or a.animal_class is None or a.direction is None:
+        raise DomainError("incomplete", "Hayvon turi, toifa va yoʻnalishni tanlang.")
     if a.animal_class.animal_type_id != a.animal_type_id or (
         a.breed and a.breed.animal_type_id != a.animal_type_id
     ):
         raise DomainError("invalid_taxonomy", "Toifa yoki zot tanlangan hayvon turiga mos emas.")
-    if not a.animal_type.directions.filter(id=a.direction_id).exists():
+    if not a.animal_type.directions.filter(id=a.direction.id).exists():
         raise DomainError("invalid_taxonomy", "Bu hayvon turi tanlangan yoʻnalishga kirmaydi.")
     duration = a.duration_minutes or 0
     if not s.min_duration_min <= duration <= s.max_duration_min:
@@ -698,7 +700,8 @@ def tick() -> dict[str, int]:
                     a.seller,
                     "auction_ended",
                     "Auksion tugadi — xaridorni tanlang",
-                    f"{a.active_bids_count} ta taklif. Tanlash uchun {PlatformSettings.load().decision_window_h} soat bor.",
+                    f"{a.active_bids_count} ta taklif. "
+                    f"Tanlash uchun {PlatformSettings.load().decision_window_h} soat bor.",
                     f"/a/{a.id}/decision",
                 )
             else:
@@ -734,10 +737,8 @@ def watch(auction_id: uuid.UUID, user: User) -> None:
     a = Auction.objects.filter(id=auction_id).first()
     if a is None:
         raise DomainError("not_found", "Auksion topilmadi.", http.HTTP_404_NOT_FOUND)
-    try:
+    with contextlib.suppress(IntegrityError):
         Watch.objects.get_or_create(user=user, auction=a)
-    except IntegrityError:
-        pass
 
 
 def unwatch(auction_id: uuid.UUID, user: User) -> None:

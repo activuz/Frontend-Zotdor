@@ -124,6 +124,10 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "AuctionStatusEnum": "auctions.models.Status",
+        "UserRoleEnum": "accounts.models.User.Role",
+    },
 }
 
 # --- Telegram login (docs/ARCHITECTURE.md §6) ----------------------------

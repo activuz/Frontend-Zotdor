@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 
 
-class Report(models.Model):
+class Report(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class Target(models.TextChoices):
         AUCTION = "auction"
         USER = "user"

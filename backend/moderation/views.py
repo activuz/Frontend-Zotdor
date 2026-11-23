@@ -14,6 +14,7 @@ from accounts.models import User
 from auctions.models import Auction
 from auctions.serializers import PublicUserSerializer, display_name
 from core.errors import DomainError
+from core.http import data_of, me
 from deals.models import Rating
 from moderation.models import Report
 
@@ -34,7 +35,7 @@ class ReportView(APIView):
         responses={201: None},
     )
     def post(self, request: Request) -> Response:
-        data = request.data
+        data = data_of(request)
         target_type, reason = str(data.get("target_type")), str(data.get("reason"))
         if target_type not in Report.Target.values or reason not in Report.Reason.values:
             raise DomainError("invalid", "Shikoyat turini tanlang.")
@@ -46,14 +47,14 @@ class ReportView(APIView):
         if not model.objects.filter(id=target_id).exists():
             raise DomainError("not_found", "Topilmadi.", status.HTTP_404_NOT_FOUND)
         if Report.objects.filter(
-            reporter=request.user,
+            reporter=me(request),
             target_type=target_type,
             target_id=target_id,
             status=Report.ReportStatus.OPEN,
         ).exists():
             raise DomainError("already_reported", "Siz bu haqda allaqachon shikoyat qilgansiz.", 409)
         Report.objects.create(
-            reporter=request.user,  # type: ignore[misc]
+            reporter=me(request),
             target_type=target_type,
             target_id=target_id,
             reason=reason,
