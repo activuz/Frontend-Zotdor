@@ -10,7 +10,8 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 
 - `backend/` — kirish, profil, ma'lumotnomalar, hamyon, auksionlar (media va tekshiruvlar bilan), takliflar, bitimlar va baholar, shikoyatlar, bildirishnomalar (outbox), to‘lovlar (`fake` va Click) hamda panel API tayyor va test qilingan.
 - `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
-- `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
+- `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
+- `deploy/` — production docker compose, nginx, zaxira nusxa (10-bosqich).
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
 ## Hujjatlar
@@ -53,9 +54,10 @@ cd backend && .venv/Scripts/python manage.py spectacular --file schema.yml --val
 # frontend
 cd frontend && npm run dev | npm run lint | npm run build
 cd frontend && npm run api:types        # backend/schema.yml → src/api/schema.d.ts
+cd panel && npm run dev | npm run lint | npm run build | npm run api:types   # port 3001
 ```
 
-API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikkalasi ham o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
+API o‘zgarsa, `schema.yml` hamda `frontend/` va `panel/` dagi `schema.d.ts` qayta generatsiya qilinadi va hammasi o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
 
 ## Backend qoidalari
 

@@ -28,7 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["panel_auctions_list"];
+        get: operations["panel_auctions_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -44,7 +44,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["panel_auctions_retrieve"];
+        get: operations["panel_auctions_retrieve_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1538,6 +1538,42 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Notification"][];
         };
+        PaginatedPanelAuctionList: {
+            results: components["schemas"]["PanelAuctionRow"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelAuditList: {
+            results: components["schemas"]["PanelAuditRow"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelClaimList: {
+            results: components["schemas"]["PanelClaim"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelRefundList: {
+            results: components["schemas"]["PanelRefund"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelReportList: {
+            results: components["schemas"]["PanelReport"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelUserList: {
+            results: components["schemas"]["PanelUser"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
         PaginatedWalletEntryList: {
             /**
              * Format: uri
@@ -1554,11 +1590,220 @@ export interface components {
         PanelActionRequest: {
             reason?: string;
         };
-        PanelStats: {
-            data: {
-                [key: string]: unknown;
-            };
+        PanelActionResult: {
+            status: string;
         };
+        PanelAuctionDetail: {
+            /** Format: uuid */
+            readonly id: string;
+            title?: string;
+            status?: components["schemas"]["AuctionStatusEnum"];
+            readonly cover: components["schemas"]["Cover"] | null;
+            /** Format: int64 */
+            asking_price?: number | null;
+            /** Format: int64 */
+            top_bid_amount?: number | null;
+            bidders_count?: number;
+            active_bids_count?: number;
+            /** Format: date-time */
+            starts_at?: string | null;
+            /** Format: date-time */
+            ends_at?: string | null;
+            region: components["schemas"]["Ref"] | null;
+            district: components["schemas"]["Ref"] | null;
+            /** Format: double */
+            readonly distance_km: number | null;
+            animal_type: components["schemas"]["Ref"] | null;
+            animal_class: components["schemas"]["Ref"] | null;
+            readonly age_label: string;
+            weight_kg?: number | null;
+            weight_is_estimated?: boolean;
+            readonly is_watched: boolean;
+            media: components["schemas"]["Media"][];
+            description?: string;
+            direction: components["schemas"]["Ref"] | null;
+            breed: components["schemas"]["Ref"] | null;
+            breed_other?: string;
+            age_months?: number | null;
+            /** Format: int64 */
+            min_bid?: number | null;
+            /** Format: int64 */
+            max_bid?: number | null;
+            seller: components["schemas"]["PublicUser"];
+            readonly my_bid: components["schemas"]["MyBid"] | null;
+            readonly owner: components["schemas"]["OwnerInfo"] | null;
+            readonly deal_id: string | null;
+            readonly is_owner: boolean;
+            start_now?: boolean;
+            duration_minutes?: number | null;
+            /** Format: date-time */
+            decision_deadline?: string | null;
+            /** Format: date-time */
+            published_at?: string | null;
+            checks: components["schemas"]["PanelCheck"][];
+            events: components["schemas"]["PanelEvent"][];
+            seller_phone: string;
+            seller_history: components["schemas"]["SellerHistory"];
+        };
+        PanelAuctionRow: {
+            /** Format: uuid */
+            readonly id: string;
+            title?: string;
+            status?: components["schemas"]["AuctionStatusEnum"];
+            readonly cover: components["schemas"]["Cover"] | null;
+            /** Format: int64 */
+            asking_price?: number | null;
+            /** Format: int64 */
+            top_bid_amount?: number | null;
+            bidders_count?: number;
+            active_bids_count?: number;
+            /** Format: date-time */
+            starts_at?: string | null;
+            /** Format: date-time */
+            ends_at?: string | null;
+            region: components["schemas"]["Ref"] | null;
+            district: components["schemas"]["Ref"] | null;
+            /** Format: double */
+            readonly distance_km: number | null;
+            animal_type: components["schemas"]["Ref"] | null;
+            animal_class: components["schemas"]["Ref"] | null;
+            readonly age_label: string;
+            weight_kg?: number | null;
+            weight_is_estimated?: boolean;
+            readonly is_watched: boolean;
+            seller_phone: string;
+            /** Format: uuid */
+            seller_id: string;
+        };
+        PanelAuditRow: {
+            id: number;
+            actor_phone: string;
+            action: string;
+            target_type: string;
+            target_id: string;
+            before: unknown;
+            after: unknown;
+            ip: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        PanelCheck: {
+            check_name: string;
+            result: string;
+            message: string;
+            details: unknown;
+        };
+        PanelClaim: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            deal_id: string;
+            /** Format: uuid */
+            auction_id: string;
+            auction_title: string;
+            price: number;
+            commission_amount: number | null;
+            seller_phone: string;
+            buyer_phone: string;
+            reason: string;
+            status: string;
+            resolution_note: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        PanelEvent: {
+            from_status: string;
+            to_status: string;
+            reason: string;
+            /** Format: date-time */
+            created_at: string;
+            actor__phone: string | null;
+        };
+        PanelQueues: {
+            pending_review: number;
+            reports: number;
+            claims: number;
+            refunds: number;
+        };
+        PanelRefund: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            user_id: string;
+            user_phone: string;
+            amount: number;
+            click_reference: string;
+            reason: string;
+            status: string;
+            note: string;
+            /** Format: date-time */
+            created_at: string;
+            main_balance: number;
+        };
+        PanelReport: {
+            /** Format: uuid */
+            id: string;
+            target_type: string;
+            /** Format: uuid */
+            target_id: string;
+            reason: string;
+            reason_label: string;
+            comment: string;
+            status: string;
+            reporter_phone: string;
+            /** Format: date-time */
+            created_at: string;
+            handled_note: string;
+        };
+        PanelStats: {
+            auctions_by_status: {
+                [key: string]: number;
+            };
+            queues: components["schemas"]["PanelQueues"];
+            deals_7d: number;
+            commission_7d: number;
+            new_users_7d: number;
+        };
+        PanelUser: {
+            /** Format: uuid */
+            id: string;
+            phone: string;
+            first_name: string;
+            last_name: string;
+            role: components["schemas"]["PanelUserRoleEnum"];
+            is_blocked: boolean;
+            blocked_reason: string;
+            region: string;
+            district: string;
+            /** Format: double */
+            rating_avg: number | null;
+            rating_count: number;
+            deals_count: number;
+            /** Format: date-time */
+            created_at: string;
+        };
+        PanelUserAudit: {
+            action: string;
+            after: unknown;
+            /** Format: date-time */
+            created_at: string;
+            actor__phone: string;
+        };
+        PanelUserDetail: {
+            user: components["schemas"]["PanelUser"];
+            wallet: components["schemas"]["Wallet"];
+            entries: components["schemas"]["WalletEntry"][];
+            auctions: components["schemas"]["AuctionList"][];
+            reports_against: number;
+            audit: components["schemas"]["PanelUserAudit"][];
+        };
+        /**
+         * @description * `user` - user
+         *     * `moderator` - moderator
+         *     * `admin` - admin
+         * @enum {string}
+         */
+        PanelUserRoleEnum: "user" | "moderator" | "admin";
         PatchedAnimalClassPanelRequest: {
             animal_type?: number;
             name?: string;
@@ -1790,6 +2035,11 @@ export interface components {
          * @enum {string}
          */
         ResultEnum: "pass" | "warn" | "fail";
+        SellerHistory: {
+            auctions: number;
+            blocked: number;
+            reports: number;
+        };
         Settings: {
             /** @description 20 = 0.2% */
             commission_rate_bp?: number;
@@ -1959,9 +2209,12 @@ export interface operations {
             };
         };
     };
-    panel_auctions_list: {
+    panel_auctions_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                q?: string;
+                status?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1973,12 +2226,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuctionList"][];
+                    "application/json": components["schemas"]["PaginatedPanelAuctionList"];
                 };
             };
         };
     };
-    panel_auctions_retrieve: {
+    panel_auctions_retrieve_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1994,7 +2247,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuctionDetail"];
+                    "application/json": components["schemas"]["PanelAuctionDetail"];
                 };
             };
         };
@@ -2017,48 +2270,55 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelActionResult"];
+                };
             };
         };
     };
     panel_audit_log_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                action?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelAuditList"];
+                };
             };
         };
     };
     panel_claims_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelClaimList"];
+                };
             };
         };
     };
@@ -2079,12 +2339,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelClaim"];
+                };
             };
         };
     };
@@ -2190,19 +2451,22 @@ export interface operations {
     };
     panel_refund_requests_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelRefundList"];
+                };
             };
         };
     };
@@ -2223,30 +2487,34 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelRefund"];
+                };
             };
         };
     };
     panel_reports_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelReportList"];
+                };
             };
         };
     };
@@ -2267,12 +2535,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelReport"];
+                };
             };
         };
     };
@@ -2741,19 +3010,24 @@ export interface operations {
     };
     panel_users_list: {
         parameters: {
-            query?: never;
+            query?: {
+                blocked?: string;
+                q?: string;
+                role?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelUserList"];
+                };
             };
         };
     };
@@ -2768,12 +3042,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelUserDetail"];
+                };
             };
         };
     };
@@ -2794,12 +3069,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelUser"];
+                };
             };
         };
     };
@@ -2820,12 +3096,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PanelUser"];
+                };
             };
         };
     };
@@ -2846,12 +3123,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Wallet"];
+                };
             };
         };
     };

@@ -20,7 +20,16 @@ paths:
           description: ''
   /api/panel/auctions:
     get:
-      operationId: panel_auctions_list
+      operationId: panel_auctions_retrieve
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
       tags:
       - panel
       security:
@@ -30,13 +39,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AuctionList'
+                $ref: '#/components/schemas/PaginatedPanelAuctionList'
           description: ''
   /api/panel/auctions/{auction_id}:
     get:
-      operationId: panel_auctions_retrieve
+      operationId: panel_auctions_retrieve_2
       parameters:
       - in: path
         name: auction_id
@@ -53,7 +60,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuctionDetail'
+                $ref: '#/components/schemas/PanelAuctionDetail'
           description: ''
   /api/panel/auctions/{auction_id}/{action}:
     post:
@@ -87,27 +94,49 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelActionResult'
+          description: ''
   /api/panel/audit-log:
     get:
       operationId: panel_audit_log_retrieve
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
       tags:
       - panel
       security:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelAuditList'
+          description: ''
   /api/panel/claims:
     get:
       operationId: panel_claims_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
       tags:
       - panel
       security:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelClaimList'
+          description: ''
   /api/panel/claims/{claim_id}/resolve:
     post:
       operationId: panel_claims_resolve_create
@@ -136,7 +165,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelClaim'
+          description: ''
   /api/panel/districts:
     get:
       operationId: panel_districts_list
@@ -245,13 +278,22 @@ paths:
   /api/panel/refund-requests:
     get:
       operationId: panel_refund_requests_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
       tags:
       - panel
       security:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelRefundList'
+          description: ''
   /api/panel/refund-requests/{refund_id}/resolve:
     post:
       operationId: panel_refund_requests_resolve_create
@@ -280,17 +322,30 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelRefund'
+          description: ''
   /api/panel/reports:
     get:
       operationId: panel_reports_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
       tags:
       - panel
       security:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelReportList'
+          description: ''
   /api/panel/reports/{report_id}/resolve:
     post:
       operationId: panel_reports_resolve_create
@@ -319,7 +374,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelReport'
+          description: ''
   /api/panel/settings:
     get:
       operationId: panel_settings_retrieve
@@ -795,13 +854,30 @@ paths:
   /api/panel/users:
     get:
       operationId: panel_users_list
+      parameters:
+      - in: query
+        name: blocked
+        schema:
+          type: string
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          type: string
       tags:
       - panel
       security:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelUserList'
+          description: ''
   /api/panel/users/{user_id}:
     get:
       operationId: panel_users_retrieve
@@ -818,7 +894,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUserDetail'
+          description: ''
   /api/panel/users/{user_id}/block:
     post:
       operationId: panel_users_block_create
@@ -847,7 +927,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUser'
+          description: ''
   /api/panel/users/{user_id}/role:
     post:
       operationId: panel_users_role_create
@@ -876,7 +960,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUser'
+          description: ''
   /api/panel/users/{user_id}/wallet/adjust:
     post:
       operationId: panel_users_wallet_adjust_create
@@ -905,7 +993,11 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: ''
   /api/v1/auctions:
     get:
       operationId: v1_auctions_retrieve
@@ -3251,6 +3343,126 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Notification'
+    PaginatedPanelAuctionList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelAuctionRow'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelAuditList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelAuditRow'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelClaimList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelClaim'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelRefundList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelRefund'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelReportList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelReport'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelUserList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelUser'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
     PaginatedWalletEntryList:
       type: object
       required:
@@ -3276,14 +3488,618 @@ components:
         reason:
           type: string
           minLength: 1
+    PanelActionResult:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PanelAuctionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        description:
+          type: string
+          maxLength: 2000
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed_other:
+          type: string
+          maxLength: 64
+        age_months:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        min_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        max_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        seller:
+          $ref: '#/components/schemas/PublicUser'
+        my_bid:
+          allOf:
+          - $ref: '#/components/schemas/MyBid'
+          nullable: true
+          readOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/OwnerInfo'
+          nullable: true
+          readOnly: true
+        deal_id:
+          type: string
+          nullable: true
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        start_now:
+          type: boolean
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        decision_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelCheck'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelEvent'
+        seller_phone:
+          type: string
+        seller_history:
+          $ref: '#/components/schemas/SellerHistory'
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - breed
+      - checks
+      - cover
+      - deal_id
+      - direction
+      - distance_km
+      - district
+      - events
+      - id
+      - is_owner
+      - is_watched
+      - media
+      - my_bid
+      - owner
+      - region
+      - seller
+      - seller_history
+      - seller_phone
+    PanelAuctionRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+        seller_phone:
+          type: string
+        seller_id:
+          type: string
+          format: uuid
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - cover
+      - distance_km
+      - district
+      - id
+      - is_watched
+      - region
+      - seller_id
+      - seller_phone
+    PanelAuditRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        actor_phone:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        before:
+          nullable: true
+        after:
+          nullable: true
+        ip:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - action
+      - actor_phone
+      - after
+      - before
+      - created_at
+      - id
+      - ip
+      - target_id
+      - target_type
+    PanelCheck:
+      type: object
+      properties:
+        check_name:
+          type: string
+        result:
+          type: string
+        message:
+          type: string
+        details: {}
+      required:
+      - check_name
+      - details
+      - message
+      - result
+    PanelClaim:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deal_id:
+          type: string
+          format: uuid
+        auction_id:
+          type: string
+          format: uuid
+        auction_title:
+          type: string
+        price:
+          type: integer
+        commission_amount:
+          type: integer
+          nullable: true
+        seller_phone:
+          type: string
+        buyer_phone:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+        resolution_note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - auction_id
+      - auction_title
+      - buyer_phone
+      - commission_amount
+      - created_at
+      - deal_id
+      - id
+      - price
+      - reason
+      - resolution_note
+      - seller_phone
+      - status
+    PanelEvent:
+      type: object
+      properties:
+        from_status:
+          type: string
+        to_status:
+          type: string
+        reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        actor__phone:
+          type: string
+          nullable: true
+      required:
+      - actor__phone
+      - created_at
+      - from_status
+      - reason
+      - to_status
+    PanelQueues:
+      type: object
+      properties:
+        pending_review:
+          type: integer
+        reports:
+          type: integer
+        claims:
+          type: integer
+        refunds:
+          type: integer
+      required:
+      - claims
+      - pending_review
+      - refunds
+      - reports
+    PanelRefund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_phone:
+          type: string
+        amount:
+          type: integer
+        click_reference:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        main_balance:
+          type: integer
+      required:
+      - amount
+      - click_reference
+      - created_at
+      - id
+      - main_balance
+      - note
+      - reason
+      - status
+      - user_id
+      - user_phone
+    PanelReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        target_type:
+          type: string
+        target_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        reason_label:
+          type: string
+        comment:
+          type: string
+        status:
+          type: string
+        reporter_phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        handled_note:
+          type: string
+      required:
+      - comment
+      - created_at
+      - handled_note
+      - id
+      - reason
+      - reason_label
+      - reporter_phone
+      - status
+      - target_id
+      - target_type
     PanelStats:
       type: object
       properties:
-        data:
+        auctions_by_status:
           type: object
-          additionalProperties: {}
+          additionalProperties:
+            type: integer
+        queues:
+          $ref: '#/components/schemas/PanelQueues'
+        deals_7d:
+          type: integer
+        commission_7d:
+          type: integer
+        new_users_7d:
+          type: integer
       required:
-      - data
+      - auctions_by_status
+      - commission_7d
+      - deals_7d
+      - new_users_7d
+      - queues
+    PanelUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/PanelUserRoleEnum'
+        is_blocked:
+          type: boolean
+        blocked_reason:
+          type: string
+        region:
+          type: string
+        district:
+          type: string
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+        deals_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - blocked_reason
+      - created_at
+      - deals_count
+      - district
+      - first_name
+      - id
+      - is_blocked
+      - last_name
+      - phone
+      - rating_avg
+      - rating_count
+      - region
+      - role
+    PanelUserAudit:
+      type: object
+      properties:
+        action:
+          type: string
+        after:
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        actor__phone:
+          type: string
+      required:
+      - action
+      - actor__phone
+      - after
+      - created_at
+    PanelUserDetail:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/PanelUser'
+        wallet:
+          $ref: '#/components/schemas/Wallet'
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletEntry'
+        auctions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuctionList'
+        reports_against:
+          type: integer
+        audit:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelUserAudit'
+      required:
+      - auctions
+      - audit
+      - entries
+      - reports_against
+      - user
+      - wallet
+    PanelUserRoleEnum:
+      enum:
+      - user
+      - moderator
+      - admin
+      type: string
+      description: |-
+        * `user` - user
+        * `moderator` - moderator
+        * `admin` - admin
     PatchedAnimalClassPanelRequest:
       type: object
       properties:
@@ -3885,6 +4701,19 @@ components:
         * `pass` - Pass
         * `warn` - Warn
         * `fail` - Fail
+    SellerHistory:
+      type: object
+      properties:
+        auctions:
+          type: integer
+        blocked:
+          type: integer
+        reports:
+          type: integer
+      required:
+      - auctions
+      - blocked
+      - reports
     Settings:
       type: object
       properties:

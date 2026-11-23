@@ -575,3 +575,89 @@ def test_unknown_ids_are_404(buyer: User) -> None:
     client = APIClient()
     client.force_authenticate(buyer)
     assert client.get(f"/api/v1/auctions/{uuid.uuid4()}").status_code == 404
+
+
+def test_panel_responses_match_declared_schema(
+    seller: User, buyer: User, moderator: User, admin: User
+) -> None:
+    """The panel app's TypeScript types come from panel_api.schemas; real responses must carry those keys."""
+    from panel_api import schemas
+
+    deal = sold_deal(seller, buyer)
+    deal_services.file_claim(deal.id, seller, "Xaridor kelmadi")
+    RefundRequest.objects.create(user=buyer, amount=10_000, click_reference="X1", reason="test")
+    client = APIClient()
+    client.force_authenticate(admin)
+
+    assert client.patch("/api/panel/settings", {"signup_bonus": 50_000}, format="json").status_code == 200
+
+    def keys(serializer: Any) -> set[str]:
+        return set(serializer().fields.keys())
+
+    assert keys(schemas.PanelStats) <= set(client.get("/api/panel/stats").json())
+    for path, item in (
+        ("/api/panel/auctions?status=all", schemas.PanelAuctionRow),
+        ("/api/panel/claims", schemas.PanelClaim),
+        ("/api/panel/refund-requests", schemas.PanelRefund),
+        ("/api/panel/users", schemas.PanelUser),
+        ("/api/panel/audit-log", schemas.PanelAuditRow),
+    ):
+        body = client.get(path).json()
+        assert body["results"], path
+        assert keys(item) <= set(body["results"][0]), path
+    detail = client.get(f"/api/panel/auctions/{deal.auction_id}").json()
+    assert keys(schemas.PanelAuctionDetail) <= set(detail)
+    user = client.get(f"/api/panel/users/{seller.id}").json()
+    assert keys(schemas.PanelUserDetail) <= set(user)
+
+
+# --- reminders (F8) ---------------------------------------------------------------------------
+
+
+def test_ending_soon_reminder_is_telegram_only_and_sent_once(seller: User, buyer: User) -> None:
+    from notifications.services import send_reminders
+
+    a = live_auction(seller)
+    services.place_bid(a.id, buyer, 8_000_000)
+    assert a.ends_at is not None
+    with time_machine.travel(a.ends_at - timedelta(minutes=5)):
+        assert send_reminders()["ending"] == 1
+        assert send_reminders()["ending"] == 0
+    assert not Notification.objects.filter(type="ending_soon").exists()
+
+
+def test_seller_digest_at_most_every_30_minutes(seller: User, buyer: User, far_buyer: User) -> None:
+    from notifications.services import send_reminders
+
+    a = live_auction(seller)
+    services.place_bid(a.id, buyer, 8_000_000)
+    with time_machine.travel(timezone.now() + timedelta(minutes=5)):
+        services.place_bid(a.id, far_buyer, 9_000_000)
+        assert send_reminders()["digest"] == 0  # first_bid was just sent
+    with time_machine.travel(timezone.now() + timedelta(minutes=31)):
+        assert send_reminders()["digest"] == 1
+        assert send_reminders()["digest"] == 0
+    assert Notification.objects.filter(user=seller, type="bid_digest").count() == 1
+
+
+def test_decision_rating_and_bonus_reminders(seller: User, buyer: User) -> None:
+    from notifications.services import send_reminders
+
+    a = live_auction(seller)
+    services.place_bid(a.id, buyer, 8_000_000)
+    with time_machine.travel(timezone.now() + timedelta(minutes=61)):
+        services.tick()
+    a.refresh_from_db()
+    assert a.decision_deadline is not None
+    with time_machine.travel(a.decision_deadline - timedelta(hours=1)):
+        assert send_reminders()["decision"] == 1
+        assert send_reminders()["decision"] == 0
+        services.accept_bid(a.id, seller, Bid.objects.get(auction=a).id)
+    with time_machine.travel(a.decision_deadline + timedelta(hours=25)):
+        assert send_reminders()["rating"] == 2
+        assert send_reminders()["rating"] == 0
+    w = Wallet.objects.get(user=buyer)
+    assert w.bonus_expires_at is not None
+    with time_machine.travel(w.bonus_expires_at - timedelta(days=3)):
+        assert send_reminders()["bonus"] >= 1
+        assert send_reminders()["bonus"] == 0

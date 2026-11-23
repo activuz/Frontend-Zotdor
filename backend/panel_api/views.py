@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models import Count, Q, QuerySet, Sum
 from django.forms.models import model_to_dict
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
@@ -29,6 +29,7 @@ from core.models import PlatformSettings, StaffAuditLog
 from deals import services as deal_services
 from deals.models import Deal, DealClaim
 from moderation.models import Report
+from panel_api import schemas
 from panel_api.permissions import IsAdmin, IsModerator
 from payments import services as payment_services
 from payments.models import RefundRequest
@@ -73,7 +74,7 @@ class AdminView(APIView):
 
 
 class StatsView(ModView):
-    @extend_schema(responses=inline_serializer("PanelStats", {"data": serializers.DictField()}))
+    @extend_schema(responses=schemas.PanelStats)
     def get(self, request: Request) -> Response:
         week = timezone.now() - timedelta(days=7)
         by_status = dict(
@@ -104,7 +105,10 @@ class StatsView(ModView):
 
 
 class AuctionQueueView(ModView):
-    @extend_schema(responses=AuctionListSerializer(many=True))
+    @extend_schema(
+        parameters=[OpenApiParameter("status", str), OpenApiParameter("q", str)],
+        responses=schemas.PanelAuctionPage,
+    )
     def get(self, request: Request) -> Response:
         qs = base_queryset(request).select_related("seller")
         st = request.query_params.get("status", Status.PENDING_REVIEW)
@@ -124,7 +128,7 @@ class AuctionQueueView(ModView):
 
 
 class AuctionPanelDetailView(ModView):
-    @extend_schema(responses=AuctionDetailSerializer)
+    @extend_schema(responses=schemas.PanelAuctionDetail)
     def get(self, request: Request, auction_id: uuid.UUID) -> Response:
         a = (
             base_queryset(request)
@@ -156,7 +160,7 @@ class AuctionPanelDetailView(ModView):
 class AuctionActionView(ModView):
     @extend_schema(
         request=inline_serializer("PanelAction", {"reason": serializers.CharField(required=False)}),
-        responses={200: None},
+        responses=schemas.PanelActionResult,
     )
     def post(self, request: Request, auction_id: uuid.UUID, action: str) -> Response:
         staff, reason = _staff(request), _text(request, "reason")
@@ -199,7 +203,7 @@ def _report_row(r: Report) -> dict[str, Any]:
 
 
 class ReportListView(ModView):
-    @extend_schema(responses={200: None})
+    @extend_schema(parameters=[OpenApiParameter("status", str)], responses=schemas.PanelReportPage)
     def get(self, request: Request) -> Response:
         st = request.query_params.get("status", Report.ReportStatus.OPEN)
         qs = Report.objects.select_related("reporter").order_by("created_at")
@@ -217,7 +221,7 @@ class ReportResolveView(ModView):
                 "note": serializers.CharField(required=False),
             },
         ),
-        responses={200: None},
+        responses=schemas.PanelReport,
     )
     def post(self, request: Request, report_id: uuid.UUID) -> Response:
         outcome = _text(request, "outcome")
@@ -267,7 +271,7 @@ def _claim_row(c: DealClaim) -> dict[str, Any]:
 
 
 class ClaimListView(ModView):
-    @extend_schema(responses={200: None})
+    @extend_schema(parameters=[OpenApiParameter("status", str)], responses=schemas.PanelClaimPage)
     def get(self, request: Request) -> Response:
         st = request.query_params.get("status", DealClaim.ClaimStatus.OPEN)
         qs = DealClaim.objects.select_related("deal__auction", "deal__seller", "deal__buyer").order_by(
@@ -284,7 +288,7 @@ class ClaimResolveView(ModView):
             "ClaimResolve",
             {"approve": serializers.BooleanField(), "note": serializers.CharField(required=False)},
         ),
-        responses={200: None},
+        responses=schemas.PanelClaim,
     )
     def post(self, request: Request, claim_id: uuid.UUID) -> Response:
         approve = bool(data_of(request).get("approve"))
@@ -321,7 +325,7 @@ def _refund_row(r: RefundRequest) -> dict[str, Any]:
 
 
 class RefundListView(ModView):
-    @extend_schema(responses={200: None})
+    @extend_schema(parameters=[OpenApiParameter("status", str)], responses=schemas.PanelRefundPage)
     def get(self, request: Request) -> Response:
         st = request.query_params.get("status", RefundRequest.RefundStatus.OPEN)
         qs = RefundRequest.objects.select_related("user").order_by("created_at")
@@ -336,7 +340,7 @@ class RefundResolveView(ModView):
             "RefundResolve",
             {"done": serializers.BooleanField(), "note": serializers.CharField(required=False)},
         ),
-        responses={200: None},
+        responses=schemas.PanelRefund,
     )
     def post(self, request: Request, refund_id: uuid.UUID) -> Response:
         done = bool(data_of(request).get("done"))
@@ -375,7 +379,15 @@ def _user_row(u: User) -> dict[str, Any]:
 
 
 class UserListView(ModView):
-    @extend_schema(operation_id="panel_users_list", responses={200: None})
+    @extend_schema(
+        operation_id="panel_users_list",
+        parameters=[
+            OpenApiParameter("q", str),
+            OpenApiParameter("role", str),
+            OpenApiParameter("blocked", str),
+        ],
+        responses=schemas.PanelUserPage,
+    )
     def get(self, request: Request) -> Response:
         qs = User.objects.select_related("region", "district").order_by("-created_at")
         if q := request.query_params.get("q", "").strip():
@@ -392,7 +404,7 @@ class UserListView(ModView):
 
 
 class UserDetailView(ModView):
-    @extend_schema(responses={200: None})
+    @extend_schema(responses=schemas.PanelUserDetail)
     def get(self, request: Request, user_id: uuid.UUID) -> Response:
         u = User.objects.select_related("region", "district").filter(id=user_id).first()
         if u is None:
@@ -424,7 +436,7 @@ class UserBlockView(ModView):
             "UserBlock",
             {"blocked": serializers.BooleanField(), "reason": serializers.CharField(required=False)},
         ),
-        responses={200: None},
+        responses=schemas.PanelUser,
     )
     def post(self, request: Request, user_id: uuid.UUID) -> Response:
         blocked, reason = bool(data_of(request).get("blocked")), _text(request, "reason")
@@ -456,7 +468,7 @@ class UserBlockView(ModView):
 class UserRoleView(AdminView):
     @extend_schema(
         request=inline_serializer("UserRole", {"role": serializers.ChoiceField(User.Role.choices)}),
-        responses={200: None},
+        responses=schemas.PanelUser,
     )
     def post(self, request: Request, user_id: uuid.UUID) -> Response:
         role = _text(request, "role")
@@ -495,7 +507,7 @@ class WalletAdjustView(AdminView):
                 "note": serializers.CharField(),
             },
         ),
-        responses={200: None},
+        responses=WalletSerializer,
     )
     def post(self, request: Request, user_id: uuid.UUID) -> Response:
         bucket = _text(request, "bucket")
@@ -670,7 +682,7 @@ class DistrictViewSet(_Audited):
 
 
 class AuditLogView(AdminView):
-    @extend_schema(responses={200: None})
+    @extend_schema(parameters=[OpenApiParameter("action", str)], responses=schemas.PanelAuditPage)
     def get(self, request: Request) -> Response:
         qs = StaffAuditLog.objects.select_related("actor").order_by("-created_at")
         if action := request.query_params.get("action"):

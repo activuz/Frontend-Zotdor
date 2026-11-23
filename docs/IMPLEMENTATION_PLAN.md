@@ -36,44 +36,44 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 **Natija:** balans va operatsiyalar tarixi ko‘rinadi. Ledger testlari, jumladan bir vaqtdagi operatsiyalar testlari, o‘tadi.
 
 ## 3-bosqich. Auksion yaratish
-- [ ] `auctions` modellari va holat mashinasi, `auction_events`
-- [ ] `media`: capture session, yuklash, worker'da qayta ishlash (Pillow, ffmpeg)
-- [ ] `moderation`: tekshiruv quvuri (matn va media tekshiruvlari)
-- [ ] Submit → checking → scheduled/pending_review/rejected, e'lon qilishda rezerv qo‘yish
+- [x] `auctions` modellari va holat mashinasi, `auction_events`
+- [x] media (`auctions` app ichida): capture session, yuklash, worker'da qayta ishlash (Pillow, ffmpeg)
+- [x] `moderation`: tekshiruv quvuri (matn va media tekshiruvlari)
+- [x] Submit → scheduled/pending_review/rejected (tekshiruvlar sinxron), e'lon qilishda rezerv qo‘yish
 - [x] Frontend: `/sell` ustasi, kamera moduli, qoralamani saqlash, tekshiruv natijasi ekrani (`features/sell`). Telefonda haqiqiy kamera bilan qo‘lda sinov hali qilinmagan
 
 **Natija:** telefondan haqiqiy auksion yaratiladi, tekshiruvdan o‘tadi va rejalashtiriladi.
 
 ## 4-bosqich. Feed va takliflar
-- [ ] Worker: `scheduled → live → ended` o‘tishlari
-- [ ] `GET /auctions`: filtrlar, saralash, masofa
-- [ ] `place_bid`, ommaviy taklif ro‘yxati (rank va tier bilan)
+- [x] Worker: `scheduled → live → ended` o‘tishlari
+- [x] `GET /auctions`: filtrlar, saralash, masofa
+- [x] `place_bid`, ommaviy taklif ro‘yxati (rank va tier bilan)
 - [x] Frontend: feed bo‘limlari, qidiruv (URL holati bilan), auksion sahifasi, taklif paneli, 5 s polling, sanoq
 - [x] Saqlanganlar (backend va `/me/saved`)
 
 **Natija:** bir nechta foydalanuvchi bir vaqtda taklif beradi. Ranglar va tartib to‘g‘ri. Tugagan auksionga taklif o‘tmaydi.
 
 ## 5-bosqich. Yakun, bitim va reyting
-- [ ] `decision` (tavsiya bloki), `accept_bid`, `reject_all`, 48 soatlik muddat, eslatmalar
-- [ ] `deals`, kontaktlarni ochish, reytinglar, "bitim bo‘lmadi" arizalari
+- [x] `decision` (tavsiya bloki), `accept_bid`, `reject_all`, 48 soatlik muddat, eslatmalar
+- [x] `deals`, kontaktlarni ochish, reytinglar, "bitim bo‘lmadi" arizalari
 - [x] Frontend: tanlash ekrani, bitim sahifasi, baholash, `/me/*` ro‘yxatlari, ommaviy profil
 
 **Natija:** to‘liq savdo sikli: yaratish → takliflar → tanlash → komissiya → kontaktlar → baholar.
 
 ## 6-bosqich. Bildirishnomalar
-- [ ] `telegram_outbox` va yuboruvchi (rate limit, qayta urinish)
-- [ ] USER_FLOWS F8 matrisasidagi barcha hodisalar
+- [x] `telegram_outbox` va yuboruvchi (rate limit, qayta urinish)
+- [x] USER_FLOWS F8 matrisasidagi barcha hodisalar (vaqtga bog‘liqlari `notifications.services.send_reminders`, har daqiqada)
 - [x] Ilova ichidagi bildirishnomalar va o‘qilmaganlar hisoblagichi
 
 ## 7-bosqich. Panel
-- [ ] `panel/` ilovasi: kirish (xuddi shu Telegram auth, rol tekshiruvi bilan)
-- [ ] Navbatlar: moderatsiya, shikoyatlar, "bitim bo‘lmadi" arizalari, pul qaytarish arizalari
-- [ ] Foydalanuvchilar, bloklash, balansni tuzatish (admin)
-- [ ] Sozlamalar, toifalar, audit jurnali, statistika
+- [x] `panel/` ilovasi: kirish (xuddi shu Telegram auth, rol tekshiruvi bilan)
+- [x] Navbatlar: moderatsiya, shikoyatlar, "bitim bo‘lmadi" arizalari, pul qaytarish arizalari
+- [x] Foydalanuvchilar, bloklash, balansni tuzatish (admin)
+- [x] Sozlamalar, toifalar, audit jurnali, statistika
 
 ## 8-bosqich. To‘lovlar
-- [ ] `payments`: `fake` provayder (dev va staging uchun)
-- [ ] Click Prepare/Complete, imzo, idempotentlik ⛔ Click merchant shartnomasi va kalitlar kerak
+- [x] `payments`: `fake` provayder (dev va staging uchun)
+- [ ] Click Prepare/Complete, imzo, idempotentlik — kod va testlar tayyor; haqiqiy kalitlar bilan sinov ⛔ Click merchant shartnomasi kerak
 - [x] Frontend: to‘ldirish oqimi, to‘lov holati, pul qaytarish arizasi (`fake` provayderda test sahifasi bilan)
 
 **Eslatma:** shartnoma bo‘lmasa ham platforma ishga tushadi. Balans bonus va admin tomonidan qo‘lda to‘ldirish orqali boshqariladi (BR-44).
