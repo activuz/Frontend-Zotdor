@@ -16,7 +16,7 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 
 **Statuslar:** `400` validatsiya, `401` kirilmagan, `403` ruxsat yo‘q yoki foydalanuvchi bloklangan, `404`, `409` holat ziddiyati (masalan, auksion allaqachon tugagan), `429` rate limit (`Retry-After` sarlavhasi bilan).
 
-**Sahifalash:** cursor asosida. So‘rov `?cursor=…&limit=20` (ko‘pi bilan 50). Javob shakli `{ "results": [...], "next": "<cursor>|null" }`.
+**Sahifalash:** ro‘yxatlar (`/wallet/entries`, `/notifications`) cursor asosida: `?cursor=…`, javob `{ "results": [...], "next": "<url>|null" }`. Feed (`GET /auctions`) esa `?limit=&offset=` bilan ishlaydi (standart 20, ko‘pi bilan 50), javob `{count, next, previous, results}`. Sabab: saralash masofa va faollik bo‘yicha ham bo‘ladi, cursor uchun barqaror kalit yo‘q.
 
 ## Auth
 
@@ -42,6 +42,7 @@ Xato kodlari:
 
 `GET /reference/regions` — viloyatlar va ularning tumanlari.
 `GET /reference/taxonomy` — `{directions, animal_types[{id, name, direction_ids, classes, breeds}]}`.
+`GET /config` — mijozga kerakli platforma chegaralari: `{commission_rate_bp, min_duration_min, max_duration_min, max_schedule_ahead_days, photos_min, photos_max, videos_min, videos_max, video_max_s, min_bid_pct, max_bid_pct, topup_min, topup_max}`. Qiymatlar `PlatformSettings` dan olinadi, panelda o‘zgartiriladi.
 
 ## Auksionlar
 
@@ -51,7 +52,7 @@ Xato kodlari:
 | GET | `/auctions/{id}` | Tafsilot |
 | POST | `/auctions` | Qoralama yaratish |
 | PATCH | `/auctions/{id}` | Faqat `draft` yoki `rejected` holatida |
-| POST | `/auctions/{id}/submit` | Tekshiruvga yuborish → `202 {status: "checking"}` |
+| POST | `/auctions/{id}/submit` | Tekshiruvlar sinxron bajariladi → `200 {outcome: published\|pending_review\|rejected, checks: [{check_name, result, message}], auction}` |
 | POST | `/auctions/{id}/cancel` | `{reason?}` — BR-18 |
 | GET | `/auctions/{id}/checks` | Oxirgi tekshiruv natijalari, foydalanuvchiga tushunarli matn bilan |
 | POST/DELETE | `/auctions/{id}/watch` | Saqlanganlarga qo‘shish yoki olib tashlash |

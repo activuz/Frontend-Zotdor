@@ -1,18 +1,23 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppLayout } from './components/layout/AppLayout';
-import { HomePage } from './pages/HomePage';
-import { SearchPage } from './pages/SearchPage';
-import { ListingDetailPage } from './pages/ListingDetailPage';
-import { AddListingPage } from './pages/AddListingPage';
-import { AuctionPage } from './pages/AuctionPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { CategoryPage } from './pages/CategoryPage';
+import { ErrorBoundary } from './components/layout/ErrorBoundary';
+import { NotFound } from './components/layout/NotFound';
 import { LoginPage } from './features/auth/LoginPage';
 import { ProfileSetupPage } from './features/auth/ProfileSetupPage';
 import { RequireAuth } from './features/auth/RequireAuth';
-import { WalletPage } from './features/wallet/WalletPage';
+import { FeedPage } from './features/auctions/FeedPage';
+import { SearchPage } from './features/auctions/SearchPage';
+import { AuctionPage } from './features/auctions/AuctionPage';
+import { DecisionPage } from './features/auctions/DecisionPage';
+import { SellStartPage, SellWizardPage } from './features/sell/SellPage';
+import { DealPage } from './features/deals/DealPage';
+import { MyAuctionsPage, MyBidsPage, MyDealsPage, SavedPage } from './features/me/MeLists';
+import { PublicProfilePage } from './features/me/PublicProfilePage';
+import { NotificationsPage } from './features/notifications/NotificationsPage';
+import { ProfilePage } from './features/profile/ProfilePage';
+import { TestPaymentPage, WalletPage } from './features/wallet/WalletPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,48 +28,42 @@ const queryClient = new QueryClient({
   },
 });
 
-export const App: React.FC = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppLayout>
+const auth = (page: React.ReactNode) => <RequireAuth>{page}</RequireAuth>;
+
+/** Routes from docs/USER_FLOWS.md. */
+export const App: React.FC = () => (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AppLayout>
+        <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<FeedPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/listing/:id" element={<ListingDetailPage />} />
-            <Route
-              path="/add"
-              element={
-                <RequireAuth>
-                  <AddListingPage />
-                </RequireAuth>
-              }
-            />
-            <Route path="/auction" element={<AuctionPage />} />
-            <Route
-              path="/profile"
-              element={
-                <RequireAuth>
-                  <ProfilePage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/wallet"
-              element={
-                <RequireAuth>
-                  <WalletPage />
-                </RequireAuth>
-              }
-            />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/a/:id" element={<AuctionPage />} />
+            <Route path="/a/:id/decision" element={auth(<DecisionPage />)} />
+            <Route path="/sell" element={auth(<SellStartPage />)} />
+            <Route path="/sell/:id" element={auth(<SellWizardPage />)} />
+            <Route path="/deals/:id" element={auth(<DealPage />)} />
+            <Route path="/me" element={auth(<ProfilePage />)} />
+            <Route path="/me/auctions" element={auth(<MyAuctionsPage />)} />
+            <Route path="/me/bids" element={auth(<MyBidsPage />)} />
+            <Route path="/me/deals" element={auth(<MyDealsPage />)} />
+            <Route path="/me/saved" element={auth(<SavedPage />)} />
             <Route path="/me/setup" element={<ProfileSetupPage />} />
-            <Route path="/category/:slug" element={<CategoryPage />} />
+            <Route path="/notifications" element={auth(<NotificationsPage />)} />
+            <Route path="/wallet" element={auth(<WalletPage />)} />
+            <Route path="/wallet/test-payment/:id" element={auth(<TestPaymentPage />)} />
+            <Route path="/u/:id" element={<PublicProfilePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            {/* Old demo paths. */}
+            <Route path="/profile" element={<Navigate to="/me" replace />} />
+            <Route path="/add" element={<Navigate to="/sell" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </AppLayout>
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
-};
+        </ErrorBoundary>
+      </AppLayout>
+    </BrowserRouter>
+  </QueryClientProvider>
+);
 
 export default App;

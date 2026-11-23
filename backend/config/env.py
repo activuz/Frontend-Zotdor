@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -45,11 +45,15 @@ def get_list(name: str, default: str = "") -> list[str]:
 
 
 def database_from_url(url: str) -> dict[str, object]:
-    """Parse postgres://user:pass@host:port/name into a Django DATABASES entry."""
+    """Parse postgres://user:pass@host:port/name?sslmode=require into a Django DATABASES entry.
+
+    Query parameters (sslmode, connect_timeout, …) are passed to libpq as OPTIONS; managed
+    databases such as Nhost require sslmode=require.
+    """
     parsed = urlparse(url)
     if parsed.scheme not in {"postgres", "postgresql"}:
         raise ImproperlyConfigured("DATABASE_URL must use the postgres:// scheme")
-    return {
+    config: dict[str, object] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": parsed.path.lstrip("/"),
         "USER": unquote(parsed.username or ""),
@@ -59,3 +63,7 @@ def database_from_url(url: str) -> dict[str, object]:
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
+    options = {key: values[-1] for key, values in parse_qs(parsed.query).items()}
+    if options:
+        config["OPTIONS"] = options
+    return config

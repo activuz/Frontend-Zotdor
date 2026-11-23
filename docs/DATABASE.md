@@ -122,7 +122,11 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 
 **watchlist** (user_id, auction_id, created_at). PK juft.
 
-### media
+### media (`auctions` app ichida)
+Alohida `media` app yaratilmadi: nom `MEDIA_ROOT`/`MEDIA_URL` bilan to‘qnashadi va media auksionsiz yashamaydi. Modellar `auctions/models.py` da, qayta ishlash `auctions/media.py` da, saqlash `auctions/storage.py` da.
+
+`original_path`, `file_path`, `thumb_path` — saqlash havolasi: `local` rejimda `MEDIA_ROOT` ga nisbatan yo‘l (`auctions/<auction_id>/<nom>`), `nhost` rejimda `nhost:<file_id>`. Havola o‘z backend'ini bildiradi, shuning uchun backend almashtirilganda eski qatorlar ham to‘g‘ri URL beradi.
+
 **capture_sessions** (id, user_id, auction_id, expires_at, user_agent, created_at)
 
 **auction_media**
@@ -133,9 +137,10 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 | capture_session_id | FK | |
 | kind | varchar(8) | `photo` \| `video` |
 | position | smallint | |
-| status | varchar(12) | `uploaded` \| `processing` \| `ready` \| `failed` |
+| status | varchar(12) | `processing` \| `ready` \| `failed` |
+| error | varchar(200) | `failed` bo‘lsa foydalanuvchiga ko‘rinadigan sabab |
 | original_path | varchar | qayta ishlanganidan keyin 30 kun saqlanadi |
-| file_path, thumb_path, poster_path | varchar NULL | |
+| file_path, thumb_path | varchar | bo‘sh satr = hali yo‘q. Video uchun `thumb_path` — poster kadr |
 | width, height | int NULL | |
 | duration_ms | int NULL | |
 | size_bytes | int | |
@@ -143,7 +148,7 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 | received_at | timestamptz | server vaqti |
 | client_meta | jsonb | qurilma, kamera sozlamalari (faqat diagnostika uchun) |
 
-**auction_checks** (id, auction_id, run_id, check_name, result `pass|warn|fail`, details jsonb, created_at)
+**auction_checks** (id, auction_id, run_id, check_name, result `pass|warn|fail`, message — foydalanuvchiga ko‘rinadigan matn, details jsonb, created_at). Tekshiruvlar: `text_contacts`, `text_profanity`, `media_count`, `media_freshness`, `media_quality`, `media_duplicate`.
 
 ### deals
 **deals**
@@ -209,7 +214,8 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 
 ### notifications
 - **notifications** (id, user_id, type, title, body, link, read_at NULL, created_at). Indeks `(user_id, read_at, created_at DESC)`.
-- **telegram_outbox** (id, chat_id bigint, text, reply_markup jsonb NULL, status `pending|sent|failed`, attempts, next_attempt_at, sent_at, error, created_at).
+- **telegram_outbox** (id, chat_id bigint, text, status `pending|sent|failed`, attempts, next_attempt_at, sent_at, error, created_at).
+- **sent_reminders** (id, key UNIQUE, created_at) — vaqtga bog‘liq eslatmalar (tugashiga 10 daqiqa, tanlash muddati, baholash, bonus yonishi) bir martadan ortiq yuborilmasligi uchun. Kalit misoli: `ending:<auction_id>:<user_id>`.
 
 ### moderation va core
 - **reports** (id, reporter_id, target_type `auction|user`, target_id, reason `fake|wrong_info|abuse|fraud|other`, comment, status `open|resolved|dismissed`, handled_by_id, created_at, handled_at)
@@ -218,7 +224,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 
 ## Demo tiplaridan farqlar
 
-Demo'dagi `src/types/index.ts` bilan solishtirganda:
+Olib tashlangan demo (`src/types/index.ts`, 2026-11-23 da o‘chirildi) bilan solishtirganda:
 - `announcements` va `auctions` birlashtirildi, chunki oddiy e'lonlar bo‘lmaydi.
 - `users.balance` o‘rniga `wallets` va `wallet_entries` keldi.
 - `blocked_objects` o‘rniga `users.is_blocked` va `auctions.status='blocked'` ishlatiladi.

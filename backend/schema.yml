@@ -18,6 +18,1446 @@ paths:
               schema:
                 $ref: '#/components/schemas/Health'
           description: ''
+  /api/panel/auctions:
+    get:
+      operationId: panel_auctions_retrieve
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelAuctionList'
+          description: ''
+  /api/panel/auctions/{auction_id}:
+    get:
+      operationId: panel_auctions_retrieve_2
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelAuctionDetail'
+          description: ''
+  /api/panel/auctions/{auction_id}/{action}:
+    post:
+      operationId: panel_auctions_create
+      parameters:
+      - in: path
+        name: action
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PanelActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PanelActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PanelActionRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelActionResult'
+          description: ''
+  /api/panel/audit-log:
+    get:
+      operationId: panel_audit_log_retrieve
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelAuditList'
+          description: ''
+  /api/panel/claims:
+    get:
+      operationId: panel_claims_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelClaimList'
+          description: ''
+  /api/panel/claims/{claim_id}/resolve:
+    post:
+      operationId: panel_claims_resolve_create
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimResolveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClaimResolveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClaimResolveRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelClaim'
+          description: ''
+  /api/panel/districts:
+    get:
+      operationId: panel_districts_list
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistrictPanel'
+          description: ''
+    post:
+      operationId: panel_districts_create
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictPanel'
+          description: ''
+  /api/panel/districts/{id}:
+    put:
+      operationId: panel_districts_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this district.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DistrictPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictPanel'
+          description: ''
+    patch:
+      operationId: panel_districts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this district.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDistrictPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDistrictPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDistrictPanelRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictPanel'
+          description: ''
+  /api/panel/refund-requests:
+    get:
+      operationId: panel_refund_requests_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelRefundList'
+          description: ''
+  /api/panel/refund-requests/{refund_id}/resolve:
+    post:
+      operationId: panel_refund_requests_resolve_create
+      parameters:
+      - in: path
+        name: refund_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundResolveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundResolveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundResolveRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelRefund'
+          description: ''
+  /api/panel/reports:
+    get:
+      operationId: panel_reports_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelReportList'
+          description: ''
+  /api/panel/reports/{report_id}/resolve:
+    post:
+      operationId: panel_reports_resolve_create
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportResolveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportResolveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportResolveRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelReport'
+          description: ''
+  /api/panel/settings:
+    get:
+      operationId: panel_settings_retrieve
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+          description: ''
+    patch:
+      operationId: panel_settings_partial_update
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSettingsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSettingsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSettingsRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+          description: ''
+  /api/panel/stats:
+    get:
+      operationId: panel_stats_retrieve
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelStats'
+          description: ''
+  /api/panel/taxonomy/animal-types:
+    get:
+      operationId: panel_taxonomy_animal_types_list
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalTypePanel'
+          description: ''
+    post:
+      operationId: panel_taxonomy_animal_types_create
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalTypePanel'
+          description: ''
+  /api/panel/taxonomy/animal-types/{id}:
+    put:
+      operationId: panel_taxonomy_animal_types_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this animal type.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalTypePanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalTypePanel'
+          description: ''
+    patch:
+      operationId: panel_taxonomy_animal_types_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this animal type.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalTypePanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalTypePanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalTypePanelRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalTypePanel'
+          description: ''
+  /api/panel/taxonomy/breeds:
+    get:
+      operationId: panel_taxonomy_breeds_list
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreedPanel'
+          description: ''
+    post:
+      operationId: panel_taxonomy_breeds_create
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreedPanel'
+          description: ''
+  /api/panel/taxonomy/breeds/{id}:
+    put:
+      operationId: panel_taxonomy_breeds_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this breed.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BreedPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreedPanel'
+          description: ''
+    patch:
+      operationId: panel_taxonomy_breeds_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this breed.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBreedPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBreedPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBreedPanelRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreedPanel'
+          description: ''
+  /api/panel/taxonomy/classes:
+    get:
+      operationId: panel_taxonomy_classes_list
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalClassPanel'
+          description: ''
+    post:
+      operationId: panel_taxonomy_classes_create
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalClassPanel'
+          description: ''
+  /api/panel/taxonomy/classes/{id}:
+    put:
+      operationId: panel_taxonomy_classes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this animal class.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnimalClassPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalClassPanel'
+          description: ''
+    patch:
+      operationId: panel_taxonomy_classes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this animal class.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalClassPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalClassPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAnimalClassPanelRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalClassPanel'
+          description: ''
+  /api/panel/taxonomy/directions:
+    get:
+      operationId: panel_taxonomy_directions_list
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DirectionPanel'
+          description: ''
+    post:
+      operationId: panel_taxonomy_directions_create
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionPanel'
+          description: ''
+  /api/panel/taxonomy/directions/{id}:
+    put:
+      operationId: panel_taxonomy_directions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this direction.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DirectionPanelRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionPanel'
+          description: ''
+    patch:
+      operationId: panel_taxonomy_directions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this direction.
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectionPanelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectionPanelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectionPanelRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionPanel'
+          description: ''
+  /api/panel/users:
+    get:
+      operationId: panel_users_list
+      parameters:
+      - in: query
+        name: blocked
+        schema:
+          type: string
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelUserList'
+          description: ''
+  /api/panel/users/{user_id}:
+    get:
+      operationId: panel_users_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUserDetail'
+          description: ''
+  /api/panel/users/{user_id}/block:
+    post:
+      operationId: panel_users_block_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserBlockRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUser'
+          description: ''
+  /api/panel/users/{user_id}/role:
+    post:
+      operationId: panel_users_role_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelUser'
+          description: ''
+  /api/panel/users/{user_id}/wallet/adjust:
+    post:
+      operationId: panel_users_wallet_adjust_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletAdjustRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WalletAdjustRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WalletAdjustRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: ''
+  /api/v1/auctions:
+    get:
+      operationId: v1_auctions_retrieve
+      description: 'GET: public feed and search (FR-06, FR-07). POST: create a draft
+        (FR-03).'
+      parameters:
+      - in: query
+        name: animal_class
+        schema:
+          type: integer
+      - in: query
+        name: animal_type
+        schema:
+          type: integer
+      - in: query
+        name: breed
+        schema:
+          type: integer
+      - in: query
+        name: direction
+        schema:
+          type: integer
+      - in: query
+        name: district
+        schema:
+          type: integer
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: lng
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: offset
+        schema:
+          type: integer
+      - in: query
+        name: price_max
+        schema:
+          type: integer
+      - in: query
+        name: price_min
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: region
+        schema:
+          type: integer
+      - in: query
+        name: seller
+        schema:
+          type: string
+      - in: query
+        name: sort
+        schema:
+          type: string
+          enum:
+          - ending_soon
+          - most_active
+          - nearest
+          - newest
+          - price_asc
+          - price_desc
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - all_open
+          - ended
+          - live
+          - scheduled
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuctionList'
+          description: ''
+    post:
+      operationId: v1_auctions_create
+      description: 'GET: public feed and search (FR-06, FR-07). POST: create a draft
+        (FR-03).'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DraftRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DraftRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+  /api/v1/auctions/{auction_id}:
+    get:
+      operationId: v1_auctions_retrieve_2
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+    patch:
+      operationId: v1_auctions_partial_update
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDraftRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDraftRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDraftRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+    delete:
+      operationId: v1_auctions_destroy
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auctions/{auction_id}/accept:
+    post:
+      operationId: v1_auctions_accept_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AcceptInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AcceptInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptOut'
+          description: ''
+  /api/v1/auctions/{auction_id}/bids:
+    get:
+      operationId: v1_auctions_bids_list
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicBid'
+          description: ''
+    post:
+      operationId: v1_auctions_bids_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BidInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BidInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BidInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicBid'
+          description: ''
+  /api/v1/auctions/{auction_id}/cancel:
+    post:
+      operationId: v1_auctions_cancel_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CancelInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CancelInRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+  /api/v1/auctions/{auction_id}/decision:
+    get:
+      operationId: v1_auctions_decision_retrieve
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+          description: ''
+  /api/v1/auctions/{auction_id}/media:
+    post:
+      operationId: v1_auctions_media_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+          description: ''
+  /api/v1/auctions/{auction_id}/media/{media_id}:
+    delete:
+      operationId: v1_auctions_media_destroy
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: media_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auctions/{auction_id}/reject-all:
+    post:
+      operationId: v1_auctions_reject_all_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
+  /api/v1/auctions/{auction_id}/submit:
+    post:
+      operationId: v1_auctions_submit_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitResult'
+          description: ''
+  /api/v1/auctions/{auction_id}/watch:
+    post:
+      operationId: v1_auctions_watch_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+    delete:
+      operationId: v1_auctions_watch_destroy
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/auth/csrf:
     get:
       operationId: v1_auth_csrf_retrieve
@@ -89,6 +1529,110 @@ paths:
               schema:
                 $ref: '#/components/schemas/LoginStatus'
           description: ''
+  /api/v1/config:
+    get:
+      operationId: v1_config_retrieve
+      description: Business limits the client needs to explain rules before submit
+        (FR-03, BR-41).
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicConfig'
+          description: ''
+  /api/v1/deals/{deal_id}:
+    get:
+      operationId: v1_deals_retrieve
+      parameters:
+      - in: path
+        name: deal_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+          description: ''
+  /api/v1/deals/{deal_id}/claims:
+    post:
+      operationId: v1_deals_claims_create
+      parameters:
+      - in: path
+        name: deal_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClaimInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClaimInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+          description: ''
+  /api/v1/deals/{deal_id}/rating:
+    post:
+      operationId: v1_deals_rating_create
+      parameters:
+      - in: path
+        name: deal_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RatingInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RatingInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+          description: ''
   /api/v1/me:
     get:
       operationId: v1_me_retrieve
@@ -127,6 +1671,200 @@ paths:
               schema:
                 $ref: '#/components/schemas/Me'
           description: ''
+  /api/v1/me/auctions:
+    get:
+      operationId: v1_me_auctions_list
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuctionList'
+          description: ''
+  /api/v1/me/bids:
+    get:
+      operationId: v1_me_bids_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MyBidRow'
+          description: ''
+  /api/v1/me/deals:
+    get:
+      operationId: v1_me_deals_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deal'
+          description: ''
+  /api/v1/me/watchlist:
+    get:
+      operationId: v1_me_watchlist_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuctionList'
+          description: ''
+  /api/v1/media/capture-sessions:
+    post:
+      operationId: v1_media_capture_sessions_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptureSessionInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaptureSessionInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaptureSessionInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptureSessionOut'
+          description: ''
+  /api/v1/notifications:
+    get:
+      operationId: v1_notifications_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/read:
+    post:
+      operationId: v1_notifications_read_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkReadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkReadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkReadRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/unread-count:
+    get:
+      operationId: v1_notifications_unread_count_retrieve
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
+  /api/v1/payments/{payment_id}:
+    get:
+      operationId: v1_payments_retrieve
+      parameters:
+      - in: path
+        name: payment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/fake/{payment_id}/complete:
+    post:
+      operationId: v1_payments_fake_complete_create
+      description: Local development only; returns 404 unless DEBUG and PAYMENTS_PROVIDER=fake.
+      parameters:
+      - in: path
+        name: payment_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
   /api/v1/reference/regions:
     get:
       operationId: v1_reference_regions_list
@@ -158,6 +1896,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Taxonomy'
+          description: ''
+  /api/v1/reports:
+    post:
+      operationId: v1_reports_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/users/{user_id}:
+    get:
+      operationId: v1_users_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicProfile'
           description: ''
   /api/v1/wallet:
     get:
@@ -200,8 +1982,91 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedWalletEntryList'
           description: ''
+  /api/v1/wallet/refund-requests:
+    get:
+      operationId: v1_wallet_refund_requests_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RefundRequest'
+          description: ''
+    post:
+      operationId: v1_wallet_refund_requests_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequest'
+          description: ''
+  /api/v1/wallet/topups:
+    post:
+      operationId: v1_wallet_topups_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopupInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TopupInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TopupInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopupOut'
+          description: ''
 components:
   schemas:
+    AcceptInRequest:
+      type: object
+      properties:
+        bid_id:
+          type: string
+          format: uuid
+      required:
+      - bid_id
+    AcceptOut:
+      type: object
+      properties:
+        deal_id:
+          type: string
+          format: uuid
+      required:
+      - deal_id
     AnimalClass:
       type: object
       properties:
@@ -218,6 +2083,57 @@ components:
           maxLength: 64
       required:
       - id
+      - name
+      - sex
+    AnimalClassPanel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        animal_type:
+          type: integer
+        name:
+          type: string
+          maxLength: 64
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        age_hint:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - animal_type
+      - id
+      - name
+      - sex
+    AnimalClassPanelRequest:
+      type: object
+      properties:
+        animal_type:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        age_hint:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - animal_type
       - name
       - sex
     AnimalType:
@@ -255,6 +2171,347 @@ components:
       - id
       - name
       - slug
+    AnimalTypePanel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+        directions:
+          type: array
+          items:
+            type: integer
+      required:
+      - directions
+      - id
+      - name
+      - slug
+    AnimalTypePanelRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+        directions:
+          type: array
+          items:
+            type: integer
+      required:
+      - directions
+      - name
+      - slug
+    AuctionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        description:
+          type: string
+          maxLength: 2000
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed_other:
+          type: string
+          maxLength: 64
+        age_months:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        min_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        max_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        seller:
+          $ref: '#/components/schemas/PublicUser'
+        my_bid:
+          allOf:
+          - $ref: '#/components/schemas/MyBid'
+          nullable: true
+          readOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/OwnerInfo'
+          nullable: true
+          readOnly: true
+        deal_id:
+          type: string
+          nullable: true
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        start_now:
+          type: boolean
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        decision_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - breed
+      - cover
+      - deal_id
+      - direction
+      - distance_km
+      - district
+      - id
+      - is_owner
+      - is_watched
+      - media
+      - my_bid
+      - owner
+      - region
+      - seller
+    AuctionList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - cover
+      - distance_km
+      - district
+      - id
+      - is_watched
+      - region
+    AuctionStatusEnum:
+      enum:
+      - draft
+      - pending_review
+      - rejected
+      - scheduled
+      - live
+      - ended
+      - sold
+      - unsold
+      - cancelled
+      - blocked
+      type: string
+      description: |-
+        * `draft` - Qoralama
+        * `pending_review` - Moderatsiyada
+        * `rejected` - Rad etilgan
+        * `scheduled` - Rejalashtirilgan
+        * `live` - Jonli
+        * `ended` - Tugagan
+        * `sold` - Sotilgan
+        * `unsold` - Sotilmagan
+        * `cancelled` - Bekor qilingan
+        * `blocked` - Bloklangan
+    BidInRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+      required:
+      - amount
     Breed:
       type: object
       properties:
@@ -267,16 +2524,153 @@ components:
       required:
       - id
       - name
-    BucketEnum:
-      enum:
-      - main
-      - bonus
-      - hold
-      type: string
-      description: |-
-        * `main` - Main
-        * `bonus` - Bonus
-        * `hold` - Hold
+    BreedPanel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        animal_type:
+          type: integer
+        name:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - animal_type
+      - id
+      - name
+    BreedPanelRequest:
+      type: object
+      properties:
+        animal_type:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - animal_type
+      - name
+    CancelInRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+    CaptureSessionInRequest:
+      type: object
+      properties:
+        auction_id:
+          type: string
+          format: uuid
+      required:
+      - auction_id
+    CaptureSessionOut:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+        photos_min:
+          type: integer
+        photos_max:
+          type: integer
+        videos_min:
+          type: integer
+        videos_max:
+          type: integer
+        video_max_s:
+          type: integer
+      required:
+      - expires_at
+      - id
+      - photos_max
+      - photos_min
+      - video_max_s
+      - videos_max
+      - videos_min
+    Check:
+      type: object
+      properties:
+        check_name:
+          type: string
+          maxLength: 40
+        result:
+          $ref: '#/components/schemas/ResultEnum'
+        message:
+          type: string
+          maxLength: 300
+      required:
+      - check_name
+      - result
+    ClaimInRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - reason
+    ClaimResolveRequest:
+      type: object
+      properties:
+        approve:
+          type: boolean
+        note:
+          type: string
+          minLength: 1
+      required:
+      - approve
+    Counterparty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        telegram_username:
+          type: string
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+      required:
+      - id
+      - name
+      - phone
+      - rating_avg
+      - rating_count
+      - telegram_username
+    Cover:
+      type: object
+      properties:
+        url:
+          type: string
+        thumb_url:
+          type: string
+      required:
+      - thumb_url
+      - url
     DbEnum:
       enum:
       - ok
@@ -285,6 +2679,137 @@ components:
       description: |-
         * `ok` - ok
         * `down` - down
+    Deal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        auction_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        cover_url:
+          type: string
+        price:
+          type: integer
+        commission_amount:
+          type: integer
+          nullable: true
+        status:
+          type: string
+        role:
+          $ref: '#/components/schemas/DealRoleEnum'
+        created_at:
+          type: string
+          format: date-time
+        counterparty:
+          $ref: '#/components/schemas/Counterparty'
+        my_rating:
+          type: integer
+          nullable: true
+        can_rate:
+          type: boolean
+        can_claim:
+          type: boolean
+        claim_status:
+          type: string
+          nullable: true
+      required:
+      - auction_id
+      - can_claim
+      - can_rate
+      - claim_status
+      - commission_amount
+      - counterparty
+      - cover_url
+      - created_at
+      - id
+      - my_rating
+      - price
+      - role
+      - status
+      - title
+    DealRoleEnum:
+      enum:
+      - seller
+      - buyer
+      type: string
+      description: |-
+        * `seller` - seller
+        * `buyer` - buyer
+    Decision:
+      type: object
+      properties:
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+        can_accept_now:
+          type: boolean
+        early_accept_from:
+          type: string
+          format: date-time
+          nullable: true
+        commission_rate_bp:
+          type: integer
+        recommended:
+          type: array
+          items:
+            $ref: '#/components/schemas/DecisionBid'
+        bids:
+          type: array
+          items:
+            $ref: '#/components/schemas/DecisionBid'
+      required:
+      - bids
+      - can_accept_now
+      - commission_rate_bp
+      - deadline
+      - early_accept_from
+      - recommended
+    DecisionBid:
+      type: object
+      properties:
+        bid_id:
+          type: string
+          format: uuid
+        rank:
+          type: integer
+        tier:
+          type: string
+        pseudonym:
+          type: string
+        amount:
+          type: integer
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+        deals_count:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+      - amount
+      - bid_id
+      - deals_count
+      - distance_km
+      - pseudonym
+      - rank
+      - rating_avg
+      - rating_count
+      - tags
+      - tier
     Direction:
       type: object
       properties:
@@ -302,6 +2827,50 @@ components:
       - id
       - name
       - slug
+    DirectionPanel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - id
+      - name
+      - slug
+    DirectionPanelRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - name
+      - slug
     District:
       type: object
       properties:
@@ -314,6 +2883,106 @@ components:
       required:
       - id
       - name
+    DistrictPanel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        region:
+          type: integer
+        name:
+          type: string
+          maxLength: 64
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+      required:
+      - id
+      - lat
+      - lng
+      - name
+      - region
+    DistrictPanelRequest:
+      type: object
+      properties:
+        region:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+      required:
+      - lat
+      - lng
+      - name
+      - region
+    DraftRequest:
+      type: object
+      properties:
+        direction_id:
+          type: integer
+          nullable: true
+        animal_type_id:
+          type: integer
+          nullable: true
+        animal_class_id:
+          type: integer
+          nullable: true
+        breed_id:
+          type: integer
+          nullable: true
+        breed_other:
+          type: string
+          maxLength: 64
+        age_months:
+          type: integer
+          maximum: 480
+          minimum: 0
+          nullable: true
+        weight_kg:
+          type: integer
+          maximum: 3000
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        description:
+          type: string
+          maxLength: 2000
+        asking_price:
+          type: integer
+          maximum: 10000000000
+          minimum: 1000
+          format: int64
+          nullable: true
+        district_id:
+          type: integer
+          nullable: true
+        start_now:
+          type: boolean
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        duration_minutes:
+          type: integer
+          maximum: 1440
+          minimum: 1
+          nullable: true
     Health:
       type: object
       properties:
@@ -387,6 +3056,13 @@ components:
         * `verified` - verified
         * `failed` - failed
         * `expired` - expired
+    MarkReadRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
     Me:
       type: object
       properties:
@@ -408,7 +3084,7 @@ components:
           readOnly: true
         role:
           allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/UserRoleEnum'
           readOnly: true
         region:
           allOf:
@@ -438,6 +3114,355 @@ components:
       - region
       - role
       - telegram_username
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/MediaKindEnum'
+        status:
+          $ref: '#/components/schemas/MediaStatusEnum'
+        error:
+          type: string
+          maxLength: 200
+        url:
+          type: string
+          readOnly: true
+        thumb_url:
+          type: string
+          readOnly: true
+        width:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        height:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        duration_ms:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+      required:
+      - id
+      - kind
+      - thumb_url
+      - url
+    MediaKindEnum:
+      enum:
+      - photo
+      - video
+      type: string
+      description: |-
+        * `photo` - Photo
+        * `video` - Video
+    MediaStatusEnum:
+      enum:
+      - processing
+      - ready
+      - failed
+      type: string
+      description: |-
+        * `processing` - Processing
+        * `ready` - Ready
+        * `failed` - Failed
+    MediaUploadKindEnum:
+      enum:
+      - photo
+      - video
+      type: string
+      description: |-
+        * `photo` - photo
+        * `video` - video
+    MediaUploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+        kind:
+          $ref: '#/components/schemas/MediaUploadKindEnum'
+        capture_session_id:
+          type: string
+          format: uuid
+        client_meta:
+          type: string
+          minLength: 1
+      required:
+      - capture_session_id
+      - file
+      - kind
+    MyBid:
+      type: object
+      properties:
+        amount:
+          type: integer
+        rank:
+          type: integer
+        tier:
+          type: string
+      required:
+      - amount
+      - rank
+      - tier
+    MyBidRow:
+      type: object
+      properties:
+        auction:
+          $ref: '#/components/schemas/AuctionList'
+        amount:
+          type: integer
+        rank:
+          type: integer
+          nullable: true
+        tier:
+          type: string
+          nullable: true
+        state:
+          $ref: '#/components/schemas/StateEnum'
+        deal_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - amount
+      - auction
+      - deal_id
+      - rank
+      - state
+      - tier
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        body:
+          type: string
+          readOnly: true
+        link:
+          type: string
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - id
+      - link
+      - read_at
+      - title
+      - type
+    OwnerInfo:
+      type: object
+      properties:
+        hold_amount:
+          type: integer
+          nullable: true
+        decision_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        can_cancel:
+          type: boolean
+        can_accept_now:
+          type: boolean
+        early_accept_from:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+      required:
+      - can_accept_now
+      - can_cancel
+      - checks
+      - decision_deadline
+      - early_accept_from
+      - hold_amount
+      - rejection_reason
+    PaginatedAuctionList:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuctionList'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedNotificationList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPanelAuctionList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelAuctionRow'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelAuditList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelAuditRow'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelClaimList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelClaim'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelRefundList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelRefund'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelReportList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelReport'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelUserList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelUser'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
     PaginatedWalletEntryList:
       type: object
       required:
@@ -457,6 +3482,769 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletEntry'
+    PanelActionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+    PanelActionResult:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PanelAuctionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        description:
+          type: string
+          maxLength: 2000
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        breed_other:
+          type: string
+          maxLength: 64
+        age_months:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        min_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        max_bid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        seller:
+          $ref: '#/components/schemas/PublicUser'
+        my_bid:
+          allOf:
+          - $ref: '#/components/schemas/MyBid'
+          nullable: true
+          readOnly: true
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/OwnerInfo'
+          nullable: true
+          readOnly: true
+        deal_id:
+          type: string
+          nullable: true
+          readOnly: true
+        is_owner:
+          type: boolean
+          readOnly: true
+        start_now:
+          type: boolean
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        decision_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelCheck'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelEvent'
+        seller_phone:
+          type: string
+        seller_history:
+          $ref: '#/components/schemas/SellerHistory'
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - breed
+      - checks
+      - cover
+      - deal_id
+      - direction
+      - distance_km
+      - district
+      - events
+      - id
+      - is_owner
+      - is_watched
+      - media
+      - my_bid
+      - owner
+      - region
+      - seller
+      - seller_history
+      - seller_phone
+    PanelAuctionRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 160
+        status:
+          $ref: '#/components/schemas/AuctionStatusEnum'
+        cover:
+          allOf:
+          - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        asking_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        top_bid_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        bidders_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        active_bids_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        ends_at:
+          type: string
+          format: date-time
+          nullable: true
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        district:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        animal_type:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        animal_class:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+        age_label:
+          type: string
+          readOnly: true
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        is_watched:
+          type: boolean
+          readOnly: true
+        seller_phone:
+          type: string
+        seller_id:
+          type: string
+          format: uuid
+      required:
+      - age_label
+      - animal_class
+      - animal_type
+      - cover
+      - distance_km
+      - district
+      - id
+      - is_watched
+      - region
+      - seller_id
+      - seller_phone
+    PanelAuditRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        actor_phone:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        before:
+          nullable: true
+        after:
+          nullable: true
+        ip:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - action
+      - actor_phone
+      - after
+      - before
+      - created_at
+      - id
+      - ip
+      - target_id
+      - target_type
+    PanelCheck:
+      type: object
+      properties:
+        check_name:
+          type: string
+        result:
+          type: string
+        message:
+          type: string
+        details: {}
+      required:
+      - check_name
+      - details
+      - message
+      - result
+    PanelClaim:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deal_id:
+          type: string
+          format: uuid
+        auction_id:
+          type: string
+          format: uuid
+        auction_title:
+          type: string
+        price:
+          type: integer
+        commission_amount:
+          type: integer
+          nullable: true
+        seller_phone:
+          type: string
+        buyer_phone:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+        resolution_note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - auction_id
+      - auction_title
+      - buyer_phone
+      - commission_amount
+      - created_at
+      - deal_id
+      - id
+      - price
+      - reason
+      - resolution_note
+      - seller_phone
+      - status
+    PanelEvent:
+      type: object
+      properties:
+        from_status:
+          type: string
+        to_status:
+          type: string
+        reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        actor__phone:
+          type: string
+          nullable: true
+      required:
+      - actor__phone
+      - created_at
+      - from_status
+      - reason
+      - to_status
+    PanelQueues:
+      type: object
+      properties:
+        pending_review:
+          type: integer
+        reports:
+          type: integer
+        claims:
+          type: integer
+        refunds:
+          type: integer
+      required:
+      - claims
+      - pending_review
+      - refunds
+      - reports
+    PanelRefund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_phone:
+          type: string
+        amount:
+          type: integer
+        click_reference:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        main_balance:
+          type: integer
+      required:
+      - amount
+      - click_reference
+      - created_at
+      - id
+      - main_balance
+      - note
+      - reason
+      - status
+      - user_id
+      - user_phone
+    PanelReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        target_type:
+          type: string
+        target_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        reason_label:
+          type: string
+        comment:
+          type: string
+        status:
+          type: string
+        reporter_phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        handled_note:
+          type: string
+      required:
+      - comment
+      - created_at
+      - handled_note
+      - id
+      - reason
+      - reason_label
+      - reporter_phone
+      - status
+      - target_id
+      - target_type
+    PanelStats:
+      type: object
+      properties:
+        auctions_by_status:
+          type: object
+          additionalProperties:
+            type: integer
+        queues:
+          $ref: '#/components/schemas/PanelQueues'
+        deals_7d:
+          type: integer
+        commission_7d:
+          type: integer
+        new_users_7d:
+          type: integer
+      required:
+      - auctions_by_status
+      - commission_7d
+      - deals_7d
+      - new_users_7d
+      - queues
+    PanelUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/PanelUserRoleEnum'
+        is_blocked:
+          type: boolean
+        blocked_reason:
+          type: string
+        region:
+          type: string
+        district:
+          type: string
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+        deals_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - blocked_reason
+      - created_at
+      - deals_count
+      - district
+      - first_name
+      - id
+      - is_blocked
+      - last_name
+      - phone
+      - rating_avg
+      - rating_count
+      - region
+      - role
+    PanelUserAudit:
+      type: object
+      properties:
+        action:
+          type: string
+        after:
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        actor__phone:
+          type: string
+      required:
+      - action
+      - actor__phone
+      - after
+      - created_at
+    PanelUserDetail:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/PanelUser'
+        wallet:
+          $ref: '#/components/schemas/Wallet'
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletEntry'
+        auctions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuctionList'
+        reports_against:
+          type: integer
+        audit:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelUserAudit'
+      required:
+      - auctions
+      - audit
+      - entries
+      - reports_against
+      - user
+      - wallet
+    PanelUserRoleEnum:
+      enum:
+      - user
+      - moderator
+      - admin
+      type: string
+      description: |-
+        * `user` - user
+        * `moderator` - moderator
+        * `admin` - admin
+    PatchedAnimalClassPanelRequest:
+      type: object
+      properties:
+        animal_type:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        age_hint:
+          type: string
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedAnimalTypePanelRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+        directions:
+          type: array
+          items:
+            type: integer
+    PatchedBreedPanelRequest:
+      type: object
+      properties:
+        animal_type:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedDirectionPanelRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 32
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        sort:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedDistrictPanelRequest:
+      type: object
+      properties:
+        region:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,4})?$
+    PatchedDraftRequest:
+      type: object
+      properties:
+        direction_id:
+          type: integer
+          nullable: true
+        animal_type_id:
+          type: integer
+          nullable: true
+        animal_class_id:
+          type: integer
+          nullable: true
+        breed_id:
+          type: integer
+          nullable: true
+        breed_other:
+          type: string
+          maxLength: 64
+        age_months:
+          type: integer
+          maximum: 480
+          minimum: 0
+          nullable: true
+        weight_kg:
+          type: integer
+          maximum: 3000
+          minimum: 0
+          nullable: true
+        weight_is_estimated:
+          type: boolean
+        description:
+          type: string
+          maxLength: 2000
+        asking_price:
+          type: integer
+          maximum: 10000000000
+          minimum: 1000
+          format: int64
+          nullable: true
+        district_id:
+          type: integer
+          nullable: true
+        start_now:
+          type: boolean
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+        duration_minutes:
+          type: integer
+          maximum: 1440
+          minimum: 1
+          nullable: true
     PatchedProfileUpdateRequest:
       type: object
       properties:
@@ -471,6 +4259,126 @@ components:
           type: integer
         district_id:
           type: integer
+    PatchedSettingsRequest:
+      type: object
+      properties:
+        commission_rate_bp:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 20 = 0.2%
+        signup_bonus:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        bonus_ttl_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        min_bid_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_bid_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        min_duration_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_duration_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_schedule_ahead_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        decision_window_h:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        early_accept_min_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        claim_window_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        rating_window_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        photos_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        photos_max:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        videos_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        videos_max:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        video_max_s:
+          type: integer
+          maximum: 32767
+          minimum: 0
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        provider:
+          allOf:
+          - $ref: '#/components/schemas/ProviderEnum'
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - amount
+      - completed_at
+      - created_at
+      - id
+      - provider
+      - status
+    PaymentStatusEnum:
+      enum:
+      - created
+      - prepared
+      - completed
+      - cancelled
+      - failed
+      type: string
+      description: |-
+        * `created` - Created
+        * `prepared` - Prepared
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+        * `failed` - Failed
     Place:
       type: object
       properties:
@@ -481,6 +4389,256 @@ components:
       required:
       - id
       - name
+    ProviderEnum:
+      enum:
+      - click
+      - fake
+      type: string
+      description: |-
+        * `click` - Click
+        * `fake` - Fake
+    PublicBid:
+      type: object
+      properties:
+        rank:
+          type: integer
+        tier:
+          type: string
+        pseudonym:
+          type: string
+        amount:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        is_mine:
+          type: boolean
+      required:
+      - amount
+      - created_at
+      - is_mine
+      - pseudonym
+      - rank
+      - tier
+    PublicConfig:
+      type: object
+      properties:
+        commission_rate_bp:
+          type: integer
+        min_duration_min:
+          type: integer
+        max_duration_min:
+          type: integer
+        max_schedule_ahead_days:
+          type: integer
+        photos_min:
+          type: integer
+        photos_max:
+          type: integer
+        videos_min:
+          type: integer
+        videos_max:
+          type: integer
+        video_max_s:
+          type: integer
+        min_bid_pct:
+          type: integer
+        max_bid_pct:
+          type: integer
+        topup_min:
+          type: integer
+        topup_max:
+          type: integer
+      required:
+      - commission_rate_bp
+      - max_bid_pct
+      - max_duration_min
+      - max_schedule_ahead_days
+      - min_bid_pct
+      - min_duration_min
+      - photos_max
+      - photos_min
+      - topup_max
+      - topup_min
+      - video_max_s
+      - videos_max
+      - videos_min
+    PublicProfile:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/PublicUser'
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicRating'
+      required:
+      - ratings
+      - user
+    PublicRating:
+      type: object
+      properties:
+        score:
+          type: integer
+        comment:
+          type: string
+        author:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - author
+      - comment
+      - created_at
+      - score
+    PublicUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          readOnly: true
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        deals_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        member_since:
+          type: string
+          format: date-time
+        region:
+          allOf:
+          - $ref: '#/components/schemas/Ref'
+          nullable: true
+      required:
+      - display_name
+      - id
+      - member_since
+      - rating_avg
+      - region
+    RatingInRequest:
+      type: object
+      properties:
+        score:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          minLength: 1
+      required:
+      - score
+    ReasonEnum:
+      enum:
+      - fake
+      - wrong_info
+      - abuse
+      - fraud
+      - other
+      type: string
+      description: |-
+        * `fake` - Soxta yoki boshqa joydan olingan
+        * `wrong_info` - Notoʻgʻri maʼlumot
+        * `abuse` - Haqorat yoki nojoʻya xatti-harakat
+        * `fraud` - Firibgarlik
+        * `other` - Boshqa
+    Ref:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
+    RefundInRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+        click_reference:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - amount
+      - click_reference
+      - reason
+    RefundRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        click_reference:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/RefundStatusEnum'
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        handled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - amount
+      - click_reference
+      - created_at
+      - handled_at
+      - id
+      - note
+      - reason
+      - status
+    RefundResolveRequest:
+      type: object
+      properties:
+        done:
+          type: boolean
+        note:
+          type: string
+          minLength: 1
+      required:
+      - done
+    RefundStatusEnum:
+      enum:
+      - open
+      - done
+      - rejected
+      type: string
+      description: |-
+        * `open` - Open
+        * `done` - Done
+        * `rejected` - Rejected
     Region:
       type: object
       properties:
@@ -499,16 +4657,141 @@ components:
       - districts
       - id
       - name
-    RoleEnum:
+    ReportInRequest:
+      type: object
+      properties:
+        target_type:
+          $ref: '#/components/schemas/TargetTypeEnum'
+        target_id:
+          type: string
+          format: uuid
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        comment:
+          type: string
+      required:
+      - reason
+      - target_id
+      - target_type
+    ReportResolveOutcomeEnum:
       enum:
-      - user
-      - moderator
-      - admin
+      - resolved
+      - dismissed
       type: string
       description: |-
-        * `user` - Foydalanuvchi
-        * `moderator` - Moderator
-        * `admin` - Admin
+        * `resolved` - resolved
+        * `dismissed` - dismissed
+    ReportResolveRequest:
+      type: object
+      properties:
+        outcome:
+          $ref: '#/components/schemas/ReportResolveOutcomeEnum'
+        note:
+          type: string
+          minLength: 1
+      required:
+      - outcome
+    ResultEnum:
+      enum:
+      - pass
+      - warn
+      - fail
+      type: string
+      description: |-
+        * `pass` - Pass
+        * `warn` - Warn
+        * `fail` - Fail
+    SellerHistory:
+      type: object
+      properties:
+        auctions:
+          type: integer
+        blocked:
+          type: integer
+        reports:
+          type: integer
+      required:
+      - auctions
+      - blocked
+      - reports
+    Settings:
+      type: object
+      properties:
+        commission_rate_bp:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 20 = 0.2%
+        signup_bonus:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        bonus_ttl_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        min_bid_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_bid_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        min_duration_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_duration_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_schedule_ahead_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        decision_window_h:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        early_accept_min_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        claim_window_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        rating_window_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        photos_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        photos_max:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        videos_min:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        videos_max:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        video_max_s:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - updated_at
     SexEnum:
       enum:
       - male
@@ -519,6 +4802,49 @@ components:
         * `male` - Erkak
         * `female` - Urgʻochi
         * `any` - Har ikkisi
+    StateEnum:
+      enum:
+      - active
+      - won
+      - lost
+      type: string
+      description: |-
+        * `active` - active
+        * `won` - won
+        * `lost` - lost
+    SubmitResult:
+      type: object
+      properties:
+        outcome:
+          $ref: '#/components/schemas/SubmitResultOutcomeEnum'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        auction:
+          $ref: '#/components/schemas/AuctionDetail'
+      required:
+      - auction
+      - checks
+      - outcome
+    SubmitResultOutcomeEnum:
+      enum:
+      - published
+      - pending_review
+      - rejected
+      type: string
+      description: |-
+        * `published` - published
+        * `pending_review` - pending_review
+        * `rejected` - rejected
+    TargetTypeEnum:
+      enum:
+      - auction
+      - user
+      type: string
+      description: |-
+        * `auction` - Auction
+        * `user` - User
     Taxonomy:
       type: object
       properties:
@@ -533,6 +4859,24 @@ components:
       required:
       - animal_types
       - directions
+    TopupInRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+      required:
+      - amount
+    TopupOut:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        redirect_url:
+          type: string
+      required:
+      - payment_id
+      - redirect_url
     TypeEnum:
       enum:
       - topup
@@ -555,6 +4899,40 @@ components:
         * `commission_refund` - Commission Refund
         * `refund_payout` - Refund Payout
         * `adjustment` - Adjustment
+    UnreadCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+      - count
+    UserBlockRequest:
+      type: object
+      properties:
+        blocked:
+          type: boolean
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - blocked
+    UserRoleEnum:
+      enum:
+      - user
+      - moderator
+      - admin
+      type: string
+      description: |-
+        * `user` - Foydalanuvchi
+        * `moderator` - Moderator
+        * `admin` - Admin
+    UserRoleRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+      required:
+      - role
     Wallet:
       type: object
       properties:
@@ -585,6 +4963,28 @@ components:
       - has_debt
       - held_amount
       - main_balance
+    WalletAdjustBucketEnum:
+      enum:
+      - main
+      - bonus
+      type: string
+      description: |-
+        * `main` - main
+        * `bonus` - bonus
+    WalletAdjustRequest:
+      type: object
+      properties:
+        bucket:
+          $ref: '#/components/schemas/WalletAdjustBucketEnum'
+        amount:
+          type: integer
+        note:
+          type: string
+          minLength: 1
+      required:
+      - amount
+      - bucket
+      - note
     WalletEntry:
       type: object
       properties:
@@ -593,7 +4993,7 @@ components:
           readOnly: true
         bucket:
           allOf:
-          - $ref: '#/components/schemas/BucketEnum'
+          - $ref: '#/components/schemas/WalletEntryBucketEnum'
           readOnly: true
         type:
           allOf:
@@ -624,6 +5024,16 @@ components:
       - note
       - title
       - type
+    WalletEntryBucketEnum:
+      enum:
+      - main
+      - bonus
+      - hold
+      type: string
+      description: |-
+        * `main` - Main
+        * `bonus` - Bonus
+        * `hold` - Hold
     WorkerEnum:
       enum:
       - ok

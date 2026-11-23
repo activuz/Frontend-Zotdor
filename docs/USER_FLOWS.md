@@ -10,12 +10,14 @@ Har bir oqim uchun asosiy yo‘l va muhim chetki holatlar keltirilgan. Biznes qo
 | `/search` | Qidiruv va filtrlar (holat URL'da saqlanadi) | yo‘q |
 | `/a/:id` | Auksion sahifasi | ko‘rish uchun yo‘q, taklif uchun ha |
 | `/login` | Kirish | — |
-| `/sell` | Auksion yaratish ustasi | ha |
+| `/sell` | Qoralamalar va yangi auksion boshlash | ha |
+| `/sell/:id?step=details\|time\|media\|review` | Auksion yaratish ustasi (qoralama serverda saqlanadi) | ha |
 | `/a/:id/decision` | G‘olibni tanlash | ha (egasi) |
 | `/deals/:id` | Bitim | ha (tomonlar) |
 | `/me` | Profil menyusi | ha |
 | `/me/auctions`, `/me/bids`, `/me/deals`, `/me/saved` | Ro‘yxatlar | ha |
-| `/wallet` | Hamyon | ha |
+| `/wallet` | Hamyon (`?payment=` — to‘lov holati, `?topup=` — tavsiya etilgan summa) | ha |
+| `/wallet/test-payment/:id` | Faqat `fake` to‘lov provayderi uchun test sahifasi | ha |
 | `/notifications` | Bildirishnomalar | ha |
 | `/u/:id` | Ommaviy profil | yo‘q |
 | `/legal/terms`, `/legal/privacy` | Huquqiy sahifalar | yo‘q |
@@ -40,7 +42,7 @@ Chetki holatlar:
 
 1. **Ma'lumotlar.** Ketma-ket tanlanadi: yo‘nalish → tur → toifa → zot. Keyin yoshi (yil va oy), vazni hamda "taxminiy" belgisi, narx (raqamlar guruhlab ko‘rsatiladi: `25 000 000`), tavsif, joylashuv (standart: profildagi tuman) kiritiladi. Tavsif yozilayotganda kontakt yoki haqorat aniqlansa, darhol ogohlantiriladi.
 2. **Vaqt.** "Hozir boshlash" yoki sana va vaqt tanlanadi. Davomiylik tayyor variantlardan tanlanadi (10 daq, 30 daq, 1, 2, 3, 6, 12 soat) yoki qo‘lda kiritiladi (10 daqiqadan 12 soatgacha). Ekranda tugash vaqti aniq ko‘rsatiladi: "Bugun 18:30 da tugaydi".
-3. **Media.** Kamera oynasi ochiladi. Ekranda "Rasmlar 2/4, video 0/1" hisoblagichi va har bir kadr uchun qisqa ko‘rsatma turadi ("Molni yonidan, to‘liq ko‘rinadigan qilib oling"). Kamera ruxsati berilmagan bo‘lsa, brauzer bo‘yicha ruxsat berish yo‘riqnomasi chiqadi. Kompyuterda: "Iltimos, telefoningizdan davom eting" xabari va shu qoralamaga olib boradigan QR-kod ko‘rsatiladi.
+3. **Media.** Kamera oynasi ochiladi. Ekranda "Rasmlar 2/4, video 0/1" hisoblagichi va har bir kadr uchun qisqa ko‘rsatma turadi ("Molni yonidan, to‘liq ko‘rinadigan qilib oling"). Kamera ruxsati berilmagan bo‘lsa, brauzer bo‘yicha ruxsat berish yo‘riqnomasi chiqadi. Kompyuterda: "Iltimos, telefoningizdan davom eting" xabari va shu qoralamaga olib boradigan havola (nusxa olish tugmasi bilan) ko‘rsatiladi. QR-kod hali yo‘q: uning uchun yangi kutubxona kerak, qaror mahsulot egasida. Kompyuter kamerasidan foydalanish ikkinchi darajali tugma sifatida qoldirilgan.
 4. **Ko‘rib chiqish.** Kartochka qanday ko‘rinishi va komissiya rezervi ko‘rsatiladi: "E'lon qilish uchun balansdan 50 000 so‘m vaqtincha band qilinadi". Mavjud balans ham shu yerda turadi. Balans yetmasa, "To‘ldirish" tugmasi chiqadi.
 5. **Yuborish.** "Tekshirilmoqda…" holati, odatda bir necha soniya davom etadi. Natija uch xil bo‘lishi mumkin:
    - O‘tdi → "Auksion bugun 15:00 da boshlanadi" va auksion sahifasiga havola.

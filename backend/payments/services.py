@@ -36,12 +36,15 @@ def _som(amount: int) -> str:
 def start_topup(user: User, amount: int) -> tuple[Payment, str]:
     if not settings.TOPUP_MIN <= amount <= settings.TOPUP_MAX:
         raise DomainError(
-            "invalid_amount", f"Summa {_som(settings.TOPUP_MIN)} dan {_som(settings.TOPUP_MAX)} gacha boʻlishi kerak."
+            "invalid_amount",
+            f"Summa {_som(settings.TOPUP_MIN)} dan {_som(settings.TOPUP_MAX)} gacha boʻlishi kerak.",
         )
     provider = settings.PAYMENTS_PROVIDER
     if provider == Payment.Provider.CLICK:
         if not (settings.CLICK_SERVICE_ID and settings.CLICK_MERCHANT_ID and settings.CLICK_SECRET_KEY):
-            raise DomainError("payments_unavailable", "Toʻlov tizimi hali ulanmagan.", http.HTTP_503_SERVICE_UNAVAILABLE)
+            raise DomainError(
+                "payments_unavailable", "Toʻlov tizimi hali ulanmagan.", http.HTTP_503_SERVICE_UNAVAILABLE
+            )
         payment = Payment.objects.create(user=user, provider=Payment.Provider.CLICK, amount=amount)
         query = urlencode(
             {
@@ -56,7 +59,9 @@ def start_topup(user: User, amount: int) -> tuple[Payment, str]:
     if provider == Payment.Provider.FAKE and settings.DEBUG:
         payment = Payment.objects.create(user=user, provider=Payment.Provider.FAKE, amount=amount)
         return payment, f"/wallet/test-payment/{payment.id}"
-    raise DomainError("payments_unavailable", "Toʻlov tizimi hali ulanmagan.", http.HTTP_503_SERVICE_UNAVAILABLE)
+    raise DomainError(
+        "payments_unavailable", "Toʻlov tizimi hali ulanmagan.", http.HTTP_503_SERVICE_UNAVAILABLE
+    )
 
 
 @transaction.atomic
@@ -93,7 +98,15 @@ def get_own(payment_id: uuid.UUID, user: User) -> Payment:
 # --- Click callbacks -------------------------------------------------------------------------
 
 OK, SIGN_FAILED, BAD_AMOUNT, BAD_ACTION, ALREADY_PAID, NO_ORDER, NO_TRANSACTION, BAD_REQUEST, CANCELLED = (
-    0, -1, -2, -3, -4, -5, -6, -8, -9,
+    0,
+    -1,
+    -2,
+    -3,
+    -4,
+    -5,
+    -6,
+    -8,
+    -9,
 )
 NOTES = {
     OK: "Success",
@@ -216,7 +229,13 @@ def resolve_refund(refund_id: uuid.UUID, staff: User, done: bool, note: str) -> 
     if done:
         wallet.debit_refund_payout(req.user, req.amount, req.id, actor=staff)
         req.status = RefundRequest.RefundStatus.DONE
-        notify(req.user, "refund_done", "Pul qaytarildi", f"{_som(req.amount)} Click orqali qaytarildi.", "/wallet")
+        notify(
+            req.user,
+            "refund_done",
+            "Pul qaytarildi",
+            f"{_som(req.amount)} Click orqali qaytarildi.",
+            "/wallet",
+        )
     else:
         if not note.strip():
             raise DomainError("reason_required", "Rad etish sababini yozing.")

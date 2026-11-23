@@ -5,7 +5,7 @@
  * There is deliberately no mock fallback: if the API fails, the UI shows the error.
  */
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
 
 export class ApiError extends Error {
   constructor(
@@ -49,7 +49,8 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
     await ensureCsrf();
     headers['X-CSRFToken'] = readCookie('csrftoken') ?? '';
   }
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
 
   let response: Response;
   try {
@@ -57,7 +58,7 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
       method,
       headers,
       credentials: 'include',
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'network', NETWORK_MESSAGE);
@@ -75,4 +76,26 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
     );
   }
   return data as T;
+}
+
+/** Uploaded files come back as `/media/...`; prefix the API host when the API lives elsewhere. */
+export function mediaUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  return path.startsWith('/') ? `${API_BASE}${path}` : path;
+}
+
+/** Builds `?a=1&b=2`, skipping empty values. */
+export function query(params: Record<string, string | number | boolean | null | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') search.set(key, String(value));
+  }
+  const text = search.toString();
+  return text ? `?${text}` : '';
+}
+
+/** DRF returns `next` as a full URL; pull one parameter (cursor / offset) out of it. */
+export function paramOf(next: string | null | undefined, name: string): string | undefined {
+  if (!next) return undefined;
+  return new URL(next, window.location.origin).searchParams.get(name) ?? undefined;
 }
