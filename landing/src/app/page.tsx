@@ -1,5 +1,5 @@
 import React from "react";
-import { load, type AuctionCard, type PublicConfig, type Region } from "@/api/http";
+import { LANDING_URL, load, type AuctionCard, type PublicConfig, type Region } from "@/api/http";
 import type { components } from "@/api/schema";
 import { dictionaries } from "@/lib/i18n";
 import { Header } from "@/components/Header";
@@ -11,6 +11,7 @@ import { TrustSection } from "@/components/TrustSection";
 import { Pricing } from "@/components/Pricing";
 import { Faq } from "@/components/Faq";
 import { faqItems } from "@/lib/faq";
+import { CONTACTS } from "@/lib/contacts";
 import { ContactForm } from "@/components/ContactForm";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
@@ -42,9 +43,32 @@ export default async function HomePage() {
     })),
   };
 
+  // Organization and WebSite: brand name, logo and the user site in search results.
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${LANDING_URL}/#org`,
+        name: "Zotdor.uz",
+        url: `${LANDING_URL}/`,
+        logo: `${LANDING_URL}/favicon.webp`,
+        sameAs: [CONTACTS.channel],
+      },
+      {
+        "@type": "WebSite",
+        name: "Zotdor.uz",
+        url: `${LANDING_URL}/`,
+        inLanguage: "uz",
+        publisher: { "@id": `${LANDING_URL}/#org` },
+      },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
       <Header />
       <main id="main">
         <Hero config={cfg} />

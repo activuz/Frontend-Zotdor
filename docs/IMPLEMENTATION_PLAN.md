@@ -80,6 +80,8 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 
 ## 9-bosqich. Sifat va kontent
 - [x] Landing (`landing/`, FR-18): eski "tez orada" sahifasi platformaga moslandi — haqiqiy auksionlar va sozlamalar API'dan, FAQ, narx, xavfsizlik boʻlimlari; standart yozuv lotin, kirill avtomatik; Supabase olib tashlandi, aloqa formasi `POST /api/v1/leads` ga, arizalar panelning "Sayt arizalari" boʻlimida (2026-11-23)
+- [x] SEO (2026-11-24): har sahifa uchun title, description, canonical, `noindex` (shaxsiy sahifalar), Open Graph (auksion havolalari uchun API orqali), avtomatik sitemap (`backend/seo`), `robots.txt`, JSON-LD (FAQ, Organization, Product). Qo‘llanma: docs/SEO.md
+- [ ] Search Console, Yandex Webmaster, Bing'da saytlarni tasdiqlash va sitemap yuborish ⛔ DNS va akkauntlar (docs/SEO.md §3)
 - [ ] Landing: Vercel'da uchinchi loyiha, `zotdor.uz` domeni, Render'da `LEADS_TELEGRAM_CHAT_ID` ⛔ deploy
 - [ ] DESIGN.md bo‘yicha dizayn o‘tishi: tokenlar, tipografika, holatlar, demo'dagi ortiqcha bezakni olib tashlash
 - [ ] Barcha matnlarni tekshirish: ʻ va ʼ belgilari, soxta da'volarni olib tashlash
