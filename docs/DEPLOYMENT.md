@@ -225,6 +225,8 @@ Render'da `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_MERCHANT_USER_ID`, `CL
 
 | Belgi | Sabab va yechim |
 |---|---|
+| Konsolda `Cannot read properties of null (reading 'next' / 'directions')` yoki ekranda "Server notoʻgʻri javob qaytardi" | So‘rov API'ga yetmayapti: Vercel'da `VITE_API_URL=https://api.zotdor.uz` yo‘q yoki u qo‘shilgandan keyin Redeploy qilinmagan. Yangi versiyada bunday build o‘zi xato bilan to‘xtaydi. Tekshirish: DevTools → Network → so‘rov `https://api.zotdor.uz/api/v1/...` ga ketishi kerak, `web.zotdor.uz/api/...` ga emas. |
+| Build "VITE_API_URL is not set" bilan to‘xtaydi | Vercel → Settings → Environment Variables → `VITE_API_URL` (Production va Preview uchun) → Redeploy. |
 | Login "CSRF" xatosi bilan rad etiladi | `CSRF_COOKIE_DOMAIN=.zotdor.uz` va `CSRF_TRUSTED_ORIGINS` ni tekshiring. Sayt `*.vercel.app` dan ochilgan bo‘lishi mumkin. |
 | Brauzer konsolida CORS xatosi | `CORS_ALLOWED_ORIGINS` da `https://web.zotdor.uz` aniq shu ko‘rinishda (oxirida `/` siz) bo‘lishi kerak. |
 | `400 Bad Request` (DisallowedHost) | `ALLOWED_HOSTS` ga `api.zotdor.uz` qo‘shilmagan. Bu ro‘yxatda `https://` yozilmaydi. |

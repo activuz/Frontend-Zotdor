@@ -20,6 +20,7 @@ export class ApiError extends Error {
 }
 
 const NETWORK_MESSAGE = 'Serverga ulanib boʻlmadi. Internetni tekshirib, qayta urinib koʻring.';
+const BAD_RESPONSE_MESSAGE = 'Server notoʻgʻri javob qaytardi. Birozdan keyin qayta urinib koʻring.';
 
 function readCookie(name: string): string | undefined {
   return document.cookie
@@ -65,7 +66,23 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
   }
 
   if (response.status === 204) return undefined as T;
-  const data: unknown = await response.json().catch(() => null);
+  const text = await response.text().catch(() => '');
+  let data: unknown = null;
+  let parsed = text === '';
+  try {
+    if (text) {
+      data = JSON.parse(text);
+      parsed = true;
+    }
+  } catch {
+    parsed = false;
+  }
+  if (response.ok && !parsed) {
+    // An HTML page with 200 means the request never reached the API (e.g. VITE_API_URL is
+    // missing and the static host answered with index.html). Never treat it as data.
+    throw new ApiError(response.status, 'bad_response', BAD_RESPONSE_MESSAGE);
+  }
+  if (response.ok && text === '') return undefined as T;
   if (!response.ok) {
     const error = (data as ErrorBody | null)?.error;
     throw new ApiError(

@@ -2,6 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// On Vercel the API lives on another host (docs/DEPLOYMENT.md §3). Without VITE_API_URL every
+// /api call would hit Vercel itself, so fail the build instead of shipping a broken site.
+if (process.env.VERCEL && !process.env.VITE_API_URL) {
+  throw new Error('VITE_API_URL is not set. In Vercel → Settings → Environment Variables add VITE_API_URL=https://api.zotdor.uz and redeploy.');
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
