@@ -47,3 +47,51 @@ class HealthView(APIView):
             worker = "ok"
         overall = "ok" if worker == "ok" else "degraded"
         return Response({"status": overall, "db": "ok", "worker": worker})
+
+
+class PublicConfigView(APIView):
+    """Business limits the client needs to explain rules before submit (FR-03, BR-41)."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        responses=inline_serializer(
+            "PublicConfig",
+            {
+                "commission_rate_bp": serializers.IntegerField(),
+                "min_duration_min": serializers.IntegerField(),
+                "max_duration_min": serializers.IntegerField(),
+                "max_schedule_ahead_days": serializers.IntegerField(),
+                "photos_min": serializers.IntegerField(),
+                "photos_max": serializers.IntegerField(),
+                "videos_min": serializers.IntegerField(),
+                "videos_max": serializers.IntegerField(),
+                "video_max_s": serializers.IntegerField(),
+                "min_bid_pct": serializers.IntegerField(),
+                "max_bid_pct": serializers.IntegerField(),
+                "topup_min": serializers.IntegerField(),
+                "topup_max": serializers.IntegerField(),
+            },
+        )
+    )
+    def get(self, request: Request) -> Response:
+        from core.models import PlatformSettings
+
+        s = PlatformSettings.load()
+        return Response(
+            {
+                "commission_rate_bp": s.commission_rate_bp,
+                "min_duration_min": s.min_duration_min,
+                "max_duration_min": s.max_duration_min,
+                "max_schedule_ahead_days": s.max_schedule_ahead_days,
+                "photos_min": s.photos_min,
+                "photos_max": s.photos_max,
+                "videos_min": s.videos_min,
+                "videos_max": s.videos_max,
+                "video_max_s": s.video_max_s,
+                "min_bid_pct": s.min_bid_pct,
+                "max_bid_pct": s.max_bid_pct,
+                "topup_min": settings.TOPUP_MIN,
+                "topup_max": settings.TOPUP_MAX,
+            }
+        )

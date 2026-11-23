@@ -6,10 +6,10 @@ Bu fayl repo bilan ishlaydigan AI agentlar va dasturchilar uchun. Kod yozishdan 
 
 Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgilaydi, xaridorlar taklif beradi, sotuvchi g‘olibni tanlaydi. Platforma sotuvchining balansidan 0.2% komissiya oladi. Batafsil: [docs/PRD.md](docs/PRD.md).
 
-## Joriy holat (2026-11-21)
+## Joriy holat (2026-11-23)
 
-- `backend/` — 1-bosqich tugadi: Telegram orqali kirish, profil, viloyat va tumanlar, toifalar (`reference`). 2-bosqich: hamyon (ledger, rezervlar, bonus, reconcile). Auksionlar va bitimlar hali yo‘q.
-- `frontend/` — kirish, profil, `/me/setup` va `/wallet` sahifalari haqiqiy API bilan ishlaydi. E'lon va auksion ekranlari 3–4-bosqichlargacha **ochiq demo** rejimida: `src/mocks/` ishlatiladi va `DemoNotice` ogohlantirishi ko‘rinadi. Haqiqiy API kelganda `src/mocks/`, `DemoNotice` va `AppLayout` dagi `REAL_DATA_PATHS` olib tashlanadi.
+- `backend/` — kirish, profil, ma'lumotnomalar, hamyon, auksionlar (media va tekshiruvlar bilan), takliflar, bitimlar va baholar, shikoyatlar, bildirishnomalar (outbox), to‘lovlar (`fake` va Click) hamda panel API tayyor va test qilingan.
+- `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
 - `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
@@ -72,7 +72,7 @@ API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikka
 ## Frontend qoidalari
 
 - API tiplari `src/api/schema.d.ts` dan olinadi va bu fayl generatsiya qilinadi. Server javobi uchun tipni qo‘lda yozmang.
-- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. HTTP faqat `src/api/http.ts` orqali yuboriladi. Yagona istisno — yuqorida aytilgan ochiq demo ekranlari. Yangi demo ekran qo‘shilmaydi.
+- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. HTTP faqat `src/api/http.ts` orqali yuboriladi. Demo ekranlar qo‘shilmaydi.
 - So‘rov qiladigan har bir ekranda loading, empty, error va success holatlari bo‘lishi shart.
 - `alert()`, `confirm()` va `any` ishlatilmaydi.
 - Ranglar faqat Tailwind tokenlari orqali beriladi (DESIGN.md §2). `[#xxxxxx]` ishlatilmaydi. 13 px dan kichik matn bo‘lmaydi.

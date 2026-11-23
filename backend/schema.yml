@@ -908,7 +908,7 @@ paths:
           description: No response body
   /api/v1/auctions:
     get:
-      operationId: v1_auctions_list
+      operationId: v1_auctions_retrieve
       description: 'GET: public feed and search (FR-06, FR-07). POST: create a draft
         (FR-03).'
       parameters:
@@ -1000,9 +1000,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AuctionList'
+                $ref: '#/components/schemas/PaginatedAuctionList'
           description: ''
     post:
       operationId: v1_auctions_create
@@ -1032,7 +1030,7 @@ paths:
           description: ''
   /api/v1/auctions/{auction_id}:
     get:
-      operationId: v1_auctions_retrieve
+      operationId: v1_auctions_retrieve_2
       parameters:
       - in: path
         name: auction_id
@@ -1438,6 +1436,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginStatus'
+          description: ''
+  /api/v1/config:
+    get:
+      operationId: v1_config_retrieve
+      description: Business limits the client needs to explain rules before submit
+        (FR-03, BR-41).
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicConfig'
           description: ''
   /api/v1/deals/{deal_id}:
     get:
@@ -3197,6 +3212,26 @@ components:
       - early_accept_from
       - hold_amount
       - rejection_reason
+    PaginatedAuctionList:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuctionList'
+      required:
+      - count
+      - next
+      - previous
+      - results
     PaginatedNotificationList:
       type: object
       required:
@@ -3569,6 +3604,49 @@ components:
       - pseudonym
       - rank
       - tier
+    PublicConfig:
+      type: object
+      properties:
+        commission_rate_bp:
+          type: integer
+        min_duration_min:
+          type: integer
+        max_duration_min:
+          type: integer
+        max_schedule_ahead_days:
+          type: integer
+        photos_min:
+          type: integer
+        photos_max:
+          type: integer
+        videos_min:
+          type: integer
+        videos_max:
+          type: integer
+        video_max_s:
+          type: integer
+        min_bid_pct:
+          type: integer
+        max_bid_pct:
+          type: integer
+        topup_min:
+          type: integer
+        topup_max:
+          type: integer
+      required:
+      - commission_rate_bp
+      - max_bid_pct
+      - max_duration_min
+      - max_schedule_ahead_days
+      - min_bid_pct
+      - min_duration_min
+      - photos_max
+      - photos_min
+      - topup_max
+      - topup_min
+      - video_max_s
+      - videos_max
+      - videos_min
     PublicProfile:
       type: object
       properties:

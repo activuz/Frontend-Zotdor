@@ -1,0 +1,337 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Camera as CameraIcon, Circle, Copy, Square, Trash2, Video } from 'lucide-react';
+import { ApiError, mediaUrl } from '../../api/http';
+import { Button } from '../../components/ui/Button';
+import { Alert } from '../../components/ui/Field';
+import type { AuctionDetail } from '../auctions/api';
+import type { PublicConfig } from '../reference/api';
+import { useDeleteMedia, useOpenCaptureSession, useUploadMedia, type CaptureSession } from './api';
+
+const PHOTO_HINTS = [
+  'Molni yonidan, toʻliq koʻrinadigan qilib oling',
+  'Endi old tomonidan oling',
+  'Endi orqa tomonidan oling',
+  'Ikkinchi yonidan oling',
+];
+const EXTRA_HINT = 'Qoʻshimcha rasm: tishlari, tuyogʻi yoki boshqa muhim joyi';
+const VIDEO_HINT = 'Molni atrofidan aylanib, yurganini koʻrsatib video oling';
+
+type CamError = 'denied' | 'missing' | 'unsupported' | null;
+
+function pickVideoType(): string {
+  const types = ['video/mp4', 'video/webm;codecs=vp8', 'video/webm'];
+  return types.find((t) => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) ?? '';
+}
+
+const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+
+/**
+ * In-page camera (F2 step 3, BR-12). Gallery uploads are not offered on purpose:
+ * every file is bound to a short capture session of this auction.
+ */
+export const CameraStep: React.FC<{ auction: AuctionDetail; config: PublicConfig }> = ({ auction, config }) => {
+  const [onThisDevice, setOnThisDevice] = useState(isTouchDevice);
+  const media = auction.media.filter((m) => m.status !== 'failed');
+  const failed = auction.media.filter((m) => m.status === 'failed');
+  const photos = media.filter((m) => m.kind === 'photo');
+  const videos = media.filter((m) => m.kind === 'video');
+
+  return (
+    <div className="space-y-4">
+      <p className="text-[17px] font-semibold text-ink tabular-nums" aria-live="polite">
+        Rasmlar {photos.length}/{config.photos_min}, video {videos.length}/{config.videos_min}
+      </p>
+      {onThisDevice ? (
+        <LiveCamera auction={auction} config={config} photoCount={photos.length} videoCount={videos.length} />
+      ) : (
+        <Handoff auctionId={auction.id} onUseHere={() => setOnThisDevice(true)} />
+      )}
+      {failed.length > 0 && (
+        <Alert>Baʼzi fayllarni qayta ishlab boʻlmadi: {failed.map((m) => m.error).filter(Boolean).join(' ') || 'qaytadan oling.'}</Alert>
+      )}
+      <MediaGrid auction={auction} />
+    </div>
+  );
+};
+
+const Handoff: React.FC<{ auctionId: string; onUseHere: () => void }> = ({ auctionId, onUseHere }) => {
+  const link = `${window.location.origin}/sell/${auctionId}?step=media`;
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4 space-y-3">
+      <p className="text-[17px] font-semibold text-ink">Iltimos, telefoningizdan davom eting</p>
+      <p className="text-[15px] text-ink-muted">
+        Rasm va video faqat kamera orqali, shu yerning oʻzida olinadi. Telefonda shu havolani oching va xuddi shu
+        hisob bilan kiring — qoralamangiz saqlangan.
+      </p>
+      <p className="break-all rounded-xl bg-page p-3 text-[15px] text-ink">{link}</p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={() =>
+            void navigator.clipboard
+              ?.writeText(link)
+              .then(() => setCopied(true))
+              .catch(() => setCopied(false))
+          }
+        >
+          <Copy className="w-4 h-4" aria-hidden="true" />
+          {copied ? 'Nusxa olindi' : 'Havoladan nusxa olish'}
+        </Button>
+        <Button variant="ghost" onClick={onUseHere}>
+          Shu qurilma kamerasidan foydalanish
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const LiveCamera: React.FC<{
+  auction: AuctionDetail;
+  config: PublicConfig;
+  photoCount: number;
+  videoCount: number;
+}> = ({ auction, config, photoCount, videoCount }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const [active, setActive] = useState(false);
+  const [mode, setMode] = useState<'photo' | 'video'>(photoCount < config.photos_min ? 'photo' : 'video');
+  const [camError, setCamError] = useState<CamError>(null);
+  const [recording, setRecording] = useState(0); // seconds recorded, 0 = idle
+  const [session, setSession] = useState<CaptureSession | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const openSession = useOpenCaptureSession(auction.id);
+  const upload = useUploadMedia(auction.id);
+
+  const photosFull = photoCount >= config.photos_max;
+  const videosFull = videoCount >= config.videos_max;
+
+  const stop = useCallback(() => {
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setActive(false);
+  }, []);
+
+  useEffect(() => stop, [stop]);
+
+  const ensureSession = async (): Promise<CaptureSession> => {
+    if (session && new Date(session.expires_at).getTime() - Date.now() > 30_000) return session;
+    const fresh = await openSession.mutateAsync();
+    setSession(fresh);
+    return fresh;
+  };
+
+  const start = async () => {
+    setCamError(null);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCamError('unsupported');
+      return;
+    }
+    try {
+      await ensureSession();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setActive(true);
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          void videoRef.current.play();
+        }
+      });
+    } catch (e) {
+      if (e instanceof ApiError) {
+        setNotice(e.message);
+        return;
+      }
+      const name = e instanceof DOMException ? e.name : '';
+      setCamError(name === 'NotAllowedError' ? 'denied' : name === 'NotFoundError' ? 'missing' : 'unsupported');
+    }
+  };
+
+  const send = async (blob: Blob, kind: 'photo' | 'video', meta: Record<string, string | number>) => {
+    setNotice(null);
+    const ext = kind === 'photo' ? 'jpg' : blob.type.includes('mp4') ? 'mp4' : 'webm';
+    const file = new File([blob], `${kind}-${Date.now()}.${ext}`, { type: blob.type });
+    try {
+      const s = await ensureSession();
+      await upload.mutateAsync({ file, kind, sessionId: s.id, meta: { ...meta, captured_at: new Date().toISOString() } });
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'capture_session_expired') {
+        setSession(null);
+        setNotice('Kamera seansi tugadi. Yana bir marta oling.');
+      } else {
+        setNotice(e instanceof Error ? e.message : 'Yuklab boʻlmadi. Qayta urinib koʻring.');
+      }
+    }
+  };
+
+  const takePhoto = () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    canvas.toBlob(
+      (blob) => blob && void send(blob, 'photo', { source: 'camera', width: canvas.width, height: canvas.height }),
+      'image/jpeg',
+      0.9,
+    );
+  };
+
+  const toggleRecording = () => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    if (recorderRef.current?.state === 'recording') {
+      recorderRef.current.stop();
+      return;
+    }
+    const type = pickVideoType();
+    let recorder: MediaRecorder;
+    try {
+      recorder = type ? new MediaRecorder(stream, { mimeType: type }) : new MediaRecorder(stream);
+    } catch {
+      setCamError('unsupported');
+      return;
+    }
+    const chunks: Blob[] = [];
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      const s = Math.floor((Date.now() - startedAt) / 1000) + 1;
+      setRecording(s);
+      if (s >= config.video_max_s && recorder.state === 'recording') recorder.stop();
+    }, 1000);
+    recorder.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
+    recorder.onstop = () => {
+      window.clearInterval(timer);
+      setRecording(0);
+      const blob = new Blob(chunks, { type: recorder.mimeType || type || 'video/webm' });
+      if (blob.size > 0) void send(blob, 'video', { source: 'camera', duration_ms: Date.now() - startedAt });
+    };
+    recorderRef.current = recorder;
+    recorder.start(1000);
+    setRecording(1);
+  };
+
+  const hint =
+    mode === 'video' ? VIDEO_HINT : (PHOTO_HINTS[photoCount] ?? EXTRA_HINT);
+
+  return (
+    <div className="space-y-3">
+      <div role="group" aria-label="Rejim" className="flex gap-2">
+        {(['photo', 'video'] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            aria-pressed={mode === m}
+            disabled={recording > 0}
+            onClick={() => setMode(m)}
+            className={`flex-1 min-h-touch rounded-xl border text-[15px] font-semibold ${mode === m ? 'border-brand bg-brand-soft text-ink' : 'border-line bg-surface text-ink-muted'}`}
+          >
+            {m === 'photo' ? 'Rasm' : 'Video'}
+          </button>
+        ))}
+      </div>
+      <p className="rounded-xl bg-brand-soft p-3 text-[15px] text-ink">{hint}</p>
+
+      {camError === 'denied' && (
+        <Alert>
+          Kameraga ruxsat berilmagan. Brauzerning manzil qatoridagi qulf belgisini bosing, “Kamera” bandida “Ruxsat
+          berish”ni tanlang va sahifani yangilang. Telefon sozlamalarida ham brauzerga kamera ruxsati yoqilgan
+          boʻlishi kerak.
+        </Alert>
+      )}
+      {camError === 'missing' && <Alert>Kamera topilmadi. Telefoningizdan davom eting.</Alert>}
+      {camError === 'unsupported' && (
+        <Alert>Bu brauzer kamerani qoʻllab-quvvatlamaydi. Chrome yoki Safari'ning yangi versiyasidan foydalaning.</Alert>
+      )}
+      {notice && <Alert>{notice}</Alert>}
+
+      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-ink">
+        {active ? (
+          <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Button variant="secondary" onClick={() => void start()} disabled={openSession.isPending}>
+              <CameraIcon className="w-5 h-5" aria-hidden="true" />
+              {openSession.isPending ? 'Tayyorlanmoqda…' : 'Kamerani ochish'}
+            </Button>
+          </div>
+        )}
+        {recording > 0 && (
+          <p className="absolute left-3 top-3 rounded-lg bg-danger px-2 text-[15px] font-semibold text-white tabular-nums">
+            {recording} / {config.video_max_s} s
+          </p>
+        )}
+      </div>
+
+      {active && (
+        <div className="flex gap-2">
+          {mode === 'photo' ? (
+            <Button variant="primary" className="flex-1" onClick={takePhoto} disabled={photosFull || upload.isPending}>
+              <Circle className="w-5 h-5" aria-hidden="true" />
+              {photosFull ? 'Rasmlar yetarli' : 'Rasmga olish'}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={toggleRecording}
+              disabled={(videosFull && recording === 0) || upload.isPending}
+            >
+              {recording > 0 ? <Square className="w-5 h-5" aria-hidden="true" /> : <Video className="w-5 h-5" aria-hidden="true" />}
+              {recording > 0 ? 'Toʻxtatish' : videosFull ? 'Video yetarli' : 'Yozishni boshlash'}
+            </Button>
+          )}
+          <Button onClick={stop} disabled={recording > 0}>
+            Yopish
+          </Button>
+        </div>
+      )}
+      {upload.isPending && (
+        <p role="status" className="text-[15px] text-ink-muted">
+          Yuklanmoqda…
+        </p>
+      )}
+    </div>
+  );
+};
+
+const MediaGrid: React.FC<{ auction: AuctionDetail }> = ({ auction }) => {
+  const remove = useDeleteMedia(auction.id);
+  if (auction.media.length === 0) return null;
+  return (
+    <div>
+      {remove.isError && <Alert>{remove.error.message}</Alert>}
+      <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2" aria-label="Olingan fayllar">
+        {auction.media.map((m, i) => (
+          <li key={m.id} className="relative aspect-square overflow-hidden rounded-xl border border-line bg-page">
+            {m.thumb_url ? (
+              <img src={mediaUrl(m.thumb_url)} alt={`${m.kind === 'video' ? 'Video' : 'Rasm'} ${i + 1}`} className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full items-center justify-center p-1 text-center text-[13px] text-ink">
+                {m.status === 'processing' ? 'Qayta ishlanmoqda…' : m.kind === 'video' ? 'Video' : 'Rasm'}
+              </span>
+            )}
+            {m.status === 'failed' && (
+              <span className="absolute inset-x-0 bottom-0 bg-danger px-1 text-[13px] text-white">Xato</span>
+            )}
+            <button
+              type="button"
+              onClick={() => remove.mutate(m.id)}
+              disabled={remove.isPending}
+              aria-label={`${i + 1}-faylni oʻchirish`}
+              className="absolute right-1 top-1 min-h-touch min-w-touch flex items-center justify-center rounded-xl bg-surface/90 text-danger"
+            >
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};

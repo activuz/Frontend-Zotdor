@@ -4,12 +4,13 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView
 
-from core.views import HealthView
+from core.views import HealthView, PublicConfigView
 from payments.urls import click_urlpatterns
 from telegram_bot.views import TelegramWebhookView
 
 urlpatterns = [
     path("api/health", HealthView.as_view(), name="health"),
+    path("api/v1/config", PublicConfigView.as_view(), name="public-config"),
     path("api/v1/reference/", include("reference.urls")),
     path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("wallet.urls")),

@@ -16,6 +16,8 @@ export default defineConfig({
     // Same-origin in development so the session cookie is first-party (docs/ARCHITECTURE.md §8).
     proxy: {
       '/api': { target: 'http://127.0.0.1:8000', changeOrigin: false },
+      // Uploaded auction photos and videos (served by nginx in production).
+      '/media': { target: 'http://127.0.0.1:8000', changeOrigin: false },
     },
   },
 });

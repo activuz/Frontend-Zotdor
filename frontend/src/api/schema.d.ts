@@ -461,7 +461,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description GET: public feed and search (FR-06, FR-07). POST: create a draft (FR-03). */
-        get: operations["v1_auctions_list"];
+        get: operations["v1_auctions_retrieve"];
         put?: never;
         /** @description GET: public feed and search (FR-06, FR-07). POST: create a draft (FR-03). */
         post: operations["v1_auctions_create"];
@@ -478,7 +478,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["v1_auctions_retrieve"];
+        get: operations["v1_auctions_retrieve_2"];
         put?: never;
         post?: never;
         delete: operations["v1_auctions_destroy"];
@@ -688,6 +688,23 @@ export interface paths {
             cookie?: never;
         };
         get: operations["v1_auth_telegram_status_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Business limits the client needs to explain rules before submit (FR-03, BR-41). */
+        get: operations["v1_config_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1502,6 +1519,12 @@ export interface components {
             rejection_reason: string;
             checks: components["schemas"]["Check"][];
         };
+        PaginatedAuctionList: {
+            count: number;
+            next: string | null;
+            previous: string | null;
+            results: components["schemas"]["AuctionList"][];
+        };
         PaginatedNotificationList: {
             /**
              * Format: uri
@@ -1653,6 +1676,21 @@ export interface components {
             /** Format: date-time */
             created_at: string;
             is_mine: boolean;
+        };
+        PublicConfig: {
+            commission_rate_bp: number;
+            min_duration_min: number;
+            max_duration_min: number;
+            max_schedule_ahead_days: number;
+            photos_min: number;
+            photos_max: number;
+            videos_min: number;
+            videos_max: number;
+            video_max_s: number;
+            min_bid_pct: number;
+            max_bid_pct: number;
+            topup_min: number;
+            topup_max: number;
         };
         PublicProfile: {
             user: components["schemas"]["PublicUser"];
@@ -2817,7 +2855,7 @@ export interface operations {
             };
         };
     };
-    v1_auctions_list: {
+    v1_auctions_retrieve: {
         parameters: {
             query?: {
                 animal_class?: number;
@@ -2848,7 +2886,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuctionList"][];
+                    "application/json": components["schemas"]["PaginatedAuctionList"];
                 };
             };
         };
@@ -2878,7 +2916,7 @@ export interface operations {
             };
         };
     };
-    v1_auctions_retrieve: {
+    v1_auctions_retrieve_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -3275,6 +3313,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+        };
+    };
+    v1_config_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicConfig"];
                 };
             };
         };

@@ -122,7 +122,15 @@ class AuctionListView(APIView):
             OpenApiParameter("lat", float),
             OpenApiParameter("lng", float),
         ],
-        responses=AuctionListSerializer(many=True),
+        responses=inline_serializer(
+            "PaginatedAuctionList",
+            {
+                "count": serializers.IntegerField(),
+                "next": serializers.CharField(allow_null=True),
+                "previous": serializers.CharField(allow_null=True),
+                "results": AuctionListSerializer(many=True),
+            },
+        ),
     )
     def get(self, request: Request) -> Response:
         p = request.query_params
