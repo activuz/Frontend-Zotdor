@@ -247,7 +247,7 @@ const LiveCamera: React.FC<{
       )}
       {camError === 'missing' && <Alert>Kamera topilmadi. Telefoningizdan davom eting.</Alert>}
       {camError === 'unsupported' && (
-        <Alert>Bu brauzer kamerani qoʻllab-quvvatlamaydi. Chrome yoki Safari'ning yangi versiyasidan foydalaning.</Alert>
+        <Alert>Bu brauzer kamerani qoʻllab-quvvatlamaydi. Chrome yoki Safariʼning yangi versiyasidan foydalaning.</Alert>
       )}
       {notice && <Alert>{notice}</Alert>}
 

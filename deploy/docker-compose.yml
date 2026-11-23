@@ -1,0 +1,100 @@
+# Production stack on one VPS (docs/ARCHITECTURE.md §8, variant A).
+# Run from the repository root:  docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+name: zotdor
+
+x-backend: &backend
+  build: ../backend
+  restart: unless-stopped
+  env_file: ../backend/.env
+  environment:
+    DATABASE_URL: postgres://zotdor:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}@db:5432/zotdor
+    DJANGO_DEBUG: "false"
+    MEDIA_ROOT: /data/media
+    MEDIA_PROCESS_SYNC: "false"
+  volumes:
+    - media:/data/media
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zotdor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: zotdor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zotdor"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Applies migrations and collects static files, then exits. api and worker wait for it.
+  migrate:
+    <<: *backend
+    restart: "no"
+    # load_reference is a one-time step (deploy/README.md): re-running it must not undo panel edits.
+    command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+    volumes:
+      - media:/data/media
+      - static:/app/staticfiles
+
+  api:
+    <<: *backend
+    volumes:
+      - media:/data/media
+      - static:/app/staticfiles
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    <<: *backend
+    command: python manage.py procrastinate worker --concurrency 4
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: deploy/nginx/Dockerfile
+      args:
+        VITE_API_URL: ""
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in deploy/.env}
+      PANEL_DOMAIN: ${PANEL_DOMAIN:?set PANEL_DOMAIN in deploy/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - media:/data/media:ro
+      - static:/data/static:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot:ro
+    depends_on:
+      - api
+
+  # Renewal: docker compose ... run --rm certbot renew && docker compose ... exec nginx nginx -s reload
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["tools"]
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+
+volumes:
+  pgdata:
+  media:
+  static:
+  certbot-www:

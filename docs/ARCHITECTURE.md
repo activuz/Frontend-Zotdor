@@ -162,7 +162,7 @@ Barcha tekshiruv o‘tsa, auksion `scheduled` holatiga o‘tadi. Kamida bitta `w
 
 ## 8. Deploy
 
-**Variant A — bitta VPS (tavsiya):** `deploy/docker-compose.yml` ichida `postgres`, `api` (gunicorn), `worker` (procrastinate) va `nginx` bor. Nginx TLS'ni (Let's Encrypt), `zotdor.uz` uchun frontend build'ni, `panel.zotdor.uz` uchun panel build'ni va `/media/` ni beradi. `api.zotdor.uz` so‘rovlarini esa `api` konteyneriga uzatadi.
+**Variant A — bitta VPS (tavsiya, yozilgan):** `deploy/docker-compose.yml` ichida `db`, `migrate` (bir martalik: migratsiya va collectstatic), `api` (gunicorn), `worker` (procrastinate) va `nginx` bor. Nginx TLS'ni (Let's Encrypt), `zotdor.uz` uchun frontend build'ni, `panel.zotdor.uz` uchun panel build'ni va `/media/` ni beradi. Ikkala domen ham `/api/` ni `api` konteyneriga uzatadi: alohida `api.zotdor.uz` kerak emas va cookie doim birinchi tomon cookie'si bo‘ladi. Ishga tushirish tartibi: [deploy/README.md](../deploy/README.md).
 
 **Variant B — alohida hostlar:** frontend va panel istalgan statik hostingga qo‘yiladi, faqat `VITE_API_URL=https://api.zotdor.uz` beriladi. **Sharti:** barcha ilovalar bitta asosiy domen ostida bo‘lishi kerak (`*.zotdor.uz`). Aks holda sessiya cookie'si uchinchi tomon cookie'si bo‘lib qoladi va brauzerlar uni bloklaydi.
 

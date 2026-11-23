@@ -146,7 +146,7 @@ def verify_contact(contact: SharedContact) -> tuple[ContactResult, LoginRequest 
 
 _FAIL_MESSAGES = {
     "foreign_contact": "Faqat oʻzingizning raqamingizni ulashish mumkin.",
-    "phone_mismatch": "Telegram'dagi raqamingiz siz kiritgan raqamga mos kelmadi.",
+    "phone_mismatch": "Telegramʼdagi raqamingiz siz kiritgan raqamga mos kelmadi.",
     "account_conflict": "Bu raqam boshqa Telegram akkauntiga bogʻlangan.",
 }
 

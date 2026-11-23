@@ -2,6 +2,7 @@ import React from 'react';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { Footer } from './Footer';
+import { OfflineBanner } from './OfflineBanner';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-page text-ink flex flex-col">
@@ -12,6 +13,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       Asosiy qismga oʻtish
     </a>
     <Header />
+    <OfflineBanner />
     <main id="main" className="flex-1 w-full max-w-[1200px] mx-auto px-3 sm:px-6 pt-4 pb-24 md:pb-8">
       {children}
     </main>

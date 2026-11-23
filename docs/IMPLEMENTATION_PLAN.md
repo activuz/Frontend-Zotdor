@@ -82,13 +82,13 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [ ] DESIGN.md bo‘yicha dizayn o‘tishi: tokenlar, tipografika, holatlar, demo'dagi ortiqcha bezakni olib tashlash
 - [ ] Barcha matnlarni tekshirish: ʻ va ʼ belgilari, soxta da'volarni olib tashlash
 - [ ] Huquqiy sahifalar ⛔ matnni yurist beradi
-- [ ] 404 sahifa, Error Boundary (bajarildi), offline holati (hali yo‘q)
+- [x] 404 sahifa, Error Boundary, offline holati
 - [ ] Accessibility tekshiruvi (axe) va 360, 390, 768, 1280 kengliklarda qo‘lda sinov
 
 ## 10-bosqich. Ishga tushirish
-- [ ] Production `docker-compose.yml`, nginx, TLS, xavfsizlik sarlavhalari
-- [ ] Zaxira nusxa va tiklash sinovi
-- [ ] Monitoring va `/api/health` ogohlantirishlari
+- [x] Production `docker-compose.yml`, nginx, TLS, xavfsizlik sarlavhalari (`deploy/`). Docker'da hali ishga tushirib ko‘rilmagan — birinchi VPS o‘rnatishida tekshiriladi
+- [ ] Zaxira nusxa va tiklash sinovi — `deploy/backup.sh` va `deploy/RESTORE.md` yozildi, tiklash sinovi VPS'da qilinadi
+- [ ] Monitoring va `/api/health` ogohlantirishlari — endpoint va compose healthcheck bor, tashqi ogohlantirish xizmatini tanlash kerak
 - [ ] Xavfsizlik ko‘rigi (OWASP ASVS L1 ro‘yxati bo‘yicha)
 - [ ] Yuklama sinovi: bitta auksionga 50 ta bir vaqtdagi xaridor
 - [ ] Staging'da yopiq beta, keyin production ⛔ VPS (O‘zbekistonda) va domen DNS'i kerak

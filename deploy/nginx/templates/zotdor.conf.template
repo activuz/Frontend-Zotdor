@@ -1,0 +1,72 @@
+# ${DOMAIN}: public site. ${PANEL_DOMAIN}: staff panel. Both proxy /api to the same backend,
+# so the session cookie is always first-party (docs/ARCHITECTURE.md §8).
+
+limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
+limit_req_zone $binary_remote_addr zone=api:10m rate=20r/s;
+limit_req_status 429;
+
+upstream zotdor_api {
+    server api:8000;
+    keepalive 16;
+}
+
+# HTTP: ACME challenge, everything else → HTTPS.
+server {
+    listen 80;
+    server_name ${DOMAIN} ${PANEL_DOMAIN};
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include /etc/nginx/snippets/tls.conf;
+    include /etc/nginx/snippets/headers.conf;
+
+    root /srv/frontend;
+    include /etc/nginx/snippets/backend.conf;
+
+    location /assets/ {
+        include /etc/nginx/snippets/headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+    location / {
+        include /etc/nginx/snippets/headers.conf;
+        # The sell wizard needs the camera on this origin only.
+        add_header Permissions-Policy "camera=(self), microphone=(), geolocation=()" always;
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${PANEL_DOMAIN};
+    # One certificate covers both names (deploy/README.md, certbot -d DOMAIN -d PANEL_DOMAIN).
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include /etc/nginx/snippets/tls.conf;
+    include /etc/nginx/snippets/headers.conf;
+
+    root /srv/panel;
+    include /etc/nginx/snippets/backend.conf;
+
+    location /assets/ {
+        include /etc/nginx/snippets/headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+    location / {
+        include /etc/nginx/snippets/headers.conf;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+        add_header X-Robots-Tag "noindex, nofollow" always;
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}

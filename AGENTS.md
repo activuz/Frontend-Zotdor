@@ -11,7 +11,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 - `backend/` — kirish, profil, ma'lumotnomalar, hamyon, auksionlar (media va tekshiruvlar bilan), takliflar, bitimlar va baholar, shikoyatlar, bildirishnomalar (outbox), to‘lovlar (`fake` va Click) hamda panel API tayyor va test qilingan.
 - `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
 - `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
-- `deploy/` — production docker compose, nginx, zaxira nusxa (10-bosqich).
+- `deploy/` — production docker compose, nginx, zaxira nusxa va tiklash yo‘riqnomasi ([deploy/README.md](deploy/README.md)). Docker faqat shu yerda ishlatiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
 ## Hujjatlar
