@@ -91,7 +91,8 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [ ] Monitoring va `/api/health` ogohlantirishlari — endpoint va compose healthcheck bor, tashqi ogohlantirish xizmatini tanlash kerak
 - [ ] Xavfsizlik ko‘rigi (OWASP ASVS L1 ro‘yxati bo‘yicha)
 - [ ] Yuklama sinovi: bitta auksionga 50 ta bir vaqtdagi xaridor
-- [ ] Staging'da yopiq beta, keyin production ⛔ VPS (O‘zbekistonda) va domen DNS'i kerak
+- [x] Production sxemasi tanlandi (2026-11-23): Vercel + Render + Nhost. Kod moslandi (`auctions/storage.py`, `render.yaml`, `vercel.json`), qo‘llanma: [DEPLOYMENT.md](DEPLOYMENT.md). VPS varianti `deploy/` da saqlangan
+- [ ] Staging'da yopiq beta, keyin production ⛔ Nhost Pro, Render Starter, DNS yozuvlari va yangi bot tokeni kerak
 
 ## Mahsulot egasidan kerakli narsalar (⛔ ro‘yxati)
 

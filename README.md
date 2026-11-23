@@ -22,7 +22,8 @@ Uning foydalari:
 - `backend/` — API, Telegram bot va fon vazifalari: kirish, hamyon, auksionlar, takliflar, bitimlar, bildirishnomalar, to‘lovlar, panel API.
 - `frontend/` — foydalanuvchi ilovasi, haqiqiy API bilan.
 - `panel/` — moderator va administrator paneli.
-- `deploy/` — production uchun docker compose, nginx va zaxira nusxa skriptlari.
+- Production: Vercel (sayt, panel) + Render (API) + Nhost (baza, fayllar) — [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- `deploy/` — muqobil: bitta VPS uchun docker compose, nginx va zaxira nusxa skriptlari.
 
 Qolgan ishlar: [implementatsiya rejasi](docs/IMPLEMENTATION_PLAN.md).
 

@@ -11,6 +11,9 @@ x-backend: &backend
     DJANGO_DEBUG: "false"
     MEDIA_ROOT: /data/media
     MEDIA_PROCESS_SYNC: "false"
+    # VPS keeps files on the local volume, served by nginx (Render uses STORAGE_BACKEND=nhost).
+    STORAGE_BACKEND: local
+    CSRF_COOKIE_DOMAIN: ""
   volumes:
     - media:/data/media
   depends_on:
@@ -45,6 +48,7 @@ services:
 
   api:
     <<: *backend
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile -
     volumes:
       - media:/data/media
       - static:/app/staticfiles

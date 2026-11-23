@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import django_stubs_ext
+from django.core.exceptions import ImproperlyConfigured
 
 from config import env
 
@@ -92,6 +93,19 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env.get("MEDIA_ROOT", str(BASE_DIR / "media")))
 
+# --- File storage (auctions/storage.py) -------------------------------------
+# local: MEDIA_ROOT + nginx (VPS, development). nhost: Nhost Storage (Render production).
+STORAGE_BACKEND = env.get("STORAGE_BACKEND", "local")
+# e.g. https://<subdomain>.storage.<region>.nhost.run
+NHOST_STORAGE_URL = env.get("NHOST_STORAGE_URL", "")
+NHOST_ADMIN_SECRET = env.get("NHOST_ADMIN_SECRET", "")
+NHOST_PUBLIC_BUCKET = env.get("NHOST_PUBLIC_BUCKET", "media-public")
+NHOST_PRIVATE_BUCKET = env.get("NHOST_PRIVATE_BUCKET", "media-private")
+if STORAGE_BACKEND not in ("local", "nhost"):
+    raise ImproperlyConfigured("STORAGE_BACKEND must be 'local' or 'nhost'")
+if STORAGE_BACKEND == "nhost" and not (NHOST_STORAGE_URL and NHOST_ADMIN_SECRET):
+    raise ImproperlyConfigured("STORAGE_BACKEND=nhost needs NHOST_STORAGE_URL and NHOST_ADMIN_SECRET")
+
 # --- Security -------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -99,6 +113,10 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_TRUSTED_ORIGINS = env.get_list("CSRF_TRUSTED_ORIGINS")
+# Split hosting (web.zotdor.uz → api.zotdor.uz): the SPA must read the CSRF cookie set by the
+# API, so it is shared with the parent domain (".zotdor.uz"). Empty = host-only (same origin).
+CSRF_COOKIE_DOMAIN = env.get("CSRF_COOKIE_DOMAIN", "") or None
+SESSION_COOKIE_DOMAIN = env.get("SESSION_COOKIE_DOMAIN", "") or None
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"

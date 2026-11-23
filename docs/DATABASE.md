@@ -123,7 +123,9 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 **watchlist** (user_id, auction_id, created_at). PK juft.
 
 ### media (`auctions` app ichida)
-Alohida `media` app yaratilmadi: nom `MEDIA_ROOT`/`MEDIA_URL` bilan to‘qnashadi va media auksionsiz yashamaydi. Modellar `auctions/models.py` da, fayl bilan ishlash `auctions/media.py` da.
+Alohida `media` app yaratilmadi: nom `MEDIA_ROOT`/`MEDIA_URL` bilan to‘qnashadi va media auksionsiz yashamaydi. Modellar `auctions/models.py` da, qayta ishlash `auctions/media.py` da, saqlash `auctions/storage.py` da.
+
+`original_path`, `file_path`, `thumb_path` — saqlash havolasi: `local` rejimda `MEDIA_ROOT` ga nisbatan yo‘l (`auctions/<auction_id>/<nom>`), `nhost` rejimda `nhost:<file_id>`. Havola o‘z backend'ini bildiradi, shuning uchun backend almashtirilganda eski qatorlar ham to‘g‘ri URL beradi.
 
 **capture_sessions** (id, user_id, auction_id, expires_at, user_agent, created_at)
 

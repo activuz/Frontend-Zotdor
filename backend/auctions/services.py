@@ -19,6 +19,7 @@ from django.utils import timezone
 from rest_framework import status as http
 
 from auctions import media as media_store
+from auctions import storage
 from auctions.models import (
     EDITABLE_STATUSES,
     Auction,
@@ -212,6 +213,25 @@ def open_capture_session(auction_id: uuid.UUID, user: User, user_agent: str = ""
     )
 
 
+def _check_media_allowed(
+    auction: Auction, user: User, kind: str, session_id: uuid.UUID, settings: PlatformSettings
+) -> CaptureSession:
+    _own(auction, user)
+    if auction.status not in EDITABLE_STATUSES:
+        raise DomainError("not_editable", "Bu auksionga media qoʻshib boʻlmaydi.", http.HTTP_409_CONFLICT)
+    session = CaptureSession.objects.filter(id=session_id, auction=auction, user=user).first()
+    if session is None or session.expires_at <= timezone.now():
+        raise DomainError("capture_session_expired", "Kamera seansi tugadi. Kamerani qaytadan oching.")
+    if kind not in (AuctionMedia.Kind.PHOTO, AuctionMedia.Kind.VIDEO):
+        raise DomainError("unsupported_media", "Notoʻgʻri media turi.")
+    existing = auction.media.exclude(status=AuctionMedia.MediaStatus.FAILED).filter(kind=kind).count()
+    limit = settings.photos_max if kind == AuctionMedia.Kind.PHOTO else settings.videos_max
+    if existing >= limit:
+        noun = "rasm" if kind == AuctionMedia.Kind.PHOTO else "video"
+        raise DomainError("too_many_media", f"Koʻpi bilan {limit} ta {noun} qoʻshish mumkin.")
+    return session
+
+
 def add_media(
     auction_id: uuid.UUID,
     user: User,
@@ -221,35 +241,31 @@ def add_media(
     client_meta: dict[str, Any],
 ) -> AuctionMedia:
     settings = PlatformSettings.load()
+    # Cheap check first, then the upload OUTSIDE any transaction (it may be an HTTP call to
+    # Nhost), then the same checks again under the row lock before the row is created.
     with transaction.atomic():
-        auction = _lock(auction_id)
-        _own(auction, user)
-        if auction.status not in EDITABLE_STATUSES:
-            raise DomainError("not_editable", "Bu auksionga media qoʻshib boʻlmaydi.", http.HTTP_409_CONFLICT)
-        session = CaptureSession.objects.filter(id=session_id, auction=auction, user=user).first()
-        if session is None or session.expires_at <= timezone.now():
-            raise DomainError("capture_session_expired", "Kamera seansi tugadi. Kamerani qaytadan oching.")
-        if kind not in (AuctionMedia.Kind.PHOTO, AuctionMedia.Kind.VIDEO):
-            raise DomainError("unsupported_media", "Notoʻgʻri media turi.")
-        existing = auction.media.exclude(status=AuctionMedia.MediaStatus.FAILED).filter(kind=kind).count()
-        limit = settings.photos_max if kind == AuctionMedia.Kind.PHOTO else settings.videos_max
-        if existing >= limit:
-            noun = "rasm" if kind == AuctionMedia.Kind.PHOTO else "video"
-            raise DomainError("too_many_media", f"Koʻpi bilan {limit} ta {noun} qoʻshish mumkin.")
-        try:
-            stored, size = media_store.store_original(auction.id, upload, kind)
-        except media_store.MediaError as exc:
-            raise DomainError("file_too_large", str(exc)) from exc
-        position = (auction.media.aggregate(m=Max("position"))["m"] or 0) + 1
-        item = AuctionMedia.objects.create(
-            auction=auction,
-            capture_session=session,
-            kind=kind,
-            position=position,
-            original_path=media_store.rel(stored),
-            size_bytes=size,
-            client_meta={k: str(v)[:200] for k, v in list(client_meta.items())[:20]},
-        )
+        _check_media_allowed(_lock(auction_id), user, kind, session_id, settings)
+    try:
+        stored, size = media_store.store_original(auction_id, upload, kind)
+    except media_store.MediaError as exc:
+        raise DomainError("file_too_large", str(exc)) from exc
+    try:
+        with transaction.atomic():
+            auction = _lock(auction_id)
+            session = _check_media_allowed(auction, user, kind, session_id, settings)
+            position = (auction.media.aggregate(m=Max("position"))["m"] or 0) + 1
+            item = AuctionMedia.objects.create(
+                auction=auction,
+                capture_session=session,
+                kind=kind,
+                position=position,
+                original_path=stored,
+                size_bytes=size,
+                client_meta={k: str(v)[:200] for k, v in list(client_meta.items())[:20]},
+            )
+    except BaseException:
+        storage.delete(stored)
+        raise
     if kind == AuctionMedia.Kind.PHOTO or django_settings.MEDIA_PROCESS_SYNC:
         media_store.process(item, settings.video_max_s)
     else:
@@ -265,9 +281,18 @@ def delete_media(auction_id: uuid.UUID, media_id: uuid.UUID, user: User) -> None
     _own(auction, user)
     if auction.status not in EDITABLE_STATUSES:
         raise DomainError("not_editable", "Eʼlon qilingan auksion mediasini oʻzgartirib boʻlmaydi.", 409)
-    deleted, _ = auction.media.filter(id=media_id).delete()
-    if not deleted:
+    item = auction.media.filter(id=media_id).first()
+    if item is None:
         raise DomainError("not_found", "Fayl topilmadi.", http.HTTP_404_NOT_FOUND)
+    refs = [item.original_path, item.file_path, item.thumb_path]
+    item.delete()
+    # Files go only once the row is gone for good; a rollback keeps them.
+    transaction.on_commit(lambda: _delete_files(refs))
+
+
+def _delete_files(refs: list[str]) -> None:
+    for ref in refs:
+        storage.delete(ref)
 
 
 # --- submit / publish -----------------------------------------------------------------------

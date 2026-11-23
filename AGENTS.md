@@ -11,7 +11,8 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 - `backend/` — kirish, profil, ma'lumotnomalar, hamyon, auksionlar (media va tekshiruvlar bilan), takliflar, bitimlar va baholar, shikoyatlar, bildirishnomalar (outbox), to‘lovlar (`fake` va Click) hamda panel API tayyor va test qilingan.
 - `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
 - `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
-- `deploy/` — production docker compose, nginx, zaxira nusxa va tiklash yo‘riqnomasi ([deploy/README.md](deploy/README.md)). Docker faqat shu yerda ishlatiladi.
+- Production: sayt va panel — Vercel (`web.zotdor.uz`, `panel.zotdor.uz`), API va worker — Render (`api.zotdor.uz`, `render.yaml`), baza va fayllar — Nhost. Qo‘llanma: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Fayllar `auctions/storage.py` orqali saqlanadi (`STORAGE_BACKEND=local|nhost`).
+- `deploy/` — muqobil variant: bitta VPS uchun docker compose, nginx, zaxira nusxa va tiklash ([deploy/README.md](deploy/README.md)). Docker faqat Render image'i va shu yerda ishlatiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
 ## Hujjatlar
@@ -26,6 +27,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 | [docs/DESIGN.md](docs/DESIGN.md) | tokenlar, tipografika, matn qoidalari |
 | [docs/TESTING.md](docs/TESTING.md) | majburiy test holatlari, "tayyor" ta'rifi |
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | bosqichlar va bog‘liqliklar |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | production: Vercel, Render, Nhost sozlash |
 
 **Hujjat va kod bir-biriga mos bo‘lishi shart.** Modelni, endpointni yoki biznes qoidani o‘zgartirsangiz, tegishli hujjatni o‘sha o‘zgarish ichida yangilang. Biznes qoidasini o‘zgartirish kerak bo‘lsa, avval mahsulot egasidan so‘rang. Uni o‘zingiz hal qilmang.
 
