@@ -19,6 +19,7 @@ urlpatterns = [
     path("api/v1/", include("auctions.urls")),
     path("api/v1/", include("deals.urls")),
     path("api/v1/", include("moderation.urls")),
+    path("api/v1/", include("leads.urls")),
     path("api/panel/", include("panel_api.urls")),
     path("api/payments/click/", include(click_urlpatterns)),
     path("api/telegram/webhook/<str:secret>", TelegramWebhookView.as_view(), name="telegram-webhook"),

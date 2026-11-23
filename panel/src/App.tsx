@@ -8,7 +8,7 @@ import { PanelLayout } from './layout/PanelLayout';
 import { EmptyState } from './components/PageState';
 import { Dashboard } from './pages/Dashboard';
 import { AuctionQueue, AuctionReview } from './pages/Auctions';
-import { Claims, Refunds, Reports } from './pages/Queues';
+import { Claims, Leads, Refunds, Reports } from './pages/Queues';
 import { UserDetail, Users } from './pages/Users';
 import { Settings } from './pages/Settings';
 import { Taxonomy } from './pages/Taxonomy';
@@ -31,6 +31,7 @@ const Staff: React.FC = () => (
         <Route path="/reports" element={<Reports />} />
         <Route path="/claims" element={<Claims />} />
         <Route path="/refunds" element={<Refunds />} />
+        <Route path="/leads" element={<Leads />} />
         <Route path="/users" element={<Users />} />
         <Route path="/users/:id" element={<UserDetail />} />
         <Route path="/settings" element={<Settings />} />

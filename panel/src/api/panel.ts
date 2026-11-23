@@ -7,6 +7,7 @@ export type PanelStats = C['PanelStats'];
 export type PanelAuctionRow = C['PanelAuctionRow'];
 export type PanelAuctionDetail = C['PanelAuctionDetail'];
 export type PanelReport = C['PanelReport'];
+export type PanelLead = C['PanelLead'];
 export type PanelClaim = C['PanelClaim'];
 export type PanelRefund = C['PanelRefund'];
 export type PanelUser = C['PanelUser'];
@@ -68,6 +69,23 @@ export function useResolveReport() {
   return useMutation({
     mutationFn: ({ id, outcome, note }: { id: string; outcome: 'resolved' | 'dismissed'; note: string }) =>
       api<PanelReport>('POST', `${P}/reports/${id}/resolve`, { outcome, note }),
+    onSuccess: () => void client.invalidateQueries(),
+  });
+}
+
+export function useLeads(status: string, offset: number) {
+  return useQuery({
+    queryKey: ['leads', status, offset],
+    queryFn: () =>
+      api<C['PaginatedPanelLeadList']>('GET', `${P}/leads${query({ status, limit: PAGE, offset })}`),
+  });
+}
+
+export function useSetLeadStatus() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, note }: { id: string; status: 'contacted' | 'closed'; note: string }) =>
+      api<PanelLead>('POST', `${P}/leads/${id}/status`, { status, note }),
     onSuccess: () => void client.invalidateQueries(),
   });
 }

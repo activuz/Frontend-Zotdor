@@ -79,6 +79,8 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 **Eslatma:** shartnoma bo‘lmasa ham platforma ishga tushadi. Balans bonus va admin tomonidan qo‘lda to‘ldirish orqali boshqariladi (BR-44).
 
 ## 9-bosqich. Sifat va kontent
+- [x] Landing (`landing/`, FR-18): eski "tez orada" sahifasi platformaga moslandi — haqiqiy auksionlar va sozlamalar API'dan, FAQ, narx, xavfsizlik boʻlimlari; standart yozuv lotin, kirill avtomatik; Supabase olib tashlandi, aloqa formasi `POST /api/v1/leads` ga, arizalar panelning "Sayt arizalari" boʻlimida (2026-11-23)
+- [ ] Landing: Vercel'da uchinchi loyiha, `zotdor.uz` domeni, Render'da `LEADS_TELEGRAM_CHAT_ID` ⛔ deploy
 - [ ] DESIGN.md bo‘yicha dizayn o‘tishi: tokenlar, tipografika, holatlar, demo'dagi ortiqcha bezakni olib tashlash
 - [ ] Barcha matnlarni tekshirish: ʻ va ʼ belgilari, soxta da'volarni olib tashlash
 - [ ] Huquqiy sahifalar ⛔ matnni yurist beradi
