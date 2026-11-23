@@ -29,13 +29,22 @@ function readCookie(name: string): string | undefined {
     ?.split('=')[1];
 }
 
-let csrfReady: Promise<void> | null = null;
+let csrfToken: Promise<string> | null = null;
 
-/** Ensures the csrftoken cookie exists; called lazily before the first unsafe request. */
-function ensureCsrf(): Promise<void> {
-  if (readCookie('csrftoken')) return Promise.resolve();
-  csrfReady ??= fetch(`${API_BASE}/api/v1/auth/csrf`, { credentials: 'include' }).then(() => undefined);
-  return csrfReady;
+/**
+ * CSRF token for unsafe requests. It comes from the /auth/csrf response body, not from
+ * document.cookie: when the SPA and the API live on different subdomains the SPA cannot read
+ * the API's cookie. The cookie is still sent by the browser and checked by Django.
+ */
+function getCsrfToken(): Promise<string> {
+  csrfToken ??= fetch(`${API_BASE}/api/v1/auth/csrf`, { credentials: 'include' })
+    .then((r) => (r.ok ? (r.json() as Promise<{ csrf_token?: string }>) : ({} as { csrf_token?: string })))
+    .then((d) => d.csrf_token ?? readCookie('csrftoken') ?? '')
+    .catch(() => {
+      csrfToken = null;
+      return readCookie('csrftoken') ?? '';
+    });
+  return csrfToken;
 }
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -45,10 +54,22 @@ interface ErrorBody {
 }
 
 export async function api<T>(method: Method, path: string, body?: unknown): Promise<T> {
+  try {
+    return await send<T>(method, path, body);
+  } catch (error) {
+    // Django rotates the token on login; fetch a fresh one and retry once.
+    if (error instanceof ApiError && error.code === 'csrf_failed') {
+      csrfToken = null;
+      return send<T>(method, path, body);
+    }
+    throw error;
+  }
+}
+
+async function send<T>(method: Method, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (method !== 'GET') {
-    await ensureCsrf();
-    headers['X-CSRFToken'] = readCookie('csrftoken') ?? '';
+    headers['X-CSRFToken'] = await getCsrfToken();
   }
   const isForm = body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';

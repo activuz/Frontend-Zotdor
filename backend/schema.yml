@@ -1461,15 +1461,24 @@ paths:
   /api/v1/auth/csrf:
     get:
       operationId: v1_auth_csrf_retrieve
-      description: Sets the csrftoken cookie; the frontend calls it once on startup.
+      description: |-
+        Sets the csrftoken cookie and returns the token.
+
+        The SPA sends the returned value in X-CSRFToken. Returning it in the body means the SPA
+        never has to read the cookie, which it cannot do when it runs on another subdomain
+        (web.zotdor.uz → api.zotdor.uz) unless CSRF_COOKIE_DOMAIN is shared.
       tags:
       - v1
       security:
       - cookieAuth: []
       - {}
       responses:
-        '204':
-          description: No response body
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsrfToken'
+          description: ''
   /api/v1/auth/logout:
     post:
       operationId: v1_auth_logout_create
@@ -2671,6 +2680,13 @@ components:
       required:
       - thumb_url
       - url
+    CsrfToken:
+      type: object
+      properties:
+        csrf_token:
+          type: string
+      required:
+      - csrf_token
     DbEnum:
       enum:
       - ok
