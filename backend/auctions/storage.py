@@ -29,6 +29,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 NHOST_PREFIX = "nhost:"
+USER_AGENT = "zotdor-api/1.0 (+https://zotdor.uz)"
 
 
 class StorageError(Exception):
@@ -61,7 +62,12 @@ def _multipart(fields: list[tuple[str, str, bytes, str | None]]) -> tuple[bytes,
 
 
 def _request(method: str, url: str, data: bytes | None = None, content_type: str = "") -> bytes:
-    headers = {"x-hasura-admin-secret": str(getattr(settings, "NHOST_ADMIN_SECRET", ""))}
+    headers = {
+        "x-hasura-admin-secret": str(getattr(settings, "NHOST_ADMIN_SECRET", "")),
+        # Nhost sits behind Cloudflare, which bans the default "Python-urllib/x.y" agent
+        # with 403 "error code: 1010". Any explicit agent passes.
+        "User-Agent": USER_AGENT,
+    }
     if content_type:
         headers["Content-Type"] = content_type
     req = urllib.request.Request(url, data=data, headers=headers, method=method)  # noqa: S310

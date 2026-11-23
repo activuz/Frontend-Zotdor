@@ -250,6 +250,7 @@ Render'da `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_MERCHANT_USER_ID`, `CL
 | Brauzer konsolida CORS xatosi | `CORS_ALLOWED_ORIGINS` da `https://web.zotdor.uz` aniq shu ko‘rinishda (oxirida `/` siz) bo‘lishi kerak. |
 | `400 Bad Request` (DisallowedHost) | `ALLOWED_HOSTS` ga `api.zotdor.uz` qo‘shilmagan. Bu ro‘yxatda `https://` yozilmaydi. |
 | Rasm yuklanadi, lekin "Faylni saqlab bo‘lmadi" | `NHOST_STORAGE_URL` yoki admin secret noto‘g‘ri, yoki bucket yaratilmagan (1.3). Render loglarida `Nhost storage POST 4xx`. |
+| Rasm yuklashda 503, Render logida `Nhost storage POST 403: error code: 1010` | Nhost oldidagi Cloudflare so‘rovni User-Agent bo‘yicha bloklagan. `auctions/storage.py` o‘z `USER_AGENT` ini yuboradi — eski image deploy qilinmaganini tekshiring. |
 | Rasm saqlandi, lekin ko‘rinmaydi | `public` roli uchun `storage.files` select ruxsati yo‘q (1.4) yoki CSP domeni mos emas. |
 | Video "Qayta ishlanmoqda…" dan o‘tmaydi | Worker ishlamayapti (`/api/health` → `worker`). |
 | Health: `db: down` | `DATABASE_URL`, `sslmode=require`, Nhost loyihasi pauza holatida emasligini tekshiring. |
