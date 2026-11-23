@@ -17,6 +17,8 @@ urlpatterns = [
     path("auctions/<uuid:auction_id>/<str:action>", views.AuctionActionView.as_view()),
     path("reports", views.ReportListView.as_view()),
     path("reports/<uuid:report_id>/resolve", views.ReportResolveView.as_view()),
+    path("leads", views.LeadListView.as_view()),
+    path("leads/<uuid:lead_id>/status", views.LeadStatusView.as_view()),
     path("claims", views.ClaimListView.as_view()),
     path("claims/<uuid:claim_id>/resolve", views.ClaimResolveView.as_view()),
     path("refund-requests", views.RefundListView.as_view()),

@@ -6,6 +6,7 @@ Bu qo‘llanma tanlangan production sxemasini qadam-baqadam sozlaydi. Muqobil va
 |---|---|---|
 | Foydalanuvchi sayti (`frontend/`) | Vercel | https://web.zotdor.uz |
 | Panel (`panel/`) | Vercel | https://panel.zotdor.uz |
+| Landing (`landing/`, Next.js) | Vercel | https://zotdor.uz |
 | API, Telegram bot, fon vazifalari (`backend/`) | Render (Docker) | https://api.zotdor.uz |
 | PostgreSQL va fayllar (rasm, video) | Nhost, loyiha `ipzsvyjvfumhpjhqwhtt` | `*.nhost.run` |
 
@@ -164,6 +165,20 @@ Ikkita alohida loyiha, ikkalasi ham shu repo'dan:
 - CSP'da `https://api.zotdor.uz` va `https://*.nhost.run` ruxsat etilgan. API domeni o‘zgarsa, ikkala `vercel.json` ni ham yangilang.
 - Preview deploy'lar (`*.vercel.app`) sahifani ko‘rsatadi, lekin ularda login ishlamaydi (cookie boshqa saytga tegishli bo‘lib qoladi).
 
+### Landing (`landing/`)
+
+Uchinchi Vercel loyihasi: **Root Directory = `landing`**, Framework — Next.js (avtomatik), domen `zotdor.uz` (va `www.zotdor.uz` → `zotdor.uz` yoʻnaltirish).
+
+| Env | Qiymat |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | `https://api.zotdor.uz` |
+| `NEXT_PUBLIC_SITE_URL` | `https://web.zotdor.uz` |
+| `NEXT_PUBLIC_LANDING_URL` | `https://zotdor.uz` |
+
+- Sahifa API'dan `/config`, `/reference/regions` va ochiq auksionlarni oladi va ularni har 60 soniyada yangilaydi (ISR). API ishlamay qolsa, boʻlimlar xato holatini koʻrsatadi, sahifa esa ochilaveradi.
+- Aloqa formasi brauzerdan `POST https://api.zotdor.uz/api/v1/leads` ga yuboriladi. Shuning uchun Render'dagi `CORS_ALLOWED_ORIGINS` ga `https://zotdor.uz,https://www.zotdor.uz` qoʻshilishi shart (`render.yaml` da bor, dashboard'da ham tekshiring).
+- Arizalarning Telegram nusxasi uchun Render'da `LEADS_TELEGRAM_CHAT_ID` ni toʻldiring: xodimlar guruhi yoki shaxsiy chat id. Bot (`ZotdorPlatformBot`) oʻsha chatga qoʻshilgan boʻlishi kerak. Boʻsh boʻlsa, arizalar faqat panelda koʻrinadi.
+
 ---
 
 ## 4. DNS (`zotdor.uz` zonasi)
@@ -172,6 +187,8 @@ Ikkita alohida loyiha, ikkalasi ham shu repo'dan:
 |---|---|---|
 | `web` | CNAME | Vercel ko‘rsatgan qiymat (odatda `cname.vercel-dns.com`) |
 | `panel` | CNAME | Vercel ko‘rsatgan qiymat |
+| `@` (zotdor.uz) | A / CNAME | Vercel koʻrsatgan qiymat (landing) |
+| `www` | CNAME | Vercel koʻrsatgan qiymat |
 | `api` | CNAME | `zotdor-api.onrender.com` (Render ko‘rsatgani) |
 
 Vercel va Render'da domen holati "Verified / Certificate issued" bo‘lguncha kuting.

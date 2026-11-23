@@ -12,6 +12,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 - `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
 - `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
 - Production: sayt va panel — Vercel (`web.zotdor.uz`, `panel.zotdor.uz`), API va worker — Render (`api.zotdor.uz`, `render.yaml`), baza va fayllar — Nhost. Qo‘llanma: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Fayllar `auctions/storage.py` orqali saqlanadi (`STORAGE_BACKEND=local|nhost`).
+- `landing/` — `zotdor.uz` reklama sahifasi (Next.js 14, FR-18): platformani tanishtiradi, API'dan sozlamalar, hududlar va ochiq auksionlarni oladi, aloqa formasi `POST /api/v1/leads` ga yuboradi (`leads` app, panelda "Sayt arizalari"). Standart yozuv — oʻzbek lotin, kirill avtomatik transliteratsiya. Tokenlar `frontend/` bilan bir xil. `npm run dev` (port 3002), `npm run api:types`.
 - `deploy/` — muqobil variant: bitta VPS uchun docker compose, nginx, zaxira nusxa va tiklash ([deploy/README.md](deploy/README.md)). Docker faqat Render image'i va shu yerda ishlatiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
@@ -57,9 +58,10 @@ cd backend && .venv/Scripts/python manage.py spectacular --file schema.yml --val
 cd frontend && npm run dev | npm run lint | npm run build
 cd frontend && npm run api:types        # backend/schema.yml → src/api/schema.d.ts
 cd panel && npm run dev | npm run lint | npm run build | npm run api:types   # port 3001
+cd landing && npm run dev | npm run lint | npm run build | npm run api:types # port 3002
 ```
 
-API o‘zgarsa, `schema.yml` hamda `frontend/` va `panel/` dagi `schema.d.ts` qayta generatsiya qilinadi va hammasi o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
+API o‘zgarsa, `schema.yml` hamda `frontend/`, `panel/` va `landing/` dagi `schema.d.ts` qayta generatsiya qilinadi va hammasi o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
 
 ## Backend qoidalari
 

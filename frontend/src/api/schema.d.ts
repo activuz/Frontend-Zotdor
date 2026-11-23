@@ -149,6 +149,38 @@ export interface paths {
         patch: operations["panel_districts_partial_update"];
         trace?: never;
     };
+    "/api/panel/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["panel_leads_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/panel/leads/{lead_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["panel_leads_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/panel/refund-requests": {
         parameters: {
             query?: never;
@@ -761,6 +793,23 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["v1_deals_rating_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Public contact form on the landing page (FR-18). No session is used, so no CSRF check. */
+        post: operations["v1_leads_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1411,6 +1460,35 @@ export interface components {
          * @enum {string}
          */
         HealthStatusEnum: "ok" | "degraded" | "down";
+        LeadCreated: {
+            /** Format: uuid */
+            id: string;
+        };
+        LeadInRequest: {
+            name: string;
+            phone: string;
+            role: components["schemas"]["LeadInRoleEnum"];
+            region?: number | null;
+            message?: string;
+            utm?: string;
+        };
+        /**
+         * @description * `seller` - Sotuvchi
+         *     * `buyer` - Xaridor
+         *     * `both` - Sotuvchi va xaridor
+         * @enum {string}
+         */
+        LeadInRoleEnum: "seller" | "buyer" | "both";
+        LeadStatusInRequest: {
+            status: components["schemas"]["LeadStatusInStatusEnum"];
+            note?: string;
+        };
+        /**
+         * @description * `contacted` - contacted
+         *     * `closed` - closed
+         * @enum {string}
+         */
+        LeadStatusInStatusEnum: "contacted" | "closed";
         LoginStartRequest: {
             phone: string;
         };
@@ -1561,6 +1639,12 @@ export interface components {
         };
         PaginatedPanelClaimList: {
             results: components["schemas"]["PanelClaim"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
+        PaginatedPanelLeadList: {
+            results: components["schemas"]["PanelLead"][];
             count: number;
             next: string | null;
             previous: string | null;
@@ -1728,11 +1812,29 @@ export interface components {
             created_at: string;
             actor__phone: string | null;
         };
+        PanelLead: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string;
+            role: string;
+            role_label: string;
+            region: string | null;
+            message: string;
+            utm: string;
+            status: string;
+            handled_note: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            handled_at: string | null;
+        };
         PanelQueues: {
             pending_review: number;
             reports: number;
             claims: number;
             refunds: number;
+            leads: number;
         };
         PanelRefund: {
             /** Format: uuid */
@@ -2454,6 +2556,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DistrictPanel"];
+                };
+            };
+        };
+    };
+    panel_leads_retrieve: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelLeadList"];
+                };
+            };
+        };
+    };
+    panel_leads_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadStatusInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LeadStatusInRequest"];
+                "multipart/form-data": components["schemas"]["LeadStatusInRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelLead"];
                 };
             };
         };
@@ -3695,6 +3845,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Deal"];
+                };
+            };
+        };
+    };
+    v1_leads_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LeadInRequest"];
+                "multipart/form-data": components["schemas"]["LeadInRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadCreated"];
                 };
             };
         };

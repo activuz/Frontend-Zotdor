@@ -28,6 +28,8 @@ from core.http import data_of
 from core.models import PlatformSettings, StaffAuditLog
 from deals import services as deal_services
 from deals.models import Deal, DealClaim
+from leads import services as lead_services
+from leads.models import Lead
 from moderation.models import Report
 from panel_api import schemas
 from panel_api.permissions import IsAdmin, IsModerator
@@ -88,6 +90,7 @@ class StatsView(ModView):
                     "reports": Report.objects.filter(status=Report.ReportStatus.OPEN).count(),
                     "claims": DealClaim.objects.filter(status=DealClaim.ClaimStatus.OPEN).count(),
                     "refunds": RefundRequest.objects.filter(status=RefundRequest.RefundStatus.OPEN).count(),
+                    "leads": Lead.objects.filter(status=Lead.LeadStatus.NEW).count(),
                 },
                 "deals_7d": Deal.objects.filter(created_at__gte=week).count(),
                 "commission_7d": -(
@@ -247,6 +250,64 @@ class ReportResolveView(ModView):
                 ip=_ip(request),
             )
         return Response(_report_row(r))
+
+
+# --- leads (landing contact requests, FR-18) ------------------------------------------------
+
+
+def _lead_row(lead: Lead) -> dict[str, Any]:
+    return {
+        "id": lead.id,
+        "name": lead.name,
+        "phone": lead.phone,
+        "role": lead.role,
+        "role_label": lead.get_role_display(),
+        "region": lead.region.name if lead.region else None,
+        "message": lead.message,
+        "utm": lead.source,
+        "status": lead.status,
+        "handled_note": lead.handled_note,
+        "created_at": lead.created_at,
+        "handled_at": lead.handled_at,
+    }
+
+
+class LeadListView(ModView):
+    @extend_schema(parameters=[OpenApiParameter("status", str)], responses=schemas.PanelLeadPage)
+    def get(self, request: Request) -> Response:
+        st = request.query_params.get("status", Lead.LeadStatus.NEW)
+        qs = Lead.objects.select_related("region").order_by("-created_at")
+        if st != "all":
+            qs = qs.filter(status=st)
+        return _page(request, self, qs, _lead_row)
+
+
+class LeadStatusView(ModView):
+    @extend_schema(
+        request=inline_serializer(
+            "LeadStatusIn",
+            {
+                "status": serializers.ChoiceField(["contacted", "closed"]),
+                "note": serializers.CharField(required=False),
+            },
+        ),
+        responses=schemas.PanelLead,
+    )
+    def post(self, request: Request, lead_id: uuid.UUID) -> Response:
+        with transaction.atomic():
+            lead, before = lead_services.set_status(
+                lead_id, _text(request, "status"), _text(request, "note"), _staff(request)
+            )
+            audit.log(
+                _staff(request),
+                f"lead.{lead.status}",
+                "lead",
+                lead.id,
+                before=before,
+                after={"status": lead.status, "note": lead.handled_note},
+                ip=_ip(request),
+            )
+        return Response(_lead_row(lead))
 
 
 # --- claims --------------------------------------------------------------------------------

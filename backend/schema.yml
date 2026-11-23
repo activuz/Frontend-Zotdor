@@ -275,6 +275,58 @@ paths:
               schema:
                 $ref: '#/components/schemas/DistrictPanel'
           description: ''
+  /api/panel/leads:
+    get:
+      operationId: panel_leads_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelLeadList'
+          description: ''
+  /api/panel/leads/{lead_id}/status:
+    post:
+      operationId: panel_leads_status_create
+      parameters:
+      - in: path
+        name: lead_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadStatusInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadStatusInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadStatusInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelLead'
+          description: ''
   /api/panel/refund-requests:
     get:
       operationId: panel_refund_requests_retrieve
@@ -1641,6 +1693,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Deal'
+          description: ''
+  /api/v1/leads:
+    post:
+      operationId: v1_leads_create
+      description: Public contact form on the landing page (FR-18). No session is
+        used, so no CSRF check.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadInRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadCreated'
           description: ''
   /api/v1/me:
     get:
@@ -3022,6 +3102,64 @@ components:
         * `ok` - ok
         * `degraded` - degraded
         * `down` - down
+    LeadCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      required:
+      - id
+    LeadInRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        role:
+          $ref: '#/components/schemas/LeadInRoleEnum'
+        region:
+          type: integer
+          nullable: true
+        message:
+          type: string
+        utm:
+          type: string
+      required:
+      - name
+      - phone
+      - role
+    LeadInRoleEnum:
+      enum:
+      - seller
+      - buyer
+      - both
+      type: string
+      description: |-
+        * `seller` - Sotuvchi
+        * `buyer` - Xaridor
+        * `both` - Sotuvchi va xaridor
+    LeadStatusInRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/LeadStatusInStatusEnum'
+        note:
+          type: string
+          minLength: 1
+      required:
+      - status
+    LeadStatusInStatusEnum:
+      enum:
+      - contacted
+      - closed
+      type: string
+      description: |-
+        * `contacted` - contacted
+        * `closed` - closed
     LoginStartRequest:
       type: object
       properties:
@@ -3406,6 +3544,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PanelClaim'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedPanelLeadList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelLead'
         count:
           type: integer
         next:
@@ -3903,6 +4061,51 @@ components:
       - from_status
       - reason
       - to_status
+    PanelLead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        role_label:
+          type: string
+        region:
+          type: string
+          nullable: true
+        message:
+          type: string
+        utm:
+          type: string
+        status:
+          type: string
+        handled_note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        handled_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created_at
+      - handled_at
+      - handled_note
+      - id
+      - message
+      - name
+      - phone
+      - region
+      - role
+      - role_label
+      - status
+      - utm
     PanelQueues:
       type: object
       properties:
@@ -3914,8 +4117,11 @@ components:
           type: integer
         refunds:
           type: integer
+        leads:
+          type: integer
       required:
       - claims
+      - leads
       - pending_review
       - refunds
       - reports

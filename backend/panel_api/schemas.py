@@ -34,6 +34,7 @@ class PanelQueues(S[Any]):
     reports = serializers.IntegerField()
     claims = serializers.IntegerField()
     refunds = serializers.IntegerField()
+    leads = serializers.IntegerField()
 
 
 class PanelStats(S[Any]):
@@ -98,6 +99,21 @@ class PanelReport(S[Any]):
     reporter_phone = serializers.CharField()
     created_at = serializers.DateTimeField()
     handled_note = serializers.CharField()
+
+
+class PanelLead(S[Any]):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    phone = serializers.CharField()
+    role = serializers.CharField()
+    role_label = serializers.CharField()
+    region = serializers.CharField(allow_null=True)
+    message = serializers.CharField()
+    utm = serializers.CharField()
+    status = serializers.CharField()
+    handled_note = serializers.CharField()
+    created_at = serializers.DateTimeField()
+    handled_at = serializers.DateTimeField(allow_null=True)
 
 
 class PanelClaim(S[Any]):
@@ -174,6 +190,7 @@ class PanelUserDetail(S[Any]):
 
 PanelAuctionPage = paginated("PaginatedPanelAuctionList", PanelAuctionRow(many=True))
 PanelReportPage = paginated("PaginatedPanelReportList", PanelReport(many=True))
+PanelLeadPage = paginated("PaginatedPanelLeadList", PanelLead(many=True))
 PanelClaimPage = paginated("PaginatedPanelClaimList", PanelClaim(many=True))
 PanelRefundPage = paginated("PaginatedPanelRefundList", PanelRefund(many=True))
 PanelUserPage = paginated("PaginatedPanelUserList", PanelUser(many=True))

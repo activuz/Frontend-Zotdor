@@ -155,6 +155,29 @@ def test_upload_needs_live_capture_session(seller: User) -> None:
     assert err.value.code == "capture_session_expired"
 
 
+def test_storage_failure_is_503_not_a_bad_file(seller: User) -> None:
+    from auctions import storage
+
+    a = services.create_draft(seller, taxonomy())
+    session = services.open_capture_session(a.id, seller)
+    with (
+        patch("auctions.storage.save", side_effect=storage.StorageError("Nhost storage POST 403")),
+        pytest.raises(DomainError) as err,
+    ):
+        services.add_media(a.id, seller, photo(1), "photo", session.id, {})
+    assert (err.value.code, err.value.http_status) == ("storage_unavailable", 503)
+    assert not a.media.exists()
+
+
+def test_too_large_upload_is_413(seller: User, settings: Any) -> None:
+    settings.PHOTO_MAX_BYTES = 10
+    a = services.create_draft(seller, taxonomy())
+    session = services.open_capture_session(a.id, seller)
+    with pytest.raises(DomainError) as err:
+        services.add_media(a.id, seller, photo(1), "photo", session.id, {})
+    assert (err.value.code, err.value.http_status) == ("file_too_large", 413)
+
+
 def test_non_image_upload_fails_processing(seller: User) -> None:
     a = services.create_draft(seller, taxonomy())
     session = services.open_capture_session(a.id, seller)

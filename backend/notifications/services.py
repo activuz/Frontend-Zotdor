@@ -41,10 +41,10 @@ def notify(
         if link and settings.FRONTEND_URL:
             text += f"\n\n{settings.FRONTEND_URL.rstrip('/')}{link}"
         TelegramOutbox.objects.create(chat_id=user.telegram_user_id, text=text)
-        transaction.on_commit(_kick_sender)
+        transaction.on_commit(kick_sender)
 
 
-def _kick_sender() -> None:
+def kick_sender() -> None:
     from notifications.tasks import send_outbox
 
     try:

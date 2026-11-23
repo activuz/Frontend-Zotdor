@@ -90,7 +90,7 @@ Tafsilotda bunga qo‘shimcha ravishda `media[]`, `description`, `breed`, `age_m
 | PATCH | `/auctions/{id}/media/order` | `{ids: [...]}` |
 | DELETE | `/auctions/{id}/media/{media_id}` | Faqat `draft`/`rejected` holatida |
 
-Xato kodlari: `capture_session_expired`, `unsupported_media`, `file_too_large`, `too_many_photos`, `video_too_long`.
+Xato kodlari: `capture_session_expired` (400), `unsupported_media` (400), `too_many_media` (400), `not_editable` (409), `file_too_large` (413), `storage_unavailable` (503 — fayl ombori (Nhost) faylni qabul qilmadi; foydalanuvchining fayli aybdor emas, Render loglarida `could not store upload`). Video uzunligi va formati fon jarayonida tekshiriladi: xato boʻlsa, media `failed` holatiga oʻtadi va `error` da sababi yoziladi.
 
 ## Takliflar
 
@@ -150,6 +150,7 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | POST | `/notifications/read` | `{ids?}` — `ids` bo‘lmasa, hammasi o‘qilgan deb belgilanadi |
 | GET | `/notifications/unread-count` | |
 | POST | `/reports` | `{target_type, target_id, reason, comment?}` |
+| POST | `/leads` | Landing aloqa formasi (FR-18). Ochiq, sessiyasiz va CSRF'siz. `{name, phone, role: seller|buyer|both, region?, message?, utm?}` → `201 {id}`. Xatolar: `invalid_name`, `invalid_phone`, `invalid_role`, `invalid_region`, `message_too_long`, `rate_limited` (429: bitta raqamdan sutkasiga 3 ta, bitta IP'dan soatiga 10 ta) |
 | GET | `/users/{id}` | Ommaviy profil: `display_name`, viloyat, reyting, bitimlar soni, so‘nggi baholar |
 
 ## Telegram
@@ -165,12 +166,13 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | `/reports`, `/reports/{id}/resolve` | | mod |
 | `/claims`, `/claims/{id}/approve`, `/reject` | `{note}` | mod |
 | `/refund-requests`, `/{id}/done`, `/reject` | `{note}` | mod |
+| `/leads?status=new|contacted|closed|all`, `/leads/{id}/status` | `{status: contacted|closed, note?}`, auditga yoziladi | mod |
 | `/users`, `/users/{id}`, `/users/{id}/block`, `/unblock` | | mod |
 | `/users/{id}/wallet/adjust` | `{bucket, amount, note}` | admin |
 | `/users/{id}/role` | `{role}` | admin |
 | `/settings` | GET, PATCH | admin |
 | `/taxonomy/*`, `/regions/*` | CRUD | admin |
 | `/audit-log` | | admin |
-| `/stats` | `{auctions_by_status, deals_7d, commission_7d, new_users_7d}` | mod |
+| `/stats` | `{auctions_by_status, queues: {pending_review, reports, claims, refunds, leads}, deals_7d, commission_7d, new_users_7d}` | mod |
 
 Panelda bajarilgan har bir mutatsiya `staff_audit_log` jadvaliga yoziladi.

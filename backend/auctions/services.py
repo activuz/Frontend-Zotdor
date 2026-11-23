@@ -247,8 +247,11 @@ def add_media(
         _check_media_allowed(_lock(auction_id), user, kind, session_id, settings)
     try:
         stored, size = media_store.store_original(auction_id, upload, kind)
+    except media_store.StorageUnavailable as exc:
+        # Our storage failed, not the user's file: 503 so it is not mistaken for a bad upload.
+        raise DomainError("storage_unavailable", str(exc), http.HTTP_503_SERVICE_UNAVAILABLE) from exc
     except media_store.MediaError as exc:
-        raise DomainError("file_too_large", str(exc)) from exc
+        raise DomainError("file_too_large", str(exc), http.HTTP_413_REQUEST_ENTITY_TOO_LARGE) from exc
     try:
         with transaction.atomic():
             auction = _lock(auction_id)

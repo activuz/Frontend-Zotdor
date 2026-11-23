@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "notifications",
     "auctions",
     "moderation",
+    "leads",
     "deals",
     "payments",
     "panel_api",
@@ -157,6 +158,12 @@ TELEGRAM_WEBHOOK_SECRET = env.get("TELEGRAM_WEBHOOK_SECRET", "")
 LOGIN_REQUEST_TTL_SECONDS = 600
 LOGIN_RATE_PER_PHONE_PER_HOUR = 5
 LOGIN_RATE_PER_IP_PER_HOUR = 20
+
+# --- Landing contact requests (FR-18) ---------------------------------------
+# Staff Telegram chat (user or group id) that gets a copy of every new request. Empty = off.
+LEADS_TELEGRAM_CHAT_ID = env.get("LEADS_TELEGRAM_CHAT_ID", "")
+LEADS_PER_PHONE_PER_DAY = 3
+LEADS_PER_IP_PER_HOUR = 10
 
 # --- Media (docs/ARCHITECTURE.md §7) ---------------------------------------
 FFMPEG_BIN = env.get("FFMPEG_BIN", "ffmpeg")

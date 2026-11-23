@@ -10,7 +10,7 @@ envVarGroups:
       - key: ALLOWED_HOSTS
         value: api.zotdor.uz,zotdor-api.onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://web.zotdor.uz,https://panel.zotdor.uz
+        value: https://web.zotdor.uz,https://panel.zotdor.uz,https://zotdor.uz,https://www.zotdor.uz
       - key: CSRF_TRUSTED_ORIGINS
         value: https://web.zotdor.uz,https://panel.zotdor.uz
       - key: CSRF_COOKIE_DOMAIN
@@ -37,6 +37,8 @@ envVarGroups:
         value: ZotdorPlatformBot
       - key: TELEGRAM_WEBHOOK_SECRET
         generateValue: true
+      - key: LEADS_TELEGRAM_CHAT_ID
+        sync: false
       - key: PAYMENTS_PROVIDER
         value: click
       - key: CLICK_SERVICE_ID

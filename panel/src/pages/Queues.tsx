@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   useClaims,
+  useLeads,
   useRefunds,
   useReports,
   useResolveClaim,
   useResolveRefund,
   useResolveReport,
+  useSetLeadStatus,
 } from '../api/panel';
 import { formatDateTime, formatSom } from '../lib/format';
 import { EmptyState, PageError, PageLoading } from '../components/PageState';
@@ -23,6 +25,9 @@ const STATUS_LABEL: Record<string, string> = {
   approved: 'Tasdiqlangan',
   rejected: 'Rad etilgan',
   done: 'Qaytarilgan',
+  new: 'Yangi',
+  contacted: 'Bogʻlanildi',
+  closed: 'Yopilgan',
   all: 'Hammasi',
 };
 
@@ -160,6 +165,56 @@ export const Refunds: React.FC = () => {
                   { key: 'reject', label: 'Rad etish', needsNote: true },
                 ]}
                 onSubmit={(key, note) => resolve.mutate({ id: r.id, done: key === 'done', note })}
+              />
+            )}
+          </Card>
+        ))}
+      </ul>
+      {list.isSuccess && <Pager offset={offset} count={list.data.count} onChange={setOffset} />}
+    </div>
+  );
+};
+
+export const Leads: React.FC = () => {
+  const [status, setStatus] = useState('new');
+  const [offset, setOffset] = useState(0);
+  const list = useLeads(status, offset);
+  const update = useSetLeadStatus();
+
+  return (
+    <div>
+      <Title>Sayt arizalari</Title>
+      <Tabs value={status} options={tabs(['new', 'contacted', 'closed', 'all'])} onChange={(v) => { setStatus(v); setOffset(0); }} />
+      {list.isPending && <PageLoading />}
+      {list.isError && <PageError message={list.error.message} onRetry={() => void list.refetch()} />}
+      {list.isSuccess && list.data.results.length === 0 && <EmptyState title="Arizalar yoʻq" />}
+      <ul className="space-y-3">
+        {list.data?.results.map((l) => (
+          <Card key={l.id}>
+            <p className="font-semibold">
+              {l.name} ·{' '}
+              <a href={`tel:${l.phone}`} className="text-brand tabular-nums">{l.phone}</a>
+            </p>
+            <p className="text-[13px] text-ink-muted">
+              {l.role_label}
+              {l.region && ` · ${l.region}`}
+              {l.utm && ` · Manba: ${l.utm}`}
+            </p>
+            {l.message && <p className="rounded-xl bg-page p-3">{l.message}</p>}
+            <p className="text-[13px] text-ink-muted">
+              {formatDateTime(l.created_at)} · {STATUS_LABEL[l.status] ?? l.status}
+              {l.handled_note && ` · ${l.handled_note}`}
+            </p>
+            {l.status !== 'closed' && (
+              <DecisionForm
+                pending={update.isPending}
+                error={update.isError && update.variables?.id === l.id ? update.error.message : undefined}
+                notePlaceholder="Ichki izoh"
+                actions={[
+                  ...(l.status === 'new' ? [{ key: 'contacted', label: 'Bogʻlanildi', variant: 'primary' as const }] : []),
+                  { key: 'closed', label: 'Yopish' },
+                ]}
+                onSubmit={(key, note) => update.mutate({ id: l.id, status: key as 'contacted' | 'closed', note })}
               />
             )}
           </Card>

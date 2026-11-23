@@ -34,6 +34,10 @@ class MediaError(Exception):
     """User-facing reason why a file was refused."""
 
 
+class StorageUnavailable(MediaError):
+    """The file is fine but file storage (Nhost) did not accept it: a server-side problem."""
+
+
 def _key(auction_id: uuid.UUID | str, name: str) -> str:
     return f"auctions/{auction_id}/{name}"
 
@@ -58,7 +62,7 @@ def store_original(auction_id: uuid.UUID, upload: UploadedFile[bytes], kind: str
             )
         except storage.StorageError as exc:
             logger.exception("could not store upload")
-            raise MediaError("Faylni saqlab boʻlmadi. Qayta urinib koʻring.") from exc
+            raise StorageUnavailable("Faylni saqlab boʻlmadi. Birozdan keyin qayta urinib koʻring.") from exc
     return ref, upload.size
 
 
