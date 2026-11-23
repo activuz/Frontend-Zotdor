@@ -64,6 +64,9 @@ def test_nhost_upload_uses_bucket_and_admin_secret(nhost: Any, tmp_path: Path) -
     assert seen["url"] == "https://sub.storage.eu-central-1.nhost.run/v1/files"
     assert seen["method"] == "POST"
     assert seen["headers"]["X-hasura-admin-secret"] == "secret"
+    # Cloudflare in front of Nhost answers 403 "error code: 1010" to the default Python-urllib agent.
+    assert seen["headers"]["User-agent"] == storage.USER_AGENT
+    assert "urllib" not in storage.USER_AGENT.lower()
     assert b'name="bucket-id"' in seen["body"]
     assert b"media-private" in seen["body"]
     assert b'name="file[]"; filename="a.webp"' in seen["body"]
