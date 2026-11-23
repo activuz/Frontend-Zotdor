@@ -638,7 +638,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Sets the csrftoken cookie; the frontend calls it once on startup. */
+        /**
+         * @description Sets the csrftoken cookie and returns the token.
+         *
+         *     The SPA sends the returned value in X-CSRFToken. Returning it in the body means the SPA
+         *     never has to read the cookie, which it cannot do when it runs on another subdomain
+         *     (web.zotdor.uz → api.zotdor.uz) unless CSRF_COOKIE_DOMAIN is shared.
+         */
         get: operations["v1_auth_csrf_retrieve"];
         put?: never;
         post?: never;
@@ -1276,6 +1282,9 @@ export interface components {
         Cover: {
             url: string;
             thumb_url: string;
+        };
+        CsrfToken: {
+            csrf_token: string;
         };
         /**
          * @description * `ok` - ok
@@ -3522,12 +3531,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CsrfToken"];
+                };
             };
         };
     };

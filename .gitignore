@@ -30,4 +30,4 @@ dist-ssr
 *.sw?
 
 # Deploy secrets
-deploy/.env
+.env

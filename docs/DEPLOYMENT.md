@@ -225,7 +225,11 @@ Render'da `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_MERCHANT_USER_ID`, `CL
 
 | Belgi | Sabab va yechim |
 |---|---|
-| Login "CSRF" xatosi bilan rad etiladi | `CSRF_COOKIE_DOMAIN=.zotdor.uz` va `CSRF_TRUSTED_ORIGINS` ni tekshiring. Sayt `*.vercel.app` dan ochilgan bo‘lishi mumkin. |
+| Konsolda `Cannot read properties of null (reading 'next' / 'directions')` yoki ekranda "Server notoʻgʻri javob qaytardi" | So‘rov API'ga yetmayapti: Vercel'da `VITE_API_URL=https://api.zotdor.uz` yo‘q yoki u qo‘shilgandan keyin Redeploy qilinmagan. Yangi versiyada bunday build o‘zi xato bilan to‘xtaydi. Tekshirish: DevTools → Network → so‘rov `https://api.zotdor.uz/api/v1/...` ga ketishi kerak, `web.zotdor.uz/api/...` ga emas. |
+| Build "VITE_API_URL is not set" bilan to‘xtaydi | Vercel → Settings → Environment Variables → `VITE_API_URL` (Production va Preview uchun) → Redeploy. |
+| Login ishlaydi, lekin saqlashda (masalan, profil) `403` va "Bu amal uchun ruxsat yo‘q" | CSRF tekshiruvi. Render'dagi kod eski bo‘lishi mumkin (token `/auth/csrf` javobidan olinadigan versiya deploy qilinmagan). Shuningdek `CSRF_TRUSTED_ORIGINS` da `https://web.zotdor.uz` va `https://panel.zotdor.uz` borligini tekshiring. Yangi versiyada CSRF xatosi `csrf_failed` kodi va "Sahifani yangilab, qayta urinib ko‘ring" matni bilan qaytadi. |
+| Login "CSRF" xatosi bilan rad etiladi | `CSRF_TRUSTED_ORIGINS` ni tekshiring. Sayt `*.vercel.app` dan ochilgan bo‘lishi mumkin. |
+| Loglarda `FATAL: no authentication method is found` | `DATABASE_URL` oxirida `?sslmode=require` yo‘q yoki parol/foydalanuvchi noto‘g‘ri. Nhost faqat SSL ulanishni qabul qiladi. |
 | Brauzer konsolida CORS xatosi | `CORS_ALLOWED_ORIGINS` da `https://web.zotdor.uz` aniq shu ko‘rinishda (oxirida `/` siz) bo‘lishi kerak. |
 | `400 Bad Request` (DisallowedHost) | `ALLOWED_HOSTS` ga `api.zotdor.uz` qo‘shilmagan. Bu ro‘yxatda `https://` yozilmaydi. |
 | Rasm yuklanadi, lekin "Faylni saqlab bo‘lmadi" | `NHOST_STORAGE_URL` yoki admin secret noto‘g‘ri, yoki bucket yaratilmagan (1.3). Render loglarida `Nhost storage POST 4xx`. |
