@@ -18,6 +18,7 @@ import { PublicProfilePage } from './features/me/PublicProfilePage';
 import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { TestPaymentPage, WalletPage } from './features/wallet/WalletPage';
+import { RouteSeo } from './lib/seo';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ const auth = (page: React.ReactNode) => <RequireAuth>{page}</RequireAuth>;
 export const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
+      <RouteSeo />
       <AppLayout>
         <ErrorBoundary>
           <Routes>

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "auctions",
     "moderation",
     "leads",
+    "seo",
     "deals",
     "payments",
     "panel_api",

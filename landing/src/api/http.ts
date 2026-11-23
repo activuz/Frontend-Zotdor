@@ -15,6 +15,9 @@ export type LeadCreated = S["LeadCreated"];
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://api.zotdor.uz").replace(/\/$/, "");
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://web.zotdor.uz").replace(/\/$/, "");
 
+/** Public address of this landing (canonical URL, sitemap, robots). */
+export const LANDING_URL = (process.env.NEXT_PUBLIC_LANDING_URL || "https://zotdor.uz").replace(/\/$/, "");
+
 export class ApiError extends Error {
   constructor(
     message: string,

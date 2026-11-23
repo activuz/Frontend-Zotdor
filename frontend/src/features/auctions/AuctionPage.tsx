@@ -5,6 +5,8 @@ import { ApiError, mediaUrl } from '../../api/http';
 import { useMe } from '../auth/api';
 import { formatDateTime, formatKm, formatRating, formatSom } from '../../lib/format';
 import { useNow } from '../../lib/useNow';
+import { auctionSeo } from './seo';
+import { useSeo } from '../../lib/seo';
 import { PageError, PageLoading } from '../../components/ui/PageState';
 import { Button, ButtonLink } from '../../components/ui/Button';
 import { Alert, MoneyInput } from '../../components/ui/Field';
@@ -26,6 +28,11 @@ import { REPORT_REASONS, STATUS_LABEL, STATUS_TONE, TIER_BORDER, TIER_TEXT } fro
 export const AuctionPage: React.FC = () => {
   const { id = '' } = useParams();
   const auction = useAuction(id);
+  useSeo(
+    auction.isSuccess
+      ? auctionSeo(auction.data)
+      : { title: auction.isError ? 'Auksion topilmadi' : 'Auksion', noindex: auction.isError },
+  );
 
   if (auction.isPending) return <PageLoading />;
   if (auction.isError)

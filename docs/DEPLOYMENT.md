@@ -181,6 +181,10 @@ Uchinchi Vercel loyihasi: **Root Directory = `landing`**, Framework — Next.js 
 
 ---
 
+Sayt ishga tushgach, qidiruv tizimlariga qo‘shish: [SEO.md](SEO.md), 3-bo‘lim.
+
+---
+
 ## 4. DNS (`zotdor.uz` zonasi)
 
 | Yozuv | Tur | Qiymat |

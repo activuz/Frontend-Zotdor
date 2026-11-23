@@ -9,6 +9,7 @@ import { PageError, PageLoading } from '../../components/ui/PageState';
 import { useFeed } from '../auctions/api';
 import { AuctionGrid } from '../auctions/AuctionCard';
 import { ReportButton } from '../auctions/AuctionPage';
+import { useSeo } from '../../lib/seo';
 
 type PublicProfile = components['schemas']['PublicProfile'];
 
@@ -20,6 +21,21 @@ export const PublicProfilePage: React.FC = () => {
     queryFn: () => api<PublicProfile>('GET', `/users/${id}`),
   });
   const auctions = useFeed({ seller: id }, { limit: 12 });
+  const p = profile.data?.user;
+  useSeo(
+    p
+      ? {
+          title: `${p.display_name} — sotuvchi`,
+          description: [
+            `${p.display_name} Zotdor.uz chorva auksionida`,
+            p.rating_count ? `oʻrtacha baho ${formatRating(p.rating_avg)} (${p.rating_count} ta)` : '',
+            p.deals_count ? `${p.deals_count} ta bitim` : '',
+          ]
+            .filter(Boolean)
+            .join(', ') + '.',
+        }
+      : { title: 'Sotuvchi', noindex: profile.isError },
+  );
 
   if (profile.isPending) return <PageLoading />;
   if (profile.isError) return <PageError message={profile.error.message} onRetry={() => void profile.refetch()} />;

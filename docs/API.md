@@ -153,6 +153,16 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | POST | `/leads` | Landing aloqa formasi (FR-18). Ochiq, sessiyasiz va CSRF'siz. `{name, phone, role: seller|buyer|both, region?, message?, utm?}` → `201 {id}`. Xatolar: `invalid_name`, `invalid_phone`, `invalid_role`, `invalid_region`, `message_too_long`, `rate_limited` (429: bitta raqamdan sutkasiga 3 ta, bitta IP'dan soatiga 10 ta) |
 | GET | `/users/{id}` | Ommaviy profil: `display_name`, viloyat, reyting, bitimlar soni, so‘nggi baholar |
 
+## SEO (`/api/seo`, JSON emas)
+
+| Metod | Yo‘l | Tavsif |
+|---|---|---|
+| GET | `/api/seo/sitemap.xml` | `web.zotdor.uz/sitemap.xml` shu yerga proxy qilinadi. Bazadan har so‘rovda tuziladi: `/`, `/search`, ochiq auksionlar va oxirgi 30 kunda tugaganlar. 10 daqiqa kesh |
+| GET | `/api/seo/a/{id}` | Faqat havola ko‘rinishi botlari uchun (Telegram, Facebook…) Open Graph teglari bilan HTML. Ochiq bo‘lmagan auksionga 404 |
+| GET | `/robots.txt` | API hosti indekslanmaydi: `Disallow: /` |
+
+Batafsil: [SEO.md](SEO.md).
+
 ## Telegram
 
 `POST /api/telegram/webhook/{TELEGRAM_WEBHOOK_SECRET}` — faqat Telegram uchun. `X-Telegram-Bot-Api-Secret-Token` sarlavhasi tekshiriladi.

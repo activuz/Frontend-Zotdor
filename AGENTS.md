@@ -28,6 +28,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 | [docs/DESIGN.md](docs/DESIGN.md) | tokenlar, tipografika, matn qoidalari |
 | [docs/TESTING.md](docs/TESTING.md) | majburiy test holatlari, "tayyor" ta'rifi |
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | bosqichlar va bog‘liqliklar |
+| [docs/SEO.md](docs/SEO.md) | sarlavhalar, Open Graph, sitemap, qidiruv tizimlariga qo‘shish |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | production: Vercel, Render, Nhost sozlash |
 
 **Hujjat va kod bir-biriga mos bo‘lishi shart.** Modelni, endpointni yoki biznes qoidani o‘zgartirsangiz, tegishli hujjatni o‘sha o‘zgarish ichida yangilang. Biznes qoidasini o‘zgartirish kerak bo‘lsa, avval mahsulot egasidan so‘rang. Uni o‘zingiz hal qilmang.
