@@ -153,6 +153,7 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | POST | `/notifications/read` | `{ids?}` — `ids` bo‘lmasa, hammasi o‘qilgan deb belgilanadi |
 | GET | `/notifications/unread-count` | |
 | POST | `/reports` | `{target_type, target_id, reason, comment?}` |
+| POST | `/bug-reports` | "Xatolik haqida xabar berish" (FR-19). Ochiq; kirgan foydalanuvchi bogʻlanadi (sessiya bilan, CSRF kerak). `{message, contact?, page_url?, viewport?, error?}` → `201 {id}`. `contact` faqat mehmondan saqlanadi. Kontekst maydonlari rad etilmaydi, kesiladi. Brauzer nomi `User-Agent` sarlavhasidan olinadi. Xatolar: `message_too_short` (10 belgidan kam), `message_too_long` (2000 dan ortiq), `rate_limited` (429: bitta foydalanuvchi yoki IP'dan soatiga 5 ta) |
 | POST | `/leads` | Landing aloqa formasi (FR-18). Ochiq, sessiyasiz va CSRF'siz. `{name, phone, role: seller|buyer|both, region?, message?, utm?}` → `201 {id}`. Xatolar: `invalid_name`, `invalid_phone`, `invalid_role`, `invalid_region`, `message_too_long`, `rate_limited` (429: bitta raqamdan sutkasiga 3 ta, bitta IP'dan soatiga 10 ta) |
 | GET | `/users/{id}` | Ommaviy profil: `display_name`, viloyat, reyting, bitimlar soni, so‘nggi baholar |
 
@@ -179,6 +180,7 @@ Batafsil: [SEO.md](SEO.md).
 | `/reports`, `/reports/{id}/resolve` | | mod |
 | `/claims`, `/claims/{id}/approve`, `/reject` | `{note}` | mod |
 | `/refund-requests`, `/{id}/done`, `/reject` | `{note}` | mod |
+| `/bug-reports?status=new|resolved|closed|all`, `/bug-reports/{id}/status` | `{status: resolved|closed, note?}`, auditga yoziladi (`bug_report.resolved`). `/stats` dagi `queues.bug_reports` — yangi xabarlar soni | mod |
 | `/leads?status=new|contacted|closed|all`, `/leads/{id}/status` | `{status: contacted|closed, note?}`, auditga yoziladi | mod |
 | `/users`, `/users/{id}`, `/users/{id}/block`, `/unblock` | | mod |
 | `/users/{id}/wallet/adjust` | `{bucket, amount, note}` | admin |

@@ -1,15 +1,19 @@
 import React from 'react';
+import { ReportProblemButton } from '../../features/feedback/ReportProblem';
 
 interface State {
   failed: boolean;
+  error: string;
 }
 
 /** Last line of defence: a render error shows a recoverable screen instead of a blank page. */
 export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
-  state: State = { failed: false };
+  state: State = { failed: false, error: '' };
 
-  static getDerivedStateFromError(): State {
-    return { failed: true };
+  static getDerivedStateFromError(error: unknown): State {
+    // Attached to a bug report, if the user sends one (FR-19).
+    const text = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ''}` : String(error);
+    return { failed: true, error: text.slice(0, 2000) };
   }
 
   componentDidCatch(error: unknown) {
@@ -29,6 +33,9 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
         >
           Sahifani yangilash
         </button>
+        <div className="mt-2">
+          <ReportProblemButton variant="button" error={this.state.error} />
+        </div>
       </div>
     );
   }

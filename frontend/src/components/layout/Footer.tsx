@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ReportProblemButton } from '../../features/feedback/ReportProblem';
 
 /** Certificates and other claims are shown only when the product owner provides real ones (DESIGN.md §5). */
 export const Footer: React.FC = () => (
@@ -32,6 +33,9 @@ export const Footer: React.FC = () => (
             <Link to="/offer" className="hover:text-ink">
               Oferta
             </Link>
+          </li>
+          <li>
+            <ReportProblemButton />
           </li>
         </ul>
       </nav>

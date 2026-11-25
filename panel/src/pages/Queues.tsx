@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   useClaims,
+  useBugReports,
   useLeads,
   useRefunds,
   useReports,
   useResolveClaim,
   useResolveRefund,
   useResolveReport,
+  useSetBugReportStatus,
   useSetLeadStatus,
 } from '../api/panel';
 import { formatDateTime, formatSom } from '../lib/format';
@@ -215,6 +217,71 @@ export const Leads: React.FC = () => {
                   { key: 'closed', label: 'Yopish' },
                 ]}
                 onSubmit={(key, note) => update.mutate({ id: l.id, status: key as 'contacted' | 'closed', note })}
+              />
+            )}
+          </Card>
+        ))}
+      </ul>
+      {list.isSuccess && <Pager offset={offset} count={list.data.count} onChange={setOffset} />}
+    </div>
+  );
+};
+
+/** "Xatolik haqida xabar berish" form submissions (FR-19). */
+export const BugReports: React.FC = () => {
+  const [status, setStatus] = useState('new');
+  const [offset, setOffset] = useState(0);
+  const list = useBugReports(status, offset);
+  const update = useSetBugReportStatus();
+
+  return (
+    <div>
+      <Title>Xatolik xabarlari</Title>
+      <Tabs value={status} options={tabs(['new', 'resolved', 'closed', 'all'])} onChange={(v) => { setStatus(v); setOffset(0); }} />
+      {list.isPending && <PageLoading />}
+      {list.isError && <PageError message={list.error.message} onRetry={() => void list.refetch()} />}
+      {list.isSuccess && list.data.results.length === 0 && <EmptyState title="Xabarlar yoʻq" />}
+      <ul className="space-y-3">
+        {list.data?.results.map((r) => (
+          <Card key={r.id}>
+            <p className="font-semibold">
+              {r.user_id ? (
+                <Link to={`/users/${r.user_id}`} className="text-brand tabular-nums">{r.user_phone}</Link>
+              ) : (
+                <>Mehmon{r.contact && ` · ${r.contact}`}</>
+              )}
+            </p>
+            <p className="whitespace-pre-line rounded-xl bg-page p-3">{r.message}</p>
+            {r.page_url && (
+              <p className="break-all text-[13px]">
+                Sahifa:{' '}
+                <a href={r.page_url} target="_blank" rel="noreferrer" className="text-brand">{r.page_url}</a>
+              </p>
+            )}
+            <p className="break-all text-[13px] text-ink-muted">
+              {r.viewport && `Ekran ${r.viewport} · `}
+              {r.user_agent}
+            </p>
+            {r.error_text && (
+              <details className="text-[13px]">
+                <summary className="min-h-touch cursor-pointer font-semibold">Xato matni</summary>
+                <pre className="mt-1 max-h-60 overflow-auto whitespace-pre-wrap break-all rounded-xl bg-page p-3">{r.error_text}</pre>
+              </details>
+            )}
+            <p className="text-[13px] text-ink-muted">
+              {formatDateTime(r.created_at)} · {STATUS_LABEL[r.status] ?? r.status}
+              {r.handled_note && ` · ${r.handled_note}`}
+            </p>
+            {r.status === 'new' && (
+              <DecisionForm
+                pending={update.isPending}
+                error={update.isError && update.variables?.id === r.id ? update.error.message : undefined}
+                notePlaceholder="Ichki izoh"
+                actions={[
+                  { key: 'resolved', label: 'Tuzatildi', variant: 'primary' as const },
+                  { key: 'closed', label: 'Yopish' },
+                ]}
+                onSubmit={(key, note) => update.mutate({ id: r.id, status: key as 'resolved' | 'closed', note })}
               />
             )}
           </Card>

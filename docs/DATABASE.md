@@ -220,6 +220,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 
 ### moderation va core
 - **reports** (id, reporter_id, target_type `auction|user`, target_id, reason `fake|wrong_info|abuse|fraud|other`, comment, status `open|resolved|dismissed`, handled_by_id, created_at, handled_at)
+- **bug_reports** (id, user_id NULL `ON DELETE SET NULL`, message ≤2000, contact (faqat mehmon), page_url ≤500, user_agent ≤300, viewport, error_text ≤2000, ip, status `new|resolved|closed`, handled_by_id, handled_note, created_at, handled_at) — "Xatolik haqida xabar berish" (FR-19). Indekslar: `(status, created_at)`, `(ip, created_at)`.
 - **leads** (id, name, phone `+998XXXXXXXXX`, region_id NULL, role `seller|buyer|both`, message, source (utm), ip, status `new|contacted|closed`, handled_by_id, handled_note, created_at, handled_at) — landing aloqa formasi (FR-18). Indekslar: `(status, created_at)`, `(phone, created_at)`, `(ip, created_at)` — cheklov soʻrovlari uchun.
 - **platform_settings** — bitta qatorli jadval: `commission_rate_bp=20`, `signup_bonus=50000`, `bonus_ttl_days=90`, `cashback_pct=5` (BR-47), `min_bid_pct=50`, `max_bid_pct=300`, `min_duration_min=10`, `max_duration_min=720`, `max_schedule_ahead_days=7`, `decision_window_h=48`, `early_accept_min_minutes=10`, `claim_window_days=7`, `rating_window_days=14`, `photos_min=4`, `photos_max=10`, `videos_min=1`, `videos_max=2`, `video_max_s=30`. O‘zgarishlar audit jurnaliga yoziladi.
 - **staff_audit_log** (id, actor_id, action, target_type, target_id, before jsonb, after jsonb, ip, created_at)

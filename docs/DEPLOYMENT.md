@@ -178,6 +178,7 @@ Uchinchi Vercel loyihasi: **Root Directory = `landing`**, Framework — Next.js 
 - Sahifa API'dan `/config`, `/reference/regions` va ochiq auksionlarni oladi va ularni har 60 soniyada yangilaydi (ISR). API ishlamay qolsa, boʻlimlar xato holatini koʻrsatadi, sahifa esa ochilaveradi.
 - Aloqa formasi brauzerdan `POST https://api.zotdor.uz/api/v1/leads` ga yuboriladi. Shuning uchun Render'dagi `CORS_ALLOWED_ORIGINS` ga `https://zotdor.uz,https://www.zotdor.uz` qoʻshilishi shart (`render.yaml` da bor, dashboard'da ham tekshiring).
 - Arizalarning Telegram nusxasi uchun Render'da `LEADS_TELEGRAM_CHAT_ID` ni toʻldiring: xodimlar guruhi yoki shaxsiy chat id. Bot (`ZotdorPlatformBot`) oʻsha chatga qoʻshilgan boʻlishi kerak. Boʻsh boʻlsa, arizalar faqat panelda koʻrinadi.
+- Xatolik xabarlari (FR-19) uchun alohida chat kerak boʻlsa, `SUPPORT_TELEGRAM_CHAT_ID` ni toʻldiring. Boʻsh boʻlsa, ular `LEADS_TELEGRAM_CHAT_ID` chatiga boradi.
 
 ---
 

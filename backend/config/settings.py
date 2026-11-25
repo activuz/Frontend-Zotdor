@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "auctions",
     "moderation",
     "leads",
+    "feedback",
     "seo",
     "deals",
     "payments",
@@ -165,6 +166,9 @@ LOGIN_RATE_PER_IP_PER_HOUR = 20
 LEADS_TELEGRAM_CHAT_ID = env.get("LEADS_TELEGRAM_CHAT_ID", "")
 LEADS_PER_PHONE_PER_DAY = 3
 LEADS_PER_IP_PER_HOUR = 10
+# "Xatolik haqida xabar berish" (FR-19): staff chat for new reports; empty = the leads chat.
+SUPPORT_TELEGRAM_CHAT_ID = env.get("SUPPORT_TELEGRAM_CHAT_ID", "") or LEADS_TELEGRAM_CHAT_ID
+BUG_REPORTS_PER_HOUR = 5
 
 # --- Media (docs/ARCHITECTURE.md §7) ---------------------------------------
 FFMPEG_BIN = env.get("FFMPEG_BIN", "ffmpeg")

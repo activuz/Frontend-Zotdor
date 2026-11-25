@@ -21,6 +21,7 @@ import { LocationPrompt } from '../location/LocationPrompt';
 import { LocationPicker } from '../location/LocationPicker';
 import { useDeviceLocation } from '../location/useDeviceLocation';
 import { MapView } from '../location/MapView';
+import { ReportProblemButton } from '../feedback/ReportProblem';
 
 const MENU = [
   { to: '/me/auctions', label: 'Auksionlarim', icon: Tag },
@@ -95,6 +96,10 @@ export const ProfilePage: React.FC = () => {
           ))}
         </ul>
       </nav>
+
+      <div className="bg-surface rounded-2xl border border-line">
+        <ReportProblemButton variant="row" />
+      </div>
 
       {logout.isError && (
         <p role="alert" className="text-[15px] text-danger">

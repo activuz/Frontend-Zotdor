@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ReportProblemButton } from '../../features/feedback/ReportProblem';
 
 /** Shared loading / empty / error states (AGENTS.md: every request has loading, empty, error, success). */
 export const PageLoading: React.FC<{ label?: string }> = ({ label = 'Yuklanmoqda…' }) => (
@@ -20,6 +21,9 @@ export const PageError: React.FC<{ message: string; onRetry?: () => void }> = ({
         Qayta urinish
       </button>
     )}
+    <p className="mt-3 text-[13px] text-ink-muted">
+      Muammo takrorlanaversa: <ReportProblemButton error={message} className="min-h-touch font-semibold text-brand" />
+    </p>
   </div>
 );
 
