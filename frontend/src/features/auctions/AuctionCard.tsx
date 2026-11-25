@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ImageOff, MapPin, Users } from 'lucide-react';
+import { ImageOff, MapPin, PlayCircle, Users } from 'lucide-react';
 import { mediaUrl } from '../../api/http';
 import { formatDateTime, formatKm, formatSom } from '../../lib/format';
 import type { AuctionList } from './api';
 import { Countdown } from './Countdown';
 import { STATUS_LABEL, STATUS_TONE } from './labels';
 
+const reducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export const AuctionCard: React.FC<{ auction: AuctionList; to?: string }> = ({ auction: a, to }) => {
+  // Hover (mouse) or keyboard focus plays the attached video, muted. The file is requested only
+  // then, so a feed of cards does not download every video. Touch devices keep the photo.
+  const [playing, setPlaying] = useState(false);
+  const video = a.preview_video;
+  const start = () => {
+    if (video && !reducedMotion()) setPlaying(true);
+  };
+  const stop = () => setPlaying(false);
   const status = a.status ?? 'draft';
   const place = [a.district?.name, a.region?.name].filter(Boolean).join(', ');
   const km = formatKm(a.distance_km);
@@ -17,6 +28,10 @@ export const AuctionCard: React.FC<{ auction: AuctionList; to?: string }> = ({ a
     <Link
       to={to ?? `/a/${a.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface hover:shadow-md"
+      onPointerEnter={(e) => e.pointerType === 'mouse' && start()}
+      onPointerLeave={stop}
+      onFocus={start}
+      onBlur={stop}
     >
       <div className="relative aspect-[4/3] bg-page">
         {a.cover ? (
@@ -30,6 +45,25 @@ export const AuctionCard: React.FC<{ auction: AuctionList; to?: string }> = ({ a
           <div className="flex h-full items-center justify-center text-ink-muted">
             <ImageOff className="w-8 h-8" aria-hidden="true" />
           </div>
+        )}
+        {video && playing && (
+          <video
+            src={mediaUrl(video.url)}
+            poster={video.poster_url ? mediaUrl(video.poster_url) : undefined}
+            muted
+            loop
+            autoPlay
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        {video && !playing && (
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-ink/80 px-2 py-0.5 text-[13px] font-semibold text-surface">
+            <PlayCircle className="w-4 h-4" aria-hidden="true" />
+            Video
+          </span>
         )}
         <span
           className={`absolute left-2 top-2 rounded-lg px-2 py-0.5 text-[13px] font-semibold ${STATUS_TONE[status]}`}

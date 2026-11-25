@@ -22,7 +22,9 @@ Bu hujjat ikki qismdan iborat. Birinchisi — kodda nima qilingani: qaysi fayl n
 | `/search` | Chorva qidirish — Zotdor.uz | ✅ |
 | `/a/:id` | `<auksion sarlavhasi> — Zotdor.uz`, tavsif: joy, sotuvchi narxi, holat, tavsifning boshi | ✅ ochiq va tugagan auksionlar; qoralama va moderatsiyadagilar ❌ |
 | `/u/:id` | `<ism> — sotuvchi — Zotdor.uz`, tavsif: baho va bitimlar soni | ✅ |
-| `/login`, `/sell`, `/me/*`, `/deals/*`, `/wallet`, `/notifications`, `/a/:id/decision`, 404 | sahifa nomi | ❌ `noindex` |
+| `/login` | Kirish — Zotdor.uz | ✅ |
+| `/terms`, `/privacy`, `/offer` | Foydalanish shartlari / Maxfiylik siyosati / Ommaviy oferta — Zotdor.uz | ✅ |
+| `/sell`, `/me/*`, `/deals/*`, `/wallet`, `/notifications`, `/a/:id/decision`, 404 | sahifa nomi | ❌ `noindex` |
 
 Matnlar shu yerda yoziladi:
 
@@ -41,7 +43,7 @@ Matnlar shu yerda yoziladi:
 
 | Fayl | Nima bor | Qanday yangilanadi |
 |---|---|---|
-| `https://web.zotdor.uz/sitemap.xml` | `/`, `/search`, barcha ochiq (`scheduled`, `live`) auksionlar va oxirgi 30 kunda tugaganlar | **Avtomatik.** Vercel bu manzilni `api.zotdor.uz/api/seo/sitemap.xml` ga yo‘naltiradi; backend uni har so‘rovda bazadan tuzadi (10 daqiqa kesh). Auksion e'lon qilinishi bilan sitemap'ga tushadi, 30 kundan keyin o‘zi chiqib ketadi. |
+| `https://web.zotdor.uz/sitemap.xml` | `/`, `/search`, `/login`, `/terms`, `/privacy`, `/offer`, shu sitemap'dagi auksionlar sotuvchilarining profillari (`/u/:id`), barcha ochiq (`scheduled`, `live`) auksionlar va oxirgi 30 kunda tugaganlar | **Avtomatik.** Vercel bu manzilni `api.zotdor.uz/api/seo/sitemap.xml` ga yo‘naltiradi; backend uni har so‘rovda bazadan tuzadi (10 daqiqa kesh). Auksion e'lon qilinishi bilan sitemap'ga tushadi, 30 kundan keyin o‘zi chiqib ketadi. |
 | `https://zotdor.uz/sitemap.xml` | landing sahifasi | `landing/src/app/sitemap.ts` |
 
 Qoidalar `backend/seo/views.py` da: `FINISHED_KEEP_DAYS = 30`, `OPEN_STATUSES`, `FINISHED_STATUSES`, `STATIC_PAGES`. Qoralama, moderatsiyadagi, rad etilgan, bloklangan va bekor qilingan auksionlar sitemap'ga hech qachon tushmaydi.

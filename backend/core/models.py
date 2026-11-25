@@ -32,6 +32,9 @@ class PlatformSettings(models.Model):
     commission_rate_bp = models.PositiveSmallIntegerField(default=20, help_text="20 = 0.2%")
     signup_bonus = models.PositiveIntegerField(default=50_000)
     bonus_ttl_days = models.PositiveSmallIntegerField(default=90)
+    cashback_pct = models.PositiveSmallIntegerField(
+        default=5, help_text="Share of the charged commission returned to the seller as bonus, %"
+    )
     min_bid_pct = models.PositiveSmallIntegerField(default=50)
     max_bid_pct = models.PositiveSmallIntegerField(default=300)
     min_duration_min = models.PositiveSmallIntegerField(default=10)

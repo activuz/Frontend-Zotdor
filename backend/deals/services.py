@@ -108,6 +108,7 @@ def resolve_claim(claim_id: uuid.UUID, moderator: User, approve: bool, note: str
     claim.save()
     if approve:
         refunded = wallet.refund_commission(deal.seller, "deal", deal.id, actor=moderator)
+        wallet.reverse_cashback(deal.seller, deal.id, actor=moderator)
         deal.status = Deal.DealStatus.FAILED
         deal.save(update_fields=["status"])
         refresh_user_stats(deal.seller)

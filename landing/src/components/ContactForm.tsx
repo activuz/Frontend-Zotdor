@@ -223,7 +223,12 @@ export const ContactForm: React.FC<{ regions: Loaded<Region[]> }> = ({ regions }
               <button type="submit" disabled={pending} className={buttonClass("primary", "w-full disabled:opacity-60")}>
                 {pending ? t.contact.submitting : t.contact.submit}
               </button>
-              <p className="text-[13px] text-ink-muted">{t.contact.privacy}</p>
+              <p className="text-[13px] text-ink-muted">
+                {t.contact.privacy}{" "}
+                <a href={siteUrl("/privacy")} className="text-brand underline">
+                  {t.contact.privacyLink}
+                </a>
+              </p>
             </form>
           )}
         </div>

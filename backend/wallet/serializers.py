@@ -8,6 +8,8 @@ ENTRY_TITLES: dict[str, str] = {
     EntryType.TOPUP: "Balans toʻldirildi",
     EntryType.BONUS_GRANT: "Roʻyxatdan oʻtish bonusi",
     EntryType.BONUS_EXPIRE: "Bonus muddati tugadi",
+    EntryType.BONUS_CASHBACK: "Bitimdan bonus (keshbek)",
+    EntryType.BONUS_CASHBACK_REVERSAL: "Keshbek qaytarib olindi",
     EntryType.HOLD: "Auksion uchun band qilindi",
     EntryType.HOLD_RELEASE: "Band qilingan summa boʻshatildi",
     EntryType.COMMISSION: "Komissiya",

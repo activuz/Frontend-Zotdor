@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ArrowRight, ImageOff, MapPin, Users } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowRight, ImageOff, MapPin, PlayCircle, Users } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { mediaUrl, siteUrl, type AuctionCard, type Loaded } from "@/api/http";
 import { fill } from "@/lib/i18n";
@@ -10,6 +10,13 @@ import { ButtonLink, Section, SectionTitle } from "./ui";
 
 const Card: React.FC<{ a: AuctionCard }> = ({ a }) => {
   const { t, tr } = useLanguage();
+  // Mouse hover or keyboard focus plays the attached video (muted); loaded only then.
+  const [playing, setPlaying] = useState(false);
+  const video = a.preview_video;
+  const start = () => {
+    if (video && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(true);
+  };
+  const stop = () => setPlaying(false);
   const live = a.status === "live";
   const time = live ? a.ends_at : a.starts_at;
   const place = [a.region?.name, a.district?.name].filter(Boolean).join(", ");
@@ -23,6 +30,10 @@ const Card: React.FC<{ a: AuctionCard }> = ({ a }) => {
       <a
         href={siteUrl(`/a/${a.id}`)}
         className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-shadow hover:shadow-md"
+        onPointerEnter={(e) => e.pointerType === "mouse" && start()}
+        onPointerLeave={stop}
+        onFocus={start}
+        onBlur={stop}
       >
         <div className="relative aspect-[4/3] bg-brand-soft">
           {a.cover ? (
@@ -38,6 +49,24 @@ const Card: React.FC<{ a: AuctionCard }> = ({ a }) => {
               <ImageOff className="h-6 w-6" aria-hidden="true" />
               <span className="text-[13px]">{t.auctions.noPhoto}</span>
             </div>
+          )}
+          {video && playing && (
+            <video
+              src={mediaUrl(video.url)}
+              poster={video.poster_url ? mediaUrl(video.poster_url) : undefined}
+              muted
+              loop
+              autoPlay
+              playsInline
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
+          {video && !playing && (
+            <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-ink px-3 py-1 text-[13px] font-semibold text-page">
+              <PlayCircle className="h-4 w-4" aria-hidden="true" />
+              {t.auctions.video}
+            </span>
           )}
           <span
             className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[13px] font-semibold ${

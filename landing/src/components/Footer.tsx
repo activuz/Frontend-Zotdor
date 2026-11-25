@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { SITE_URL } from "@/api/http";
+import { SITE_URL, siteUrl } from "@/api/http";
 import { fill } from "@/lib/i18n";
 import { CONTACTS } from "@/lib/contacts";
 import { Container } from "./ui";
@@ -50,9 +50,23 @@ export const Footer: React.FC = () => {
         </ul>
       </Container>
       <Container>
-        <p className="mt-8 border-t border-line pt-6 text-[13px] text-ink-muted">
-          {fill(t.footer.rights, { year: new Date().getFullYear() })}
-        </p>
+        <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-ink-muted">{fill(t.footer.rights, { year: new Date().getFullYear() })}</p>
+          <nav aria-label={t.footer.legal}>
+            <ul className="flex flex-wrap gap-x-5">
+              {(["terms", "privacy", "offer"] as const).map((slug) => (
+                <li key={slug}>
+                  <a
+                    href={siteUrl(`/${slug}`)}
+                    className="inline-flex min-h-touch items-center text-[13px] font-medium text-ink-muted hover:text-ink"
+                  >
+                    {t.footer[slug]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </Container>
     </footer>
   );

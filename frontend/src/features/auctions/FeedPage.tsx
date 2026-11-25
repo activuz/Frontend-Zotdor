@@ -7,18 +7,26 @@ import { useFeed, type FeedFilters } from './api';
 import { AuctionGrid } from './AuctionCard';
 import { PageError, PageLoading } from '../../components/ui/PageState';
 import { query } from '../../api/http';
+import { LocationPrompt } from '../location/LocationPrompt';
+import { useDeviceLocation } from '../location/useDeviceLocation';
 
 /** FR-06: feed sections. Each section links to the same filters on /search. */
 export const FeedPage: React.FC = () => {
   const { data: me } = useMe();
-  const hasLocation = Boolean(me?.district);
+  const { hasLocation: hasDevice } = useDeviceLocation();
+  const hasLocation = Boolean(me?.district) || hasDevice;
 
   return (
     <div className="space-y-8">
       <Directions />
       <Section title="Jonli auksionlar" filters={{ status: 'live', sort: 'ending_soon' }} empty="Hozir jonli auksion yoʻq." />
-      {hasLocation && (
-        <Section title="Yaqin atrofda" filters={{ sort: 'nearest' }} empty="Yaqin atrofda auksion topilmadi." />
+      {hasLocation ? (
+        <div className="space-y-2">
+          <Section title="Yaqin atrofda" filters={{ sort: 'nearest' }} empty="Yaqin atrofda auksion topilmadi." />
+          <LocationPrompt compact />
+        </div>
+      ) : (
+        <LocationPrompt />
       )}
       <Section
         title="Tez orada boshlanadi"

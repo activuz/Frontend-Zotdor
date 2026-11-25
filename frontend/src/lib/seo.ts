@@ -97,7 +97,7 @@ export function useSeo(input: SeoInput | null) {
   }, [key, pathname]);
 }
 
-/** Tags for pages that have no data of their own. Dynamic pages (/a/:id, /u/:id) set their own. */
+/** Tags for pages that have no data of their own. Pages matched by DYNAMIC set their own. */
 const STATIC: { match: (p: string) => boolean; seo: SeoInput }[] = [
   {
     match: (p) => p === '/',
@@ -111,7 +111,14 @@ const STATIC: { match: (p: string) => boolean; seo: SeoInput }[] = [
       path: '/search',
     },
   },
-  { match: (p) => p === '/login', seo: { title: 'Kirish', noindex: true } },
+  {
+    match: (p) => p === '/login',
+    seo: {
+      title: 'Kirish',
+      description: 'Zotdor.uz ga telefon raqami va Telegram orqali kiring. Parol kerak emas. Auksion oching yoki taklif bering.',
+      path: '/login',
+    },
+  },
   { match: (p) => p === '/sell' || p.startsWith('/sell/'), seo: { title: 'Chorva sotish', noindex: true } },
   { match: (p) => p === '/me/auctions', seo: { title: 'Mening auksionlarim', noindex: true } },
   { match: (p) => p === '/me/bids', seo: { title: 'Takliflarim', noindex: true } },
@@ -124,7 +131,8 @@ const STATIC: { match: (p: string) => boolean; seo: SeoInput }[] = [
   { match: (p) => p.startsWith('/wallet'), seo: { title: 'Hamyon', noindex: true } },
 ];
 
-const DYNAMIC = /^\/(a|u)\/[^/]+$/;
+// These pages set their own tags with useSeo().
+const DYNAMIC = /^\/((a|u)\/[^/]+|terms|privacy|offer)$/;
 
 /** Mounted once inside the router. */
 export function RouteSeo() {

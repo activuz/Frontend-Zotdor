@@ -85,7 +85,9 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [ ] Landing: Vercel'da uchinchi loyiha, `zotdor.uz` domeni, Render'da `LEADS_TELEGRAM_CHAT_ID` ⛔ deploy
 - [ ] DESIGN.md bo‘yicha dizayn o‘tishi: tokenlar, tipografika, holatlar, demo'dagi ortiqcha bezakni olib tashlash
 - [ ] Barcha matnlarni tekshirish: ʻ va ʼ belgilari, soxta da'volarni olib tashlash
-- [ ] Huquqiy sahifalar ⛔ matnni yurist beradi
+- [x] Huquqiy sahifalar: `/terms`, `/privacy`, `/offer`, login'da rozilik matni, sayt va landing pastida havolalar — PRD asosidagi qoralama (2026-11-25)
+- [ ] Huquqiy matnlarni yurist tekshiruvi va operator rekvizitlari ⛔ mahsulot egasi
+- [x] Auksion kartochkasida hover/fokusda video (`preview_video`, frontend va landing)
 - [x] 404 sahifa, Error Boundary, offline holati
 - [ ] Accessibility tekshiruvi (axe) va 360, 390, 768, 1280 kengliklarda qo‘lda sinov
 

@@ -74,9 +74,11 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 - **BR-40** Komissiya: **qabul qilingan taklif summasining 0.2%**, butun so‘mgacha yuqoriga yaxlitlanadi. Uni faqat sotuvchi to‘laydi. Stavka sozlamada saqlanadi, e'lon qilish paytida auksionga yoziladi va keyin o‘zgarmaydi. *(A-11)*
 - **BR-41** Auksionni e'lon qilish uchun sotuvchining mavjud balansida sotuvchi narxining 0.2% i bo‘lishi kerak. Bu summa **rezerv** qilinadi. Bitim bo‘lsa, haqiqiy komissiya yechiladi va qolgani rezervdan qaytadi. Bitim bo‘lmasa yoki auksion bekor qilinsa, rezerv to‘liq qaytadi.
 - **BR-42** Haqiqiy komissiya rezervdan katta bo‘lsa (taklif narxdan yuqori bo‘lgan holat), farq balansdan yechiladi. Balans yetmasa, asosiy balans manfiyga tushadi. Qarz yopilmaguncha foydalanuvchi yangi auksion ocha olmaydi. *(A-12)*
-- **BR-43** Yangi akkauntga **50 000 so‘m bonus** beriladi. Bonus faqat komissiyaga sarflanadi, naqd qilib bo‘lmaydi va 90 kundan keyin yonib ketadi. Komissiya avval bonusdan, keyin asosiy balansdan yechiladi. *(A-10)*
+- **BR-43** Yangi akkauntga **50 000 so‘m bonus** beriladi. Bonus faqat komissiyaga sarflanadi, naqd qilib bo‘lmaydi va oxirgi bonus tushumidan 90 kun o‘tgach yonib ketadi (BR-47). Komissiya avval bonusdan, keyin asosiy balansdan yechiladi. *(A-10)*
 - **BR-44** Asosiy balans faqat Click orqali to‘ldiriladi. Click shartnomasi tuzilmaguncha admin balansni qo‘lda to‘ldira oladi va bu audit jurnaliga yoziladi.
 - **BR-45** Balansdan pul yechish funksiyasi yo‘q. Foydalanuvchi "pulni qaytarish" arizasini beradi (summa, Click to‘lov raqami, sabab). Moderator pulni Click kabineti orqali qo‘lda qaytaradi va arizani yopadi. Shundan keyin summa balansdan ayiriladi.
+- **BR-47** *(2026-11-25, mahsulot egasi)* Keshbek: har bir bitimda yechilgan komissiyaning **5%** i (`cashback_pct`, panelda o‘zgaradi) butun so‘mgacha pastga yaxlitlanib sotuvchining bonus hamyoniga tushadi. Bonus yig‘ilib boradi va bir martalik emas. Har yangi bonus tushganda butun bonus qoldig‘ining amal qilish muddati `bonus_ttl_days` (90 kun) ga yangilanadi. "Bitim bo‘lmadi" arizasi tasdiqlanib komissiya qaytarilsa, shu bitimning keshbeki bonus qoldig‘idan (qolgan qismi doirasida) qaytarib olinadi. Xaridorga keshbek berilmaydi.
+- **BR-48** *(2026-11-25)* Yangi akkauntga bonus berilganda foydalanuvchiga sayt va Telegram orqali bildirishnoma yuboriladi.
 - **BR-46** Har bir pul harakati o‘zgarmas jurnal yozuvi (ledger) sifatida saqlanadi. Balans faqat shu jurnal orqali o‘zgaradi.
 
 ### Reyting
@@ -109,7 +111,7 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 | FR-15 | Mening auksionlarim, Mening takliflarim, Mening bitimlarim | — |
 | FR-16 | Panel: moderatsiya navbati, shikoyatlar, arizalar, foydalanuvchilar, balansni tuzatish, sozlamalar, toifalar, audit jurnali, asosiy statistika | 44–45, 61–62 |
 | FR-18 | Landing sahifa (`zotdor.uz`): platformani tanishtiradi, saytdan haqiqiy auksionlar va sozlamalarni koʻrsatadi, FAQ va aloqa formasi. Forma arizasi (`leads`) bazaga yoziladi, panelda koʻrib chiqiladi, xodimlar Telegram chatiga nusxa yuboriladi | — |
-| FR-17 | Huquqiy sahifalar: foydalanish shartlari (oferta), maxfiylik siyosati. **Matnni mahsulot egasi yoki yurist beradi** | — |
+| FR-17 | Huquqiy sahifalar: foydalanish shartlari, maxfiylik siyosati, ommaviy oferta (`/terms`, `/privacy`, `/offer`). Matnlar mahsulot egasining roziligi bilan BR qoidalari asosida qoralama sifatida yozildi (2026-11-25, `frontend/src/features/legal/content.ts`). **Yurist ko‘rib chiqishi va operator rekvizitlari (nom, STIR, manzil) qo‘shilishi kerak** | — |
 
 ## 7. Nofunksional talablar
 

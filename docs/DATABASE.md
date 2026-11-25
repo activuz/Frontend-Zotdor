@@ -38,7 +38,7 @@ users 1─* notifications, telegram_outbox, watchlist, reports;  staff_audit_log
 | first_name, last_name | varchar(64) | Telegram'dan olinadi, profilda tahrirlanadi |
 | role | varchar(16) | `user` \| `moderator` \| `admin` |
 | region_id, district_id | FK NULL | birinchi kirishdan keyin to‘ldirish so‘raladi |
-| lat, lng | numeric(7,4) NULL | ~10 m aniqlikkacha yaxlitlanadi. Ixtiyoriy, masofa uchun |
+| lat, lng | numeric(7,4) NULL | Brauzer geolokatsiyasi (`PUT /me/location`), 3 xonagacha (~100 m) yaxlitlanadi. Ixtiyoriy, faqat masofa va "yaqin" saralash uchun; hech kimga ko‘rsatilmaydi. Bo‘lmasa tuman markazi ishlatiladi |
 | is_blocked | bool | |
 | blocked_reason | text NULL | |
 | rating_avg | numeric(3,2) NULL | denormal |
@@ -186,7 +186,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 | id | bigserial PK | |
 | user_id | FK | |
 | bucket | varchar(8) | `main` \| `bonus` \| `hold` |
-| type | varchar(24) | `topup`, `bonus_grant`, `bonus_expire`, `hold`, `hold_release`, `commission`, `commission_refund`, `refund_payout`, `adjustment` |
+| type | varchar(24) | `topup`, `bonus_grant`, `bonus_expire`, `bonus_cashback`, `bonus_cashback_reversal` (BR-47, `ref_type=deal`), `hold`, `hold_release`, `commission`, `commission_refund`, `refund_payout`, `adjustment` |
 | amount | bigint | ishorali |
 | balance_after | bigint | shu bucket'ning yangi qoldig‘i |
 | ref_type, ref_id | varchar, uuid NULL | `auction`, `deal`, `payment`, `refund_request` |
@@ -220,7 +220,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 ### moderation va core
 - **reports** (id, reporter_id, target_type `auction|user`, target_id, reason `fake|wrong_info|abuse|fraud|other`, comment, status `open|resolved|dismissed`, handled_by_id, created_at, handled_at)
 - **leads** (id, name, phone `+998XXXXXXXXX`, region_id NULL, role `seller|buyer|both`, message, source (utm), ip, status `new|contacted|closed`, handled_by_id, handled_note, created_at, handled_at) — landing aloqa formasi (FR-18). Indekslar: `(status, created_at)`, `(phone, created_at)`, `(ip, created_at)` — cheklov soʻrovlari uchun.
-- **platform_settings** — bitta qatorli jadval: `commission_rate_bp=20`, `signup_bonus=50000`, `bonus_ttl_days=90`, `min_bid_pct=50`, `max_bid_pct=300`, `min_duration_min=10`, `max_duration_min=720`, `max_schedule_ahead_days=7`, `decision_window_h=48`, `early_accept_min_minutes=10`, `claim_window_days=7`, `rating_window_days=14`, `photos_min=4`, `photos_max=10`, `videos_min=1`, `videos_max=2`, `video_max_s=30`. O‘zgarishlar audit jurnaliga yoziladi.
+- **platform_settings** — bitta qatorli jadval: `commission_rate_bp=20`, `signup_bonus=50000`, `bonus_ttl_days=90`, `cashback_pct=5` (BR-47), `min_bid_pct=50`, `max_bid_pct=300`, `min_duration_min=10`, `max_duration_min=720`, `max_schedule_ahead_days=7`, `decision_window_h=48`, `early_accept_min_minutes=10`, `claim_window_days=7`, `rating_window_days=14`, `photos_min=4`, `photos_max=10`, `videos_min=1`, `videos_max=2`, `video_max_s=30`. O‘zgarishlar audit jurnaliga yoziladi.
 - **staff_audit_log** (id, actor_id, action, target_type, target_id, before jsonb, after jsonb, ip, created_at)
 
 ## Demo tiplaridan farqlar

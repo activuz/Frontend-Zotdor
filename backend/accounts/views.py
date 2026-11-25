@@ -23,6 +23,8 @@ from accounts.serializers import (
     MeSerializer,
     ProfileUpdateSerializer,
 )
+from core.errors import DomainError
+from core.http import data_of
 
 POLL_COOKIE = "zd_login"
 POLL_COOKIE_PATH = "/api/v1/auth/"
@@ -123,3 +125,29 @@ class MeView(APIView):
             setattr(user, field, value)
         user.save()
         return Response(MeSerializer(user).data)
+
+
+class LocationView(APIView):
+    """Device position from the browser (Geolocation API). Stored rounded to ~100 m."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=inline_serializer(
+            "LocationIn", {"lat": serializers.FloatField(), "lng": serializers.FloatField()}
+        ),
+        responses=MeSerializer,
+    )
+    def put(self, request: Request) -> Response:
+        data = data_of(request)
+        try:
+            lat, lng = float(data.get("lat")), float(data.get("lng"))  # type: ignore[arg-type]
+        except (TypeError, ValueError) as exc:
+            raise DomainError("invalid_location", "Joylashuvni aniqlab boʻlmadi.") from exc
+        user: User = request.user  # type: ignore[assignment]
+        return Response(MeSerializer(services.set_location(user, lat, lng)).data)
+
+    @extend_schema(responses=MeSerializer)
+    def delete(self, request: Request) -> Response:
+        user: User = request.user  # type: ignore[assignment]
+        return Response(MeSerializer(services.clear_location(user)).data)

@@ -19,6 +19,7 @@ import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { TestPaymentPage, WalletPage } from './features/wallet/WalletPage';
 import { RouteSeo } from './lib/seo';
+import { LegalPage } from './features/legal/LegalPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +58,9 @@ export const App: React.FC = () => (
             <Route path="/wallet/test-payment/:id" element={auth(<TestPaymentPage />)} />
             <Route path="/u/:id" element={<PublicProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/terms" element={<LegalPage slug="terms" />} />
+            <Route path="/privacy" element={<LegalPage slug="privacy" />} />
+            <Route path="/offer" element={<LegalPage slug="offer" />} />
             {/* Old demo paths. */}
             <Route path="/profile" element={<Navigate to="/me" replace />} />
             <Route path="/add" element={<Navigate to="/sell" replace />} />

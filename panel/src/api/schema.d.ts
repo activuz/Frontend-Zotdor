@@ -880,6 +880,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Device position from the browser (Geolocation API). Stored rounded to ~100 m. */
+        put: operations["v1_me_location_update"];
+        post?: never;
+        /** @description Device position from the browser (Geolocation API). Stored rounded to ~100 m. */
+        delete: operations["v1_me_location_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/watchlist": {
         parameters: {
             query?: never;
@@ -1185,6 +1203,7 @@ export interface components {
             title?: string;
             status?: components["schemas"]["AuctionStatusEnum"];
             readonly cover: components["schemas"]["Cover"] | null;
+            readonly preview_video: components["schemas"]["PreviewVideo"] | null;
             /** Format: int64 */
             asking_price?: number | null;
             /** Format: int64 */
@@ -1233,6 +1252,7 @@ export interface components {
             title?: string;
             status?: components["schemas"]["AuctionStatusEnum"];
             readonly cover: components["schemas"]["Cover"] | null;
+            readonly preview_video: components["schemas"]["PreviewVideo"] | null;
             /** Format: int64 */
             asking_price?: number | null;
             /** Format: int64 */
@@ -1489,6 +1509,12 @@ export interface components {
          * @enum {string}
          */
         LeadStatusInStatusEnum: "contacted" | "closed";
+        LocationInRequest: {
+            /** Format: double */
+            lat: number;
+            /** Format: double */
+            lng: number;
+        };
         LoginStartRequest: {
             phone: string;
         };
@@ -1528,6 +1554,7 @@ export interface components {
             readonly region: components["schemas"]["Place"] | null;
             readonly district: components["schemas"]["Place"] | null;
             readonly needs_profile: boolean;
+            readonly has_location: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -1692,6 +1719,7 @@ export interface components {
             title?: string;
             status?: components["schemas"]["AuctionStatusEnum"];
             readonly cover: components["schemas"]["Cover"] | null;
+            readonly preview_video: components["schemas"]["PreviewVideo"] | null;
             /** Format: int64 */
             asking_price?: number | null;
             /** Format: int64 */
@@ -1744,6 +1772,7 @@ export interface components {
             title?: string;
             status?: components["schemas"]["AuctionStatusEnum"];
             readonly cover: components["schemas"]["Cover"] | null;
+            readonly preview_video: components["schemas"]["PreviewVideo"] | null;
             /** Format: int64 */
             asking_price?: number | null;
             /** Format: int64 */
@@ -1979,6 +2008,8 @@ export interface components {
             commission_rate_bp?: number;
             signup_bonus?: number;
             bonus_ttl_days?: number;
+            /** @description Share of the charged commission returned to the seller as bonus, % */
+            cashback_pct?: number;
             min_bid_pct?: number;
             max_bid_pct?: number;
             min_duration_min?: number;
@@ -2018,6 +2049,10 @@ export interface components {
             id: number;
             name: string;
         };
+        PreviewVideo: {
+            url: string;
+            poster_url: string;
+        };
         /**
          * @description * `click` - Click
          *     * `fake` - Fake
@@ -2035,6 +2070,7 @@ export interface components {
         };
         PublicConfig: {
             commission_rate_bp: number;
+            cashback_pct: number;
             min_duration_min: number;
             max_duration_min: number;
             max_schedule_ahead_days: number;
@@ -2156,6 +2192,8 @@ export interface components {
             commission_rate_bp?: number;
             signup_bonus?: number;
             bonus_ttl_days?: number;
+            /** @description Share of the charged commission returned to the seller as bonus, % */
+            cashback_pct?: number;
             min_bid_pct?: number;
             max_bid_pct?: number;
             min_duration_min?: number;
@@ -2221,6 +2259,8 @@ export interface components {
          * @description * `topup` - Topup
          *     * `bonus_grant` - Bonus Grant
          *     * `bonus_expire` - Bonus Expire
+         *     * `bonus_cashback` - Bonus Cashback
+         *     * `bonus_cashback_reversal` - Bonus Cashback Reversal
          *     * `hold` - Hold
          *     * `hold_release` - Hold Release
          *     * `commission` - Commission
@@ -2229,7 +2269,7 @@ export interface components {
          *     * `adjustment` - Adjustment
          * @enum {string}
          */
-        TypeEnum: "topup" | "bonus_grant" | "bonus_expire" | "hold" | "hold_release" | "commission" | "commission_refund" | "refund_payout" | "adjustment";
+        TypeEnum: "topup" | "bonus_grant" | "bonus_expire" | "bonus_cashback" | "bonus_cashback_reversal" | "hold" | "hold_release" | "commission" | "commission_refund" | "refund_payout" | "adjustment";
         UnreadCount: {
             count: number;
         };
@@ -3974,6 +4014,49 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Deal"][];
                 };
+            };
+        };
+    };
+    v1_me_location_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocationInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LocationInRequest"];
+                "multipart/form-data": components["schemas"]["LocationInRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    v1_me_location_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

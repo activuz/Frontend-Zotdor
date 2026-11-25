@@ -15,6 +15,7 @@ from rest_framework.test import APIClient
 from accounts.models import User
 from core.errors import DomainError
 from core.models import PlatformSettings
+from notifications.models import Notification, TelegramOutbox
 from wallet import services
 from wallet.models import Bucket, EntryType, Hold, Wallet, WalletEntry
 
@@ -251,6 +252,53 @@ def test_new_account_from_login_gets_bonus(telegram_settings: object) -> None:
     result = complete_login(started.request.id, started.poll_secret)
     assert result.user is not None
     assert wallet_of(result.user).bonus_balance == 50_000
+    note = Notification.objects.get(user=result.user, type="bonus_granted")
+    assert "50 000" in note.title and note.link == "/wallet"
+    assert TelegramOutbox.objects.filter(chat_id=777, text__contains="bonus").exists()
+
+
+@pytest.mark.parametrize(("commission", "expected"), [(40_000, 2_000), (18_000, 900), (19, 0), (0, 0)])
+def test_cashback_is_five_percent_of_commission_rounded_down(commission: int, expected: int) -> None:
+    assert services.cashback_for(commission, 5) == expected
+
+
+def test_cashback_accumulates_and_extends_whole_bonus_expiry() -> None:
+    user = make_user()
+    services.grant_signup_bonus(user)
+    first_expiry = wallet_of(user).bonus_expires_at
+    assert first_expiry is not None
+    deal1, deal2 = uuid.uuid4(), uuid.uuid4()
+    with time_machine.travel(timezone.now() + timedelta(days=60)):
+        assert services.grant_cashback(user, 40_000, deal1) == 2_000
+        assert services.grant_cashback(user, 40_000, deal1) == 0  # once per deal
+        assert services.grant_cashback(user, 20_000, deal2) == 1_000
+        w = wallet_of(user)
+        assert w.bonus_balance == 53_000  # not a one-time bonus: it keeps growing
+        assert w.bonus_expires_at is not None and w.bonus_expires_at > first_expiry + timedelta(days=59)
+    # The signup part would have burned at day 90; the fresh cashback moved the whole expiry.
+    with time_machine.travel(timezone.now() + timedelta(days=100)):
+        assert services.expire_bonuses() == 0
+    assert_consistent()
+
+
+def test_cashback_follows_settings() -> None:
+    s = PlatformSettings.load()
+    s.cashback_pct = 0
+    s.save()
+    user = make_user()
+    assert services.grant_cashback(user, 40_000, uuid.uuid4()) == 0
+    assert not WalletEntry.objects.filter(user=user, type=EntryType.BONUS_CASHBACK).exists()
+
+
+def test_reverse_cashback_never_makes_bonus_negative(admin: User) -> None:
+    user = make_user()
+    deal = uuid.uuid4()
+    services.grant_cashback(user, 40_000, deal)  # +2 000 bonus
+    services.adjust(user, Bucket.BONUS, -1_500, actor=admin, note="spent elsewhere")
+    assert services.reverse_cashback(user, deal, actor=admin) == 500
+    assert services.reverse_cashback(user, deal, actor=admin) == 0
+    assert wallet_of(user).bonus_balance == 0
+    assert_consistent()
 
 
 def test_wallet_api_shows_balances() -> None:
