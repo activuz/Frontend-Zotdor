@@ -18,6 +18,7 @@ from django.db.models.functions import Now
 from django.utils import timezone
 from rest_framework import status as http
 
+from accounts import services as accounts
 from auctions import media as media_store
 from auctions import storage
 from auctions.models import (
@@ -156,10 +157,35 @@ def _apply_fields(auction: Auction, data: dict[str, Any]) -> None:
     for name in DRAFT_FIELDS:
         if name in data:
             setattr(auction, name, data[name])
+    if "lat" in data or "lng" in data:
+        _apply_pin(auction, data.get("lat"), data.get("lng"), district_given="district" in data)
     if auction.district is not None:
         auction.region = auction.district.region
-        auction.lat, auction.lng = auction.district.lat, auction.district.lng
+        if not auction.location_pinned:
+            auction.lat, auction.lng = auction.district.lat, auction.district.lng
     auction.title = build_title(auction)
+
+
+def _apply_pin(auction: Auction, lat: float | None, lng: float | None, *, district_given: bool) -> None:
+    """The seller's optional map pin (BR-11a). Stored like a profile point, rounded to ~100 m.
+
+    Without an explicit district the pin decides it: the seller should not pick a region by
+    hand after pointing at the map. Clearing the pin falls back to the district centroid.
+    """
+    if lat is None and lng is None:
+        auction.location_pinned = False
+        return
+    if lat is None or lng is None:
+        raise DomainError("invalid_location", "Joylashuv toʻliq emas: kenglik va uzunlik kerak.")
+    lat, lng = float(lat), float(lng)
+    accounts.check_inside_uzbekistan(lat, lng)
+    auction.lat = Decimal(str(round(lat, accounts.LOCATION_DECIMALS)))
+    auction.lng = Decimal(str(round(lng, accounts.LOCATION_DECIMALS)))
+    auction.location_pinned = True
+    if not district_given:
+        district = accounts.nearest_district(lat, lng)
+        if district is not None:
+            auction.district = district
 
 
 @transaction.atomic
@@ -291,6 +317,21 @@ def delete_media(auction_id: uuid.UUID, media_id: uuid.UUID, user: User) -> None
     item.delete()
     # Files go only once the row is gone for good; a rollback keeps them.
     transaction.on_commit(lambda: _delete_files(refs))
+
+
+@transaction.atomic
+def reorder_media(auction_id: uuid.UUID, user: User, ids: list[uuid.UUID]) -> None:
+    """Set the gallery order (BR-12a). The first ready photo becomes the cover everywhere."""
+    auction = _lock(auction_id)
+    _own(auction, user)
+    if auction.status not in EDITABLE_STATUSES:
+        raise DomainError("not_editable", "Eʼlon qilingan auksion mediasini oʻzgartirib boʻlmaydi.", 409)
+    items = {m.id: m for m in auction.media.all()}
+    if len(ids) != len(set(ids)) or set(ids) != set(items):
+        raise DomainError("invalid_order", "Fayllar roʻyxati eskirgan. Sahifani yangilab, qayta urining.")
+    for position, media_id in enumerate(ids, start=1):
+        items[media_id].position = position
+    AuctionMedia.objects.bulk_update(items.values(), ["position"])
 
 
 def _delete_files(refs: list[str]) -> None:

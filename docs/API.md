@@ -26,9 +26,9 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 | POST | `/auth/telegram/start` | `{phone}` → `201 {request_id, deep_link, expires_at}` va `zd_login` cookie'si |
 | GET | `/auth/telegram/status/{request_id}` | `zd_login` cookie talab qilinadi. Javob: `{status: pending\|verified\|failed\|expired, fail_reason?, message?, user?}`. `verified` bo‘lsa sessiya ochiladi va `user` qaytadi. So‘rov bir martalik |
 | POST | `/auth/logout` | `204` |
-| GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`) |
+| GET | `/me` | joriy foydalanuvchi, `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`), `has_location` va `location: {lat, lng} \| null` (saqlangan nuqta, faqat egasiga) |
 | PATCH | `/me` | `{first_name?, last_name?, region_id?, district_id?}`. Tuman tanlangan viloyatga tegishli bo‘lishi kerak |
-| PUT | `/me/location` | `{lat, lng}` — brauzer geolokatsiyasi. O‘zbekiston chegarasidan tashqarida bo‘lsa `location_outside`. ~100 m gacha yaxlitlanadi. Profilda viloyat bo‘lmasa, eng yaqin tuman bo‘yicha to‘ldiriladi. Javob: `Me` (`has_location: true`) |
+| PUT | `/me/location` | `{lat, lng}` — brauzer geolokatsiyasi yoki xaritadan tanlangan nuqta. O‘zbekiston chegarasidan tashqarida bo‘lsa `location_outside`. ~100 m gacha yaxlitlanadi. Profilda viloyat bo‘lmasa, eng yaqin tuman bo‘yicha to‘ldiriladi. Javob: `Me` (`has_location: true`) |
 | DELETE | `/me/location` | Joylashuvni o‘chirish; masofa yana tuman markazidan hisoblanadi |
 
 Xato kodlari:
@@ -53,7 +53,7 @@ Xato kodlari:
 | GET | `/auctions` | Feed va qidiruv (quyida) |
 | GET | `/auctions/{id}` | Tafsilot |
 | POST | `/auctions` | Qoralama yaratish |
-| PATCH | `/auctions/{id}` | Faqat `draft` yoki `rejected` holatida |
+| PATCH | `/auctions/{id}` | Faqat `draft` yoki `rejected` holatida. Ixtiyoriy `lat`, `lng` — xaritadagi nuqta (BR-11a), ikkalasi birga yuboriladi; ikkalasi `null` bo‘lsa nuqta o‘chadi. `district_id` yuborilmasa, tuman nuqtaga eng yaqin tuman markazi bo‘yicha tanlanadi. Xatolar: `location_outside`, `invalid_location` (400) |
 | POST | `/auctions/{id}/submit` | Tekshiruvlar sinxron bajariladi → `200 {outcome: published\|pending_review\|rejected, checks: [{check_name, result, message}], auction}` |
 | POST | `/auctions/{id}/cancel` | `{reason?}` — BR-18 |
 | GET | `/auctions/{id}/checks` | Oxirgi tekshiruv natijalari, foydalanuvchiga tushunarli matn bilan |
@@ -79,7 +79,7 @@ Xato kodlari:
   "is_watched": false
 }
 ```
-Tafsilotda bunga qo‘shimcha ravishda `media[]`, `description`, `breed`, `age_months`, `weight_kg`, `weight_is_estimated`, `min_bid`, `max_bid`, `seller: {id, display_name, rating_avg, rating_count, deals_count, member_since}` keladi. Sotuvchi telefoni **kelmaydi**. Agar so‘rovchi auksion egasi bo‘lsa, `owner: {hold_amount, decision_deadline, can_cancel}` ham qo‘shiladi.
+Tafsilotda bunga qo‘shimcha ravishda `media[]`, `description`, `breed`, `age_months`, `weight_kg`, `weight_is_estimated`, `min_bid`, `max_bid`, `seller: {id, display_name, rating_avg, rating_count, deals_count, member_since}` keladi. Sotuvchi telefoni **kelmaydi**. `area: {lat, lng, radius_m} | null` — belgilangan nuqtaning taxminiy hududi (BR-33a); nuqta belgilanmagan bo‘lsa `null`. Aniq koordinata hech qachon kelmaydi. Agar so‘rovchi auksion egasi bo‘lsa, `owner: {hold_amount, decision_deadline, can_cancel, pin: {lat, lng} | null}` ham qo‘shiladi.
 
 `display_name` qisqartirilgan shaklda beriladi ("Sherzod A."). Familiya to‘liq ko‘rsatilmaydi.
 
@@ -90,7 +90,7 @@ Tafsilotda bunga qo‘shimcha ravishda `media[]`, `description`, `breed`, `age_m
 | POST | `/media/capture-sessions` | `{auction_id}` → `{id, expires_at, constraints: {photos_min, photos_max, videos_min, videos_max, video_max_s, min_short_side}}` |
 | POST | `/auctions/{id}/media` | `multipart`: `file`, `kind`, `capture_session_id`, `client_meta` (JSON) → `201 {id, status: "processing"}` |
 | GET | `/auctions/{id}/media` | Ro‘yxat va har birining holati |
-| PATCH | `/auctions/{id}/media/order` | `{ids: [...]}` |
+| PUT | `/auctions/{id}/media/order` | `{ids: [...]}` — auksionning barcha media id'lari yangi tartibda (BR-12a). Faqat egasi, `draft`/`rejected` holatida. Ro‘yxat to‘liq bo‘lmasa, ortiqcha yoki takroriy id bo‘lsa — `invalid_order` (400). Javob: auksion tafsiloti |
 | DELETE | `/auctions/{id}/media/{media_id}` | Faqat `draft`/`rejected` holatida |
 
 Xato kodlari: `capture_session_expired` (400), `unsupported_media` (400), `too_many_media` (400), `not_editable` (409), `file_too_large` (413), `storage_unavailable` (503 — fayl ombori (Nhost) faylni qabul qilmadi; foydalanuvchining fayli aybdor emas, Render loglarida `could not store upload`). Video uzunligi va formati fon jarayonida tekshiriladi: xato boʻlsa, media `failed` holatiga oʻtadi va `error` da sababi yoziladi.
@@ -129,7 +129,7 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | Metod | Yo‘l | Tavsif |
 |---|---|---|
 | GET | `/me/deals` | |
-| GET | `/deals/{id}` | Faqat tomonlar uchun: `{price, commission_amount (faqat sotuvchiga), counterparty: {name, phone, telegram_username}, can_rate, can_claim}` |
+| GET | `/deals/{id}` | Faqat tomonlar uchun: `{price, commission_amount (faqat sotuvchiga), counterparty: {name, phone, telegram_username}, location: {lat, lng} | null, can_rate, can_claim}`. `location` — sotuvchi belgilagan aniq nuqta (BR-33a), belgilanmagan bo‘lsa `null` |
 | POST | `/deals/{id}/rating` | `{score: 1..5, comment?}` |
 | POST | `/deals/{id}/claims` | `{reason}` — faqat sotuvchi |
 

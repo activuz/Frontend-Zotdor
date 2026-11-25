@@ -21,6 +21,9 @@ export interface Point {
   lng: number;
 }
 
+/** Middle of Uzbekistan: where a map opens when there is no point yet. */
+export const UZ_CENTER: Point = { lat: 41.38, lng: 64.58 };
+
 export function storedPoint(): Point | null {
   try {
     const raw = sessionStorage.getItem(KEY);
@@ -59,8 +62,8 @@ export function currentGuestPoint(): Point | null {
 export type LocateStatus = 'idle' | 'locating' | 'done' | 'denied' | 'unavailable' | 'error';
 
 const MESSAGES: Partial<Record<LocateStatus, string>> = {
-  denied: 'Joylashuvga ruxsat berilmadi. Brauzer sozlamalarida ruxsat bering yoki hududni profilda tanlang.',
-  unavailable: 'Bu qurilmada joylashuvni aniqlab boʻlmaydi. Hududni profilda tanlang.',
+  denied: 'Joylashuvga ruxsat berilmadi. Brauzer sozlamalarida ruxsat bering yoki xaritadan tanlang.',
+  unavailable: 'Bu qurilmada joylashuvni aniqlab boʻlmaydi. Xaritadan tanlang.',
   error: 'Joylashuvni aniqlab boʻlmadi. Qayta urinib koʻring.',
 };
 
@@ -82,38 +85,56 @@ export function useDeviceLocation() {
   const [message, setMessage] = useState('');
   const guestPoint = useSyncExternalStore(subscribe, currentGuestPoint);
 
-  const locate = useCallback(async () => {
+  /** Store a point: on the server for a logged-in user (their profile), in the tab for a guest. */
+  const save = useCallback(
+    async (point: Point): Promise<boolean> => {
+      setMessage('');
+      setStatus('locating');
+      try {
+        if (me) {
+          const updated = await api<Me>('PUT', '/me/location', point);
+          client.setQueryData(ME_KEY, updated);
+        } else {
+          setGuestPoint(point);
+        }
+        await client.invalidateQueries({ queryKey: ['feed'] });
+        setStatus('done');
+        return true;
+      } catch (e) {
+        setStatus('error');
+        setMessage(e instanceof ApiError ? e.message : (MESSAGES.error ?? ''));
+        return false;
+      }
+    },
+    [client, me],
+  );
+
+  /** Ask the browser for the position; returns it without saving (for the map picker). */
+  const detect = useCallback(async (): Promise<Point | null> => {
     setMessage('');
     if (!('geolocation' in navigator)) {
       setStatus('unavailable');
       setMessage(MESSAGES.unavailable ?? '');
-      return;
+      return null;
     }
     setStatus('locating');
-    let point: Point;
     try {
-      point = await position();
+      const point = await position();
+      setStatus('idle');
+      return point;
     } catch (e) {
       const denied = e instanceof GeolocationPositionError && e.code === e.PERMISSION_DENIED;
       const next: LocateStatus = denied ? 'denied' : 'error';
       setStatus(next);
       setMessage(MESSAGES[next] ?? '');
-      return;
+      return null;
     }
-    try {
-      if (me) {
-        const updated = await api<Me>('PUT', '/me/location', point);
-        client.setQueryData(ME_KEY, updated);
-      } else {
-        setGuestPoint(point);
-      }
-      await client.invalidateQueries({ queryKey: ['feed'] });
-      setStatus('done');
-    } catch (e) {
-      setStatus('error');
-      setMessage(e instanceof ApiError ? e.message : (MESSAGES.error ?? ''));
-    }
-  }, [client, me]);
+  }, []);
+
+  const locate = useCallback(async () => {
+    const point = await detect();
+    if (point) await save(point);
+  }, [detect, save]);
 
   const clear = useCallback(async () => {
     setMessage('');
@@ -129,5 +150,6 @@ export function useDeviceLocation() {
   }, [client, me]);
 
   const hasLocation = Boolean(me?.has_location || (!me && guestPoint));
-  return { status, message, locate, clear, hasLocation };
+  const point: Point | null = me ? (me.location ?? null) : guestPoint;
+  return { status, message, locate, detect, save, clear, hasLocation, point };
 }

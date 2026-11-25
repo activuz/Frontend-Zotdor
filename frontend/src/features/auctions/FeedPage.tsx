@@ -18,15 +18,15 @@ export const FeedPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {/* No saved point yet: ask for it (map or device), dismissible for this session. */}
+      {!hasDevice && <LocationPrompt dismissible />}
       <Directions />
       <Section title="Jonli auksionlar" filters={{ status: 'live', sort: 'ending_soon' }} empty="Hozir jonli auksion yoʻq." />
-      {hasLocation ? (
+      {hasLocation && (
         <div className="space-y-2">
           <Section title="Yaqin atrofda" filters={{ sort: 'nearest' }} empty="Yaqin atrofda auksion topilmadi." />
-          <LocationPrompt compact />
+          {hasDevice && <LocationPrompt compact />}
         </div>
-      ) : (
-        <LocationPrompt />
       )}
       <Section
         title="Tez orada boshlanadi"

@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera as CameraIcon, Circle, Copy, Square, Trash2, Video } from 'lucide-react';
-import { ApiError, mediaUrl } from '../../api/http';
+import { Camera as CameraIcon, Circle, Copy, Square, Video } from 'lucide-react';
+import { ApiError } from '../../api/http';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Field';
 import type { AuctionDetail } from '../auctions/api';
 import type { PublicConfig } from '../reference/api';
-import { useDeleteMedia, useOpenCaptureSession, useUploadMedia, type CaptureSession } from './api';
+import { useOpenCaptureSession, useUploadMedia, type CaptureSession } from './api';
+import { MediaGrid } from './MediaGrid';
 
 const PHOTO_HINTS = [
   'Molni yonidan, toʻliq koʻrinadigan qilib oling',
@@ -297,41 +298,6 @@ const LiveCamera: React.FC<{
           Yuklanmoqda…
         </p>
       )}
-    </div>
-  );
-};
-
-const MediaGrid: React.FC<{ auction: AuctionDetail }> = ({ auction }) => {
-  const remove = useDeleteMedia(auction.id);
-  if (auction.media.length === 0) return null;
-  return (
-    <div>
-      {remove.isError && <Alert>{remove.error.message}</Alert>}
-      <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2" aria-label="Olingan fayllar">
-        {auction.media.map((m, i) => (
-          <li key={m.id} className="relative aspect-square overflow-hidden rounded-xl border border-line bg-page">
-            {m.thumb_url ? (
-              <img src={mediaUrl(m.thumb_url)} alt={`${m.kind === 'video' ? 'Video' : 'Rasm'} ${i + 1}`} className="h-full w-full object-cover" />
-            ) : (
-              <span className="flex h-full items-center justify-center p-1 text-center text-[13px] text-ink">
-                {m.status === 'processing' ? 'Qayta ishlanmoqda…' : m.kind === 'video' ? 'Video' : 'Rasm'}
-              </span>
-            )}
-            {m.status === 'failed' && (
-              <span className="absolute inset-x-0 bottom-0 bg-danger px-1 text-[13px] text-white">Xato</span>
-            )}
-            <button
-              type="button"
-              onClick={() => remove.mutate(m.id)}
-              disabled={remove.isPending}
-              aria-label={`${i + 1}-faylni oʻchirish`}
-              className="absolute right-1 top-1 min-h-touch min-w-touch flex items-center justify-center rounded-xl bg-surface/90 text-danger"
-            >
-              <Trash2 className="w-5 h-5" aria-hidden="true" />
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

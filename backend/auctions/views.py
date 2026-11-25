@@ -25,6 +25,7 @@ from auctions.serializers import (
     AuctionListSerializer,
     DecisionSerializer,
     DraftSerializer,
+    MediaOrderSerializer,
     MediaSerializer,
     MyBidRowSerializer,
     PublicBidSerializer,
@@ -362,6 +363,17 @@ class MediaDeleteView(APIView):
     def delete(self, request: Request, auction_id: uuid.UUID, media_id: uuid.UUID) -> Response:
         services.delete_media(auction_id, media_id, me(request))
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MediaOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=MediaOrderSerializer, responses=AuctionDetailSerializer)
+    def put(self, request: Request, auction_id: uuid.UUID) -> Response:
+        payload = MediaOrderSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        services.reorder_media(auction_id, me(request), payload.validated_data["ids"])
+        return Response(_detail(request, auction_id))
 
 
 class BidsView(APIView):

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, MapPin } from 'lucide-react';
 import { useMe, useRegions } from '../auth/api';
 import { useWallet } from '../wallet/api';
 import { commissionFor, usePublicConfig, useTaxonomy, type PublicConfig } from '../reference/api';
@@ -13,6 +13,8 @@ import { Button, ButtonLink } from '../../components/ui/Button';
 import { Alert, Field, inputClass, MoneyInput } from '../../components/ui/Field';
 import { Modal } from '../../components/ui/Modal';
 import { CameraStep } from './Camera';
+import { LocationPicker } from '../location/LocationPicker';
+import { MapView } from '../location/MapView';
 import { useCreateDraft, useDeleteDraft, useSaveDraft, useSubmitAuction, type SubmitResult } from './api';
 
 /* ------------------------------------------------------------------ start screen */
@@ -364,12 +366,89 @@ const DetailsStep: React.FC<{ auction: AuctionDetail; onNext: () => void }> = ({
         </Field>
       </div>
 
+      <PinField
+        auction={a}
+        onPinned={(next) => {
+          setRegion(next.region?.id ?? null);
+          setDistrict(next.district?.id ?? null);
+        }}
+      />
+
       {save.isError && <Alert>{save.error.message}</Alert>}
       {tried && invalid && <Alert>Belgilangan maydonlarni toʻldiring.</Alert>}
       <Button type="submit" variant="primary" className="w-full" disabled={save.isPending}>
         {save.isPending ? 'Saqlanmoqda…' : 'Saqlash va davom etish'}
       </Button>
     </form>
+  );
+};
+
+/**
+ * Optional map pin for the animal (BR-11a), like the "show on map" field of OLX or Avito.
+ * Saved at once; the backend picks the district the pin is in, and the form follows it.
+ */
+const PinField: React.FC<{ auction: AuctionDetail; onPinned: (a: AuctionDetail) => void }> = ({
+  auction: a,
+  onPinned,
+}) => {
+  const { data: me } = useMe();
+  const save = useSaveDraft(a.id);
+  const [picking, setPicking] = useState(false);
+  const pin = a.owner?.pin ?? null;
+  const set = (point: { lat: number; lng: number } | null) =>
+    save.mutate(point ?? { lat: null, lng: null }, {
+      onSuccess: (next) => {
+        setPicking(false);
+        onPinned(next);
+      },
+    });
+
+  return (
+    <fieldset className="space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <legend className="px-1 text-[15px] font-semibold text-ink">Molning joylashuvi (ixtiyoriy)</legend>
+      <p className="text-[13px] text-ink-muted">
+        Xaritada belgilansa, xaridorlarga taxminiy hudud (~1,5 km) koʻrsatiladi va eʼlon “Yaqin atrofda” boʻlimida
+        aniqroq saralanadi. Aniq nuqta faqat bitim tuzilgandan keyin xaridorga ochiladi.
+      </p>
+      {pin && (
+        <MapView
+          key={`${pin.lat},${pin.lng}`}
+          mode="point"
+          center={pin}
+          zoom={14}
+          interactive={false}
+          className="h-40 rounded-xl"
+          label="Belgilangan joylashuv xaritada"
+        />
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => setPicking(true)} disabled={save.isPending}>
+          <MapPin className="w-4 h-4" aria-hidden="true" />
+          {pin ? 'Oʻzgartirish' : 'Xaritada belgilash'}
+        </Button>
+        {!pin && me?.location && (
+          <Button variant="ghost" onClick={() => me.location && set(me.location)} disabled={save.isPending}>
+            Profildagi joylashuvim
+          </Button>
+        )}
+        {pin && (
+          <Button variant="ghost" onClick={() => set(null)} disabled={save.isPending}>
+            Olib tashlash
+          </Button>
+        )}
+      </div>
+      {save.isError && !picking && <Alert>{save.error.message}</Alert>}
+      <LocationPicker
+        open={picking}
+        title="Mol qayerda?"
+        note="Xaridorlar faqat taxminiy hududni koʻradi. Tuman nuqtaga qarab avtomatik tanlanadi."
+        initial={pin ?? me?.location ?? null}
+        busy={save.isPending}
+        error={picking && save.isError ? save.error.message : ''}
+        onConfirm={set}
+        onClose={() => setPicking(false)}
+      />
+    </fieldset>
   );
 };
 
@@ -505,7 +584,12 @@ const ReviewStep: React.FC<{
     ['Mol', [a.animal_type?.name, a.animal_class?.name, a.breed?.name ?? a.breed_other].filter(Boolean).join(' · ') || '—', 'details'],
     ['Yoshi', a.age_label || '—', 'details'],
     ['Narx', price ? formatSom(price) : '—', 'details'],
-    ['Joylashuv', [a.district?.name, a.region?.name].filter(Boolean).join(', ') || '—', 'details'],
+    [
+      'Joylashuv',
+      ([a.district?.name, a.region?.name].filter(Boolean).join(', ') || '—') +
+        (a.owner?.pin ? ' · xaritada belgilangan' : ''),
+      'details',
+    ],
     ['Vaqt', `${a.start_now ? 'Darhol' : a.starts_at ? formatDateTime(a.starts_at) : '—'} · ${a.duration_minutes ? formatDuration(a.duration_minutes) : '—'}`, 'time'],
     ['Media', `${photos} rasm, ${videos} video`, 'media'],
   ];

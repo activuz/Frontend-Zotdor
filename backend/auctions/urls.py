@@ -9,6 +9,9 @@ urlpatterns = [
     path("auctions/<uuid:auction_id>/cancel", views.CancelView.as_view(), name="auction-cancel"),
     path("auctions/<uuid:auction_id>/media", views.MediaUploadView.as_view(), name="auction-media"),
     path(
+        "auctions/<uuid:auction_id>/media/order", views.MediaOrderView.as_view(), name="auction-media-order"
+    ),
+    path(
         "auctions/<uuid:auction_id>/media/<uuid:media_id>",
         views.MediaDeleteView.as_view(),
         name="auction-media-delete",

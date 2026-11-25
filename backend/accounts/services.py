@@ -244,6 +244,15 @@ def nearest_district(lat: float, lng: float) -> District | None:
     return best[1] if best else None
 
 
+def check_inside_uzbekistan(lat: float, lng: float) -> None:
+    if not (math.isfinite(lat) and math.isfinite(lng)) or not (
+        UZ_LAT[0] <= lat <= UZ_LAT[1] and UZ_LNG[0] <= lng <= UZ_LNG[1]
+    ):
+        raise DomainError(
+            "location_outside", "Joylashuv Oʻzbekiston hududidan tashqarida. Hududni qoʻlda tanlang."
+        )
+
+
 @transaction.atomic
 def set_location(user: User, lat: float, lng: float) -> User:
     """Save the device position (rounded) for distances and "nearest" sorting.
@@ -251,10 +260,7 @@ def set_location(user: User, lat: float, lng: float) -> User:
     If the profile has no region yet, it is filled from the nearest district, so a new user
     does not have to pick it by hand. A chosen region/district is never overwritten.
     """
-    if not (UZ_LAT[0] <= lat <= UZ_LAT[1] and UZ_LNG[0] <= lng <= UZ_LNG[1]):
-        raise DomainError(
-            "location_outside", "Joylashuv Oʻzbekiston hududidan tashqarida. Hududni qoʻlda tanlang."
-        )
+    check_inside_uzbekistan(lat, lng)
     user = User.objects.select_for_update().get(id=user.id)
     user.lat = Decimal(str(round(lat, LOCATION_DECIMALS)))
     user.lng = Decimal(str(round(lng, LOCATION_DECIMALS)))

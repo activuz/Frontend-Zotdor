@@ -34,6 +34,21 @@ dialog::backdrop {
   scrollbar-width: none;
 }
 
+/* Leaflet (features/location/MapView.tsx): theme colours, readable attribution. */
+.leaflet-container {
+  font: inherit;
+  @apply bg-page;
+}
+.leaflet-control-attribution {
+  font-size: 13px;
+}
+.map-area {
+  stroke: theme('colors.brand.DEFAULT');
+  stroke-width: 2;
+  fill: theme('colors.accent');
+  fill-opacity: 0.3;
+}
+
 @keyframes row-in {
   from {
     opacity: 0;

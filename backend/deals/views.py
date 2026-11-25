@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from accounts.models import User
 from auctions import media as media_store
-from auctions.serializers import display_name
+from auctions.serializers import PointSerializer, display_name, pinned_point
 from core.http import data_of, me
 from deals import services
 from deals.models import Deal, DealClaim, Rating
@@ -43,6 +43,8 @@ class DealSerializer(serializers.Serializer[Any]):
     can_rate = serializers.BooleanField()
     can_claim = serializers.BooleanField()
     claim_status = serializers.CharField(allow_null=True)
+    # BR-33a: the seller's exact pin, if any, opens together with the contacts.
+    location = PointSerializer(allow_null=True)
 
 
 def serialize(deal: Deal, viewer: User) -> dict[str, Any]:
@@ -74,6 +76,7 @@ def serialize(deal: Deal, viewer: User) -> dict[str, Any]:
         "can_rate": services.can_rate(deal, viewer),
         "can_claim": services.can_claim(deal, viewer),
         "claim_status": claim.status if claim else None,
+        "location": pinned_point(deal.auction),
     }
 
 

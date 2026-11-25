@@ -50,7 +50,8 @@ Uchala ilova **alohida deploy qilinadi**: frontend va panel statik build, backen
 | D-7 | **Telegram webhook to‘g‘ridan-to‘g‘ri Django ichida**, httpx bilan | Bot juda kichik: `/start` va kontakt. Alohida framework va jarayon kerak emas | aiogram alohida servis |
 | D-8 | **OpenAPI (drf-spectacular) → TS tiplari (openapi-typescript)** | Frontend, panel va backend kontrakti bitta manbadan olinadi | Tiplarni qo‘lda yozish (demo'dagi ikki xil model muammosi) |
 | D-9 | **Panel alohida React ilova** | Asosiy bundle yengil qoladi. Panelga alohida domen va IP cheklov qo‘yish mumkin | Django admin (foydalanuvchi alohida panel so‘radi). Django admin faqat superuser uchun favqulodda vosita sifatida qoladi |
-| D-10 | **Masofa: tuman markazlari koordinatalari + haversine** | PostGIS kerak emas. Aniq manzil oshkor bo‘lmaydi | PostGIS |
+| D-10 | **Masofa: tuman markazlari koordinatalari + haversine** | PostGIS kerak emas. Aniq manzil oshkor bo‘lmaydi. Sotuvchi nuqtasi (BR-11a) bo‘lsa, masofa undan hisoblanadi, lekin ommaga faqat ~1 km katak markazi beriladi (BR-33a) | PostGIS |
+| D-10a | **Xarita: Leaflet + OpenStreetMap tayllari** (2026-11-25) | API kaliti va shartnoma kerak emas, kutubxona faqat xarita ochilganda yuklanadi (alohida chunk). Trafik oshsa OSM tayl siyosati bo‘yicha o‘z tayl serveri yoki pullik provayderga o‘tiladi; faqat `MapView.tsx` dagi URL va CSP o‘zgaradi | Yandex Maps API (kalit va litsenziya), Google Maps (pullik) |
 | D-11 | **Pul butun so‘mda, `BIGINT`** | Float xatolari bo‘lmaydi. Click summasi butun so‘mda qabul qilinadi | Decimal tiyin |
 
 ## 3. Backend modullari (Django app'lar)
