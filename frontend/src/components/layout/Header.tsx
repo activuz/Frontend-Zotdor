@@ -1,10 +1,112 @@
-import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Bell, Plus, Search, User } from 'lucide-react';
-import { useMe } from '../../features/auth/api';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, Bug, LogOut, Plus, Search, User } from 'lucide-react';
+import { useLogout, useMe } from '../../features/auth/api';
 import { useUnreadCount } from '../../features/notifications/api';
-import { ReportProblemButton } from '../../features/feedback/ReportProblem';
+import { ReportProblemModal } from '../../features/feedback/ReportProblem';
 import { useTaxonomy } from '../../features/reference/api';
+
+const itemClass =
+  'flex w-full items-center gap-3 min-h-touch px-4 text-left text-[15px] font-semibold hover:bg-brand-soft disabled:opacity-50';
+
+/** Profile button: a small menu instead of going straight to /me. Closes on outside tap, Escape or navigation. */
+const ProfileMenu: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const logout = useLogout();
+  const [open, setOpen] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+
+  // A new page closes the menu (adjusted during render, not in an effect).
+  const [path, setPath] = useState(location.pathname);
+  if (path !== location.pathname) {
+    setPath(location.pathname);
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        button.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={root} className="relative">
+      <button
+        ref={button}
+        type="button"
+        aria-label="Profil menyusi"
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpen((o) => !o)}
+        className={`min-h-touch min-w-touch flex items-center justify-center rounded-xl text-ink hover:bg-brand-soft ${open ? 'bg-brand-soft' : ''}`}
+      >
+        <User className="w-6 h-6" aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          id={menuId}
+          className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-line bg-surface py-1 shadow-lg"
+        >
+          <Link to="/me" className={`${itemClass} text-ink`}>
+            <User className="w-5 h-5 text-brand" aria-hidden="true" />
+            Profil
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setReporting(true);
+            }}
+            className={`${itemClass} text-ink`}
+          >
+            <Bug className="w-5 h-5 text-brand" aria-hidden="true" />
+            Xatolik haqida xabar berish
+          </button>
+          <div className="my-1 border-t border-line" />
+          <button
+            type="button"
+            disabled={logout.isPending}
+            onClick={() =>
+              logout.mutate(undefined, {
+                onSuccess: () => {
+                  setOpen(false);
+                  navigate('/', { replace: true });
+                },
+              })
+            }
+            className={`${itemClass} text-danger`}
+          >
+            <LogOut className="w-5 h-5" aria-hidden="true" />
+            {logout.isPending ? 'Chiqilmoqda…' : 'Chiqish'}
+          </button>
+          {logout.isError && (
+            <p role="alert" className="px-4 pb-2 text-[13px] text-danger">
+              {logout.error.message}
+            </p>
+          )}
+        </div>
+      )}
+      <ReportProblemModal open={reporting} onClose={() => setReporting(false)} />
+    </div>
+  );
+};
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `inline-flex items-center min-h-touch px-3 rounded-xl text-[15px] font-semibold ${isActive ? 'bg-brand-soft text-ink' : 'text-ink hover:bg-brand-soft'}`;
@@ -73,7 +175,6 @@ export const Header: React.FC = () => {
             <Plus className="w-4 h-4" aria-hidden="true" />
             Sotish
           </Link>
-          <ReportProblemButton variant="icon" />
           {me ? (
             <>
               <Link
@@ -88,13 +189,7 @@ export const Header: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <Link
-                to="/me"
-                aria-label="Profil"
-                className="min-h-touch min-w-touch flex items-center justify-center rounded-xl text-ink hover:bg-brand-soft"
-              >
-                <User className="w-6 h-6" aria-hidden="true" />
-              </Link>
+              <ProfileMenu />
             </>
           ) : (
             <Link
