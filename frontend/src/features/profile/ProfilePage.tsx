@@ -4,6 +4,7 @@ import {
   Bell,
   Bookmark,
   ChevronRight,
+  FileText,
   Gavel,
   Handshake,
   LogOut,
@@ -30,6 +31,12 @@ const MENU = [
   { to: '/me/saved', label: 'Saqlanganlar', icon: Bookmark },
   { to: '/notifications', label: 'Bildirishnomalar', icon: Bell },
   { to: '/wallet', label: 'Hamyon', icon: WalletIcon },
+];
+
+const LEGAL = [
+  { to: '/terms', label: 'Foydalanish shartlari' },
+  { to: '/offer', label: 'Oferta' },
+  { to: '/privacy', label: 'Maxfiylik siyosati' },
 ];
 
 /** Rendered inside RequireAuth, so `me` is a logged-in user with a complete profile. */
@@ -96,6 +103,29 @@ export const ProfilePage: React.FC = () => {
           ))}
         </ul>
       </nav>
+
+      {/* The footer with these links is hidden on phones. */}
+      <section aria-labelledby="legal-title" className="pt-2">
+        <h2 id="legal-title" className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-ink-muted">
+          Huquqiy hujjatlar
+        </h2>
+        <ul className="bg-surface rounded-2xl border border-line divide-y divide-line">
+          {LEGAL.map(({ to, label }) => (
+            <li key={to}>
+              <Link
+                to={to}
+                className="flex items-center justify-between min-h-touch px-5 py-3 text-[15px] text-ink"
+              >
+                <span className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-ink-muted" aria-hidden="true" />
+                  {label}
+                </span>
+                <ChevronRight className="w-5 h-5 text-ink-muted" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="bg-surface rounded-2xl border border-line">
         <ReportProblemButton variant="row" />
