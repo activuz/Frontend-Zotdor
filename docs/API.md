@@ -180,7 +180,7 @@ Batafsil: [SEO.md](SEO.md).
 | `/reports`, `/reports/{id}/resolve` | | mod |
 | `/claims`, `/claims/{id}/approve`, `/reject` | `{note}` | mod |
 | `/refund-requests`, `/{id}/done`, `/reject` | `{note}` | mod |
-| `/bug-reports?status=new|resolved|closed|all`, `/bug-reports/{id}/status` | `{status: resolved|closed, note?}`, auditga yoziladi (`bug_report.resolved`). `/stats` dagi `queues.bug_reports` — yangi xabarlar soni | mod |
+| `/bug-reports?status=new|resolved|closed|all`, `/bug-reports/{id}/status` | `{status: resolved|closed, note?}`, auditga yoziladi (`bug_report.resolved`). Xabar egasi tizimga kirgan bo‘lsa, unga `bug_report_resolved`/`bug_report_closed` bildirishnomasi va Telegram xabari boradi; `note` unda "Javob" sifatida ko‘rinadi. `/stats` dagi `queues.bug_reports` — yangi xabarlar soni | mod |
 | `/leads?status=new|contacted|closed|all`, `/leads/{id}/status` | `{status: contacted|closed, note?}`, auditga yoziladi | mod |
 | `/users`, `/users/{id}`, `/users/{id}/block`, `/unblock` | | mod |
 | `/users/{id}/wallet/adjust` | `{bucket, amount, note}` | admin |

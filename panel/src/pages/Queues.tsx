@@ -272,11 +272,21 @@ export const BugReports: React.FC = () => {
               {formatDateTime(r.created_at)} · {STATUS_LABEL[r.status] ?? r.status}
               {r.handled_note && ` · ${r.handled_note}`}
             </p>
+            {r.status === 'new' && !r.user_id && (
+              <p className="rounded-xl bg-warning-soft p-3 text-[13px] text-warning">
+                Mehmon yuborgan: javob avtomatik bormaydi.
+                {r.contact ? ` Kontakt orqali oʻzingiz bogʻlaning: ${r.contact}.` : ' Kontakt qoldirilmagan.'}
+              </p>
+            )}
             {r.status === 'new' && (
               <DecisionForm
                 pending={update.isPending}
                 error={update.isError && update.variables?.id === r.id ? update.error.message : undefined}
-                notePlaceholder="Ichki izoh"
+                notePlaceholder={
+                  r.user_id
+                    ? 'Foydalanuvchiga javob (bildirishnoma va Telegram orqali yuboriladi)'
+                    : 'Ichki izoh'
+                }
                 actions={[
                   { key: 'resolved', label: 'Tuzatildi', variant: 'primary' as const },
                   { key: 'closed', label: 'Yopish' },

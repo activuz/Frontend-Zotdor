@@ -15,7 +15,7 @@ from rest_framework import status
 from core.errors import DomainError
 from feedback.models import BugReport
 from notifications.models import TelegramOutbox
-from notifications.services import kick_sender
+from notifications.services import kick_sender, notify
 
 if TYPE_CHECKING:
     from accounts.models import User
@@ -89,10 +89,10 @@ def telegram_text(report: BugReport) -> str:
 def set_status(
     report_id: uuid.UUID, new_status: str, note: str, staff: User
 ) -> tuple[BugReport, dict[str, Any]]:
-    """Staff mark a report resolved or closed. Call inside transaction.atomic()."""
+    """Staff mark a report resolved or closed; the reporter is told. Call inside transaction.atomic()."""
     if new_status not in (BugReport.ReportStatus.RESOLVED, BugReport.ReportStatus.CLOSED):
         raise DomainError("invalid", "Holatni tanlang.")
-    report = BugReport.objects.select_for_update().filter(id=report_id).first()
+    report = BugReport.objects.select_for_update().select_related("user").filter(id=report_id).first()
     if report is None:
         raise DomainError("not_found", "Xabar topilmadi.", status.HTTP_404_NOT_FOUND)
     before = {"status": report.status, "note": report.handled_note}
@@ -101,4 +101,23 @@ def set_status(
     report.handled_by = staff
     report.handled_at = timezone.now()
     report.save(update_fields=["status", "handled_note", "handled_by", "handled_at"])
+    _tell_reporter(report)
     return report, before
+
+
+def _tell_reporter(report: BugReport) -> None:
+    """In-app notification and Telegram (FR-19). Guests have no channel: staff use `contact`."""
+    if report.user is None:
+        return
+    quoted = report.message if len(report.message) <= 200 else report.message[:200].rstrip() + "…"
+    parts = []
+    if report.handled_note:
+        parts.append(f"Javob: {report.handled_note}")
+    parts.append(f"Siz yozgan edingiz: «{quoted}»")
+    title = (
+        "Xabaringiz boʻyicha muammo tuzatildi"
+        if report.status == BugReport.ReportStatus.RESOLVED
+        else "Xabaringiz koʻrib chiqildi"
+    )
+    # notify() queues Telegram via the outbox and sends it after commit.
+    notify(report.user, f"bug_report_{report.status}", title, "\n\n".join(parts))

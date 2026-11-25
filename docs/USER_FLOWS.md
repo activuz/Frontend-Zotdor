@@ -115,5 +115,6 @@ Muqobil yo‘llar: "Hech birini tanlamayman" tugmasi auksionni `unsold` holatiga
 | Taklifingiz qabul qilindi yoki tanlanmadi | xaridorlar | ✓ | ✓ |
 | Baholashni eslatish | tomonlar | ✓ | ✓ |
 | Ariza natijasi | ariza beruvchi | ✓ | ✓ |
+| Xatolik xabari tuzatildi yoki ko‘rib chiqildi (xodim javobi va yozilgan matn iqtibosi bilan; mehmonga yuborilmaydi) | xabar yuborgan foydalanuvchi | ✓ | ✓ |
 | Balans to‘ldirildi | foydalanuvchi | ✓ | ✓ |
 | Bonus 7 kundan keyin yonadi | foydalanuvchi | ✓ | ✓ |

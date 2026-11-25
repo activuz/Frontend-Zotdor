@@ -10,7 +10,7 @@ from rest_framework.test import APIClient
 from accounts.models import User
 from core.models import StaffAuditLog
 from feedback.models import BugReport
-from notifications.models import TelegramOutbox
+from notifications.models import Notification, TelegramOutbox
 
 pytestmark = pytest.mark.django_db
 
@@ -109,6 +109,42 @@ def test_panel_lists_and_resolves_with_audit() -> None:
     report = BugReport.objects.get()
     assert report.handled_by == mod and report.handled_note == "Tuzatildi"
     assert StaffAuditLog.objects.filter(action="bug_report.resolved").exists()
+
+
+@pytest.mark.parametrize(
+    ("new_status", "title_part"), [("resolved", "tuzatildi"), ("closed", "koʻrib chiqildi")]
+)
+def test_reporter_is_told_the_outcome_in_app_and_telegram(new_status: str, title_part: str) -> None:
+    mod = User.objects.create_user(phone="+998909000001", role=User.Role.MODERATOR, first_name="Mod")
+    user = User.objects.create_user(phone="+998901000001", first_name="Ali", telegram_user_id=555)
+    client = APIClient()
+    client.force_authenticate(user)
+    report_id = _post(client).json()["id"]
+    staff = APIClient()
+    staff.force_authenticate(mod)
+
+    staff.post(
+        f"/api/panel/bug-reports/{report_id}/status",
+        {"status": new_status, "note": "Yangi versiyada tuzatdik, rahmat!"},
+        format="json",
+    )
+
+    n = Notification.objects.get(user=user)
+    assert n.type == f"bug_report_{new_status}"
+    assert title_part in n.title
+    assert "Yangi versiyada tuzatdik" in n.body and "Videoni yuklaganimda" in n.body
+    tg = TelegramOutbox.objects.get(chat_id=555)
+    assert "Yangi versiyada tuzatdik" in tg.text
+
+
+def test_guest_reporter_gets_nothing_and_no_crash() -> None:
+    mod = User.objects.create_user(phone="+998909000001", role=User.Role.MODERATOR, first_name="Mod")
+    report_id = _post().json()["id"]
+    staff = APIClient()
+    staff.force_authenticate(mod)
+    r = staff.post(f"/api/panel/bug-reports/{report_id}/status", {"status": "closed"}, format="json")
+    assert r.status_code == 200
+    assert not Notification.objects.exists()
 
 
 def test_panel_needs_staff() -> None:
