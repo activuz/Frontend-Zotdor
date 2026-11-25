@@ -21,14 +21,24 @@ const LABEL = 'Xatolik haqida xabar berish';
 export const ReportProblemButton: React.FC<{
   /** Error text to attach, e.g. from the error boundary or a failed request. */
   error?: string;
-  variant?: 'link' | 'row' | 'button';
+  variant?: 'link' | 'row' | 'button' | 'icon';
   className?: string;
 }> = ({ error, variant = 'link', className = '' }) => {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {variant === 'button' ? (
+      {variant === 'icon' ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={LABEL}
+          title={LABEL}
+          className={`min-h-touch min-w-touch flex items-center justify-center rounded-xl text-danger hover:bg-danger-soft ${className}`}
+        >
+          <Bug className="w-6 h-6" aria-hidden="true" />
+        </button>
+      ) : variant === 'button' ? (
         <Button variant="ghost" className={className} onClick={() => setOpen(true)}>
           <Bug className="w-4 h-4" aria-hidden="true" />
           {LABEL}

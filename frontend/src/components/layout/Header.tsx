@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Bell, Plus, Search, User } from 'lucide-react';
 import { useMe } from '../../features/auth/api';
 import { useUnreadCount } from '../../features/notifications/api';
+import { ReportProblemButton } from '../../features/feedback/ReportProblem';
 import { useTaxonomy } from '../../features/reference/api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -72,6 +73,7 @@ export const Header: React.FC = () => {
             <Plus className="w-4 h-4" aria-hidden="true" />
             Sotish
           </Link>
+          <ReportProblemButton variant="icon" />
           {me ? (
             <>
               <Link
