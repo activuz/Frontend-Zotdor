@@ -103,7 +103,8 @@ def set_status(lead_id: uuid.UUID, new_status: str, note: str, staff: User) -> t
     """Staff marks a request as contacted or closed. Call inside transaction.atomic()."""
     if new_status not in (Lead.LeadStatus.CONTACTED, Lead.LeadStatus.CLOSED):
         raise DomainError("invalid", "Holatni tanlang.")
-    lead = Lead.objects.select_for_update().select_related("region").filter(id=lead_id).first()
+    # Lock only the lead row: `region` is nullable (LEFT JOIN), which FOR UPDATE cannot cover.
+    lead = Lead.objects.select_for_update(of=("self",)).select_related("region").filter(id=lead_id).first()
     if lead is None:
         raise DomainError("not_found", "Ariza topilmadi.", status.HTTP_404_NOT_FOUND)
     before = {"status": lead.status, "note": lead.handled_note}

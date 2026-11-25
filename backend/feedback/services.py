@@ -92,7 +92,11 @@ def set_status(
     """Staff mark a report resolved or closed; the reporter is told. Call inside transaction.atomic()."""
     if new_status not in (BugReport.ReportStatus.RESOLVED, BugReport.ReportStatus.CLOSED):
         raise DomainError("invalid", "Holatni tanlang.")
-    report = BugReport.objects.select_for_update().select_related("user").filter(id=report_id).first()
+    # Lock only the report row: `user` is a nullable FK (LEFT JOIN), and PostgreSQL refuses
+    # FOR UPDATE on the nullable side of an outer join.
+    report = (
+        BugReport.objects.select_for_update(of=("self",)).select_related("user").filter(id=report_id).first()
+    )
     if report is None:
         raise DomainError("not_found", "Xabar topilmadi.", status.HTTP_404_NOT_FOUND)
     before = {"status": report.status, "note": report.handled_note}
