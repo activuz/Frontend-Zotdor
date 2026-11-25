@@ -28,6 +28,8 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 | POST | `/auth/logout` | `204` |
 | GET | `/me` | joriy foydalanuvchi va `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`) |
 | PATCH | `/me` | `{first_name?, last_name?, region_id?, district_id?}`. Tuman tanlangan viloyatga tegishli bo‘lishi kerak |
+| PUT | `/me/location` | `{lat, lng}` — brauzer geolokatsiyasi. O‘zbekiston chegarasidan tashqarida bo‘lsa `location_outside`. ~100 m gacha yaxlitlanadi. Profilda viloyat bo‘lmasa, eng yaqin tuman bo‘yicha to‘ldiriladi. Javob: `Me` (`has_location: true`) |
+| DELETE | `/me/location` | Joylashuvni o‘chirish; masofa yana tuman markazidan hisoblanadi |
 
 Xato kodlari:
 - `invalid_phone` (400);
@@ -42,7 +44,7 @@ Xato kodlari:
 
 `GET /reference/regions` — viloyatlar va ularning tumanlari.
 `GET /reference/taxonomy` — `{directions, animal_types[{id, name, direction_ids, classes, breeds}]}`.
-`GET /config` — mijozga kerakli platforma chegaralari: `{commission_rate_bp, min_duration_min, max_duration_min, max_schedule_ahead_days, photos_min, photos_max, videos_min, videos_max, video_max_s, min_bid_pct, max_bid_pct, topup_min, topup_max}`. Qiymatlar `PlatformSettings` dan olinadi, panelda o‘zgartiriladi.
+`GET /config` — mijozga kerakli platforma chegaralari: `{commission_rate_bp, cashback_pct, min_duration_min, max_duration_min, max_schedule_ahead_days, photos_min, photos_max, videos_min, videos_max, video_max_s, min_bid_pct, max_bid_pct, topup_min, topup_max}`. Qiymatlar `PlatformSettings` dan olinadi, panelda o‘zgartiriladi.
 
 ## Auksionlar
 
@@ -63,11 +65,12 @@ Xato kodlari:
 - `sort=nearest` uchun `lat`/`lng` parametrlari yoki foydalanuvchi profilidagi tuman kerak. Ikkalasi ham bo‘lmasa, `400 location_required` qaytadi.
 - `most_active` — oxirgi 60 daqiqadagi takliflar soni bo‘yicha, keyin `bidders_count` bo‘yicha.
 
-**Auksion obyekti (ro‘yxat):**
+**Auksion obyekti (ro‘yxat):** `preview_video` — birinchi tayyor video yoki `null`; kartochka unga sichqoncha olib borilganda yoki fokusda ovozsiz o‘ynatadi.
 ```json
 {
   "id": "…", "title": "Qoramol · Buqa · Semental · 3 yosh", "status": "live",
-  "cover": {"thumb": "https://…/thumb.webp", "w": 480, "h": 360},
+  "cover": {"url": "https://…/photo.webp", "thumb_url": "https://…/thumb.webp"},
+  "preview_video": {"url": "https://…/video.mp4", "poster_url": "https://…/poster.webp"},
   "asking_price": 25000000, "top_bid_amount": 23500000, "bidders_count": 7,
   "starts_at": "…", "ends_at": "…",
   "region": {"id": 10, "name": "Toshkent viloyati"}, "district": {"id": 1003, "name": "Yangiyoʻl tumani"},

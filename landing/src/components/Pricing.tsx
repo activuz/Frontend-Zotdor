@@ -50,9 +50,14 @@ export const Pricing: React.FC<{ config: PublicConfig | null }> = ({ config }) =
           points={t.pricing.sellerPoints}
           footnote={
             rate != null
-              ? fill(t.pricing.example, {
+              ? fill(config?.cashback_pct ? t.pricing.exampleCashback : t.pricing.example, {
                   price: formatSom(EXAMPLE_PRICE, t),
                   fee: formatSom(commissionFor(EXAMPLE_PRICE, rate), t),
+                  // Same rounding as wallet.services.cashback_for (BR-47): down to whole som.
+                  cashback: formatSom(
+                    Math.floor((commissionFor(EXAMPLE_PRICE, rate) * (config?.cashback_pct ?? 0)) / 100),
+                    t,
+                  ),
                 })
               : undefined
           }

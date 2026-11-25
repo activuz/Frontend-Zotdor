@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Send } from 'lucide-react';
 import { ME_KEY, useLoginStatus, useMe, useStartLogin, type LoginStart } from './api';
@@ -84,6 +84,21 @@ export const LoginPage: React.FC = () => {
           <Send className="w-5 h-5" aria-hidden="true" />
           {start.isPending ? 'Yuborilmoqda…' : 'Telegram orqali tasdiqlash'}
         </button>
+        <p className="text-[13px] text-ink-muted">
+          Davom etish orqali siz{' '}
+          <Link to="/terms" className="text-brand underline">
+            Foydalanish shartlari
+          </Link>
+          ,{' '}
+          <Link to="/offer" className="text-brand underline">
+            Ommaviy oferta
+          </Link>{' '}
+          va{' '}
+          <Link to="/privacy" className="text-brand underline">
+            Maxfiylik siyosati
+          </Link>
+          ga rozilik bildirasiz.
+        </p>
       </form>
     </div>
   );

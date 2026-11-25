@@ -17,6 +17,7 @@ import {
 import { useLogout, useMe } from '../auth/api';
 import { PageLoading } from '../../components/ui/PageState';
 import { formatDate } from '../../lib/format';
+import { LocationPrompt } from '../location/LocationPrompt';
 
 const MENU = [
   { to: '/me/auctions', label: 'Auksionlarim', icon: Tag },
@@ -52,6 +53,9 @@ export const ProfilePage: React.FC = () => {
             <dd>{[me.district?.name, me.region?.name].filter(Boolean).join(', ')}</dd>
           </div>
         </dl>
+        <div className="mt-3">
+          <LocationPrompt compact />
+        </div>
         <p className="mt-3 text-[13px] text-ink-muted">{formatDate(me.created_at)} dan beri aʼzo</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link

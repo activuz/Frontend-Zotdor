@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, paramOf, query } from '../../api/http';
 import type { components } from '../../api/schema';
+import { currentGuestPoint } from '../location/useDeviceLocation';
 
 export type AuctionList = components['schemas']['AuctionList'];
 export type AuctionDetail = components['schemas']['AuctionDetail'];
@@ -36,11 +37,15 @@ export function isOpen(status: AuctionStatus | undefined): boolean {
 }
 
 export function useFeed(filters: FeedFilters, { limit = 20, enabled = true } = {}) {
+  // A guest's device position (sessionStorage) drives distances and "nearest"; logged-in users'
+  // position is stored on the server and applied there.
+  const point = currentGuestPoint();
+  const params = point ? { ...filters, lat: point.lat, lng: point.lng } : filters;
   return useInfiniteQuery({
-    queryKey: ['feed', filters, limit],
+    queryKey: ['feed', params, limit],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
-      api<FeedPage>('GET', `/auctions${query({ ...filters, limit, offset: pageParam })}`),
+      api<FeedPage>('GET', `/auctions${query({ ...params, limit, offset: pageParam })}`),
     getNextPageParam: (last) => {
       const offset = paramOf(last.next, 'offset');
       return offset === undefined ? undefined : Number(offset);

@@ -611,6 +611,9 @@ class SettingsSerializer(serializers.ModelSerializer[PlatformSettings]):
         rate = attrs.get("commission_rate_bp")
         if rate is not None and rate > 1000:
             raise serializers.ValidationError({"commission_rate_bp": ["Stavka 10% dan oshmasin."]})
+        cashback = attrs.get("cashback_pct")
+        if cashback is not None and cashback > 100:
+            raise serializers.ValidationError({"cashback_pct": ["Keshbek 100% dan oshmasin."]})
         return attrs
 
 

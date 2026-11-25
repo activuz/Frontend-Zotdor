@@ -1813,6 +1813,45 @@ paths:
                 items:
                   $ref: '#/components/schemas/Deal'
           description: ''
+  /api/v1/me/location:
+    put:
+      operationId: v1_me_location_update
+      description: Device position from the browser (Geolocation API). Stored rounded
+        to ~100 m.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LocationInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LocationInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+    delete:
+      operationId: v1_me_location_destroy
+      description: Device position from the browser (Geolocation API). Stored rounded
+        to ~100 m.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/me/watchlist:
     get:
       operationId: v1_me_watchlist_list
@@ -2331,6 +2370,11 @@ components:
           - $ref: '#/components/schemas/Cover'
           nullable: true
           readOnly: true
+        preview_video:
+          allOf:
+          - $ref: '#/components/schemas/PreviewVideo'
+          nullable: true
+          readOnly: true
         asking_price:
           type: integer
           maximum: 9223372036854775807
@@ -2478,6 +2522,7 @@ components:
       - media
       - my_bid
       - owner
+      - preview_video
       - region
       - seller
     AuctionList:
@@ -2495,6 +2540,11 @@ components:
         cover:
           allOf:
           - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        preview_video:
+          allOf:
+          - $ref: '#/components/schemas/PreviewVideo'
           nullable: true
           readOnly: true
         asking_price:
@@ -2568,6 +2618,7 @@ components:
       - district
       - id
       - is_watched
+      - preview_video
       - region
     AuctionStatusEnum:
       enum:
@@ -3160,6 +3211,18 @@ components:
       description: |-
         * `contacted` - contacted
         * `closed` - closed
+    LocationInRequest:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+      required:
+      - lat
+      - lng
     LoginStartRequest:
       type: object
       properties:
@@ -3253,6 +3316,9 @@ components:
         needs_profile:
           type: boolean
           readOnly: true
+        has_location:
+          type: boolean
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -3261,6 +3327,7 @@ components:
       - created_at
       - district
       - first_name
+      - has_location
       - id
       - last_name
       - needs_profile
@@ -3686,6 +3753,11 @@ components:
           - $ref: '#/components/schemas/Cover'
           nullable: true
           readOnly: true
+        preview_video:
+          allOf:
+          - $ref: '#/components/schemas/PreviewVideo'
+          nullable: true
+          readOnly: true
         asking_price:
           type: integer
           maximum: 9223372036854775807
@@ -3847,6 +3919,7 @@ components:
       - media
       - my_bid
       - owner
+      - preview_video
       - region
       - seller
       - seller_history
@@ -3866,6 +3939,11 @@ components:
         cover:
           allOf:
           - $ref: '#/components/schemas/Cover'
+          nullable: true
+          readOnly: true
+        preview_video:
+          allOf:
+          - $ref: '#/components/schemas/PreviewVideo'
           nullable: true
           readOnly: true
         asking_price:
@@ -3944,6 +4022,7 @@ components:
       - district
       - id
       - is_watched
+      - preview_video
       - region
       - seller_id
       - seller_phone
@@ -4497,6 +4576,12 @@ components:
           type: integer
           maximum: 32767
           minimum: 0
+        cashback_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Share of the charged commission returned to the seller as bonus,
+            %
         min_bid_pct:
           type: integer
           maximum: 32767
@@ -4611,6 +4696,16 @@ components:
       required:
       - id
       - name
+    PreviewVideo:
+      type: object
+      properties:
+        url:
+          type: string
+        poster_url:
+          type: string
+      required:
+      - poster_url
+      - url
     ProviderEnum:
       enum:
       - click
@@ -4647,6 +4742,8 @@ components:
       properties:
         commission_rate_bp:
           type: integer
+        cashback_pct:
+          type: integer
         min_duration_min:
           type: integer
         max_duration_min:
@@ -4672,6 +4769,7 @@ components:
         topup_max:
           type: integer
       required:
+      - cashback_pct
       - commission_rate_bp
       - max_bid_pct
       - max_duration_min
@@ -4952,6 +5050,12 @@ components:
           type: integer
           maximum: 32767
           minimum: 0
+        cashback_pct:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Share of the charged commission returned to the seller as bonus,
+            %
         min_bid_pct:
           type: integer
           maximum: 32767
@@ -5104,6 +5208,8 @@ components:
       - topup
       - bonus_grant
       - bonus_expire
+      - bonus_cashback
+      - bonus_cashback_reversal
       - hold
       - hold_release
       - commission
@@ -5115,6 +5221,8 @@ components:
         * `topup` - Topup
         * `bonus_grant` - Bonus Grant
         * `bonus_expire` - Bonus Expire
+        * `bonus_cashback` - Bonus Cashback
+        * `bonus_cashback_reversal` - Bonus Cashback Reversal
         * `hold` - Hold
         * `hold_release` - Hold Release
         * `commission` - Commission

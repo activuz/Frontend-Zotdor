@@ -644,6 +644,7 @@ def accept_bid(auction_id: uuid.UUID, user: User, bid_id: uuid.UUID) -> Deal:
         auction=a, bid=bid, seller=a.seller, buyer=bid.bidder, price=bid.amount, commission_amount=commission
     )
     wallet.capture_commission(HOLD_REF, a.id, commission, charge_ref_type="deal", charge_ref_id=deal.id)
+    cashback = wallet.grant_cashback(a.seller, commission, deal.id)
     refresh_user_stats(a.seller)
     refresh_user_stats(bid.bidder)
     if early:
@@ -666,6 +667,15 @@ def accept_bid(auction_id: uuid.UUID, user: User, bid_id: uuid.UUID) -> Deal:
             "Auksion muddatidan oldin yakunlandi" if early else "Auksion yakunlandi, taklifingiz tanlanmadi"
         )
         notify(other.bidder, "bid_not_selected", text, a.title, f"/a/{a.id}")
+    if cashback:
+        notify(
+            a.seller,
+            "bonus_cashback",
+            f"Bonus hamyonga {cashback:,} soʻm tushdi".replace(",", " "),
+            "Bitimdagi komissiyaning bir qismi bonus sifatida qaytdi. "
+            "Uni keyingi auksionlar komissiyasiga ishlatishingiz mumkin.",
+            "/wallet",
+        )
     return deal
 
 

@@ -59,6 +59,7 @@ class PublicConfigView(APIView):
             "PublicConfig",
             {
                 "commission_rate_bp": serializers.IntegerField(),
+                "cashback_pct": serializers.IntegerField(),
                 "min_duration_min": serializers.IntegerField(),
                 "max_duration_min": serializers.IntegerField(),
                 "max_schedule_ahead_days": serializers.IntegerField(),
@@ -81,6 +82,7 @@ class PublicConfigView(APIView):
         return Response(
             {
                 "commission_rate_bp": s.commission_rate_bp,
+                "cashback_pct": s.cashback_pct,
                 "min_duration_min": s.min_duration_min,
                 "max_duration_min": s.max_duration_min,
                 "max_schedule_ahead_days": s.max_schedule_ahead_days,

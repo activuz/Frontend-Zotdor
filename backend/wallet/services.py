@@ -87,6 +87,67 @@ def grant_signup_bonus(user: User) -> WalletEntry | None:
     return _post(wallet, Bucket.BONUS, EntryType.BONUS_GRANT, settings.signup_bonus)
 
 
+def cashback_for(commission: int, pct: int) -> int:
+    """BR-47: whole som, rounded down, so the platform never pays more than the stated share."""
+    if commission <= 0 or pct <= 0:
+        return 0
+    return commission * pct // 100
+
+
+@transaction.atomic
+def grant_cashback(user: User, commission: int, deal_id: uuid.UUID) -> int:
+    """BR-47: a share of every charged commission goes to the seller's bonus balance.
+
+    The bonus keeps accumulating, and every new credit moves the whole bonus balance's expiry
+    to now + bonus_ttl_days, so an active seller never loses it.
+    """
+    settings = PlatformSettings.load()
+    amount = cashback_for(commission, settings.cashback_pct)
+    if amount <= 0:
+        return 0
+    wallet = _locked_wallet(user)
+    if WalletEntry.objects.filter(
+        user=user, type=EntryType.BONUS_CASHBACK, ref_type="deal", ref_id=deal_id
+    ).exists():
+        return 0
+    wallet.bonus_expires_at = timezone.now() + timedelta(days=settings.bonus_ttl_days)
+    _post(wallet, Bucket.BONUS, EntryType.BONUS_CASHBACK, amount, ref_type="deal", ref_id=deal_id)
+    return amount
+
+
+@transaction.atomic
+def reverse_cashback(user: User, deal_id: uuid.UUID, *, actor: User) -> int:
+    """Take back a deal's cashback when its commission is refunded (approved claim, BR-34).
+
+    Only what is still on the bonus balance can be taken: bonus already spent on another
+    commission stays spent, so the bonus balance never goes negative.
+    """
+    wallet = _locked_wallet(user)
+    granted = sum(
+        WalletEntry.objects.filter(
+            user=user, type=EntryType.BONUS_CASHBACK, ref_type="deal", ref_id=deal_id
+        ).values_list("amount", flat=True)
+    )
+    taken = -sum(
+        WalletEntry.objects.filter(
+            user=user, type=EntryType.BONUS_CASHBACK_REVERSAL, ref_type="deal", ref_id=deal_id
+        ).values_list("amount", flat=True)
+    )
+    amount = min(granted - taken, wallet.bonus_balance)
+    if amount <= 0:
+        return 0
+    _post(
+        wallet,
+        Bucket.BONUS,
+        EntryType.BONUS_CASHBACK_REVERSAL,
+        -amount,
+        ref_type="deal",
+        ref_id=deal_id,
+        actor=actor,
+    )
+    return amount
+
+
 def expire_bonuses() -> int:
     """Zero out expired bonus balances. Returns how many wallets were affected."""
     count = 0

@@ -12,7 +12,8 @@ type Key = Exclude<keyof SettingsT, 'updated_at'>;
 const FIELDS: { key: Key; label: string; hint?: string }[] = [
   { key: 'commission_rate_bp', label: 'Komissiya stavkasi (bazis punkt)', hint: '20 = 0,2%' },
   { key: 'signup_bonus', label: 'Roʻyxatdan oʻtish bonusi, soʻm' },
-  { key: 'bonus_ttl_days', label: 'Bonus amal qilish muddati, kun' },
+  { key: 'bonus_ttl_days', label: 'Bonus amal qilish muddati, kun', hint: 'Har yangi bonus tushganda qayta hisoblanadi' },
+  { key: 'cashback_pct', label: 'Keshbek, komissiyaning %', hint: 'Bitimdan keyin sotuvchining bonus hamyoniga' },
   { key: 'min_bid_pct', label: 'Eng kichik taklif, narxning %' },
   { key: 'max_bid_pct', label: 'Eng katta taklif, narxning %' },
   { key: 'min_duration_min', label: 'Eng qisqa davomiylik, daqiqa' },

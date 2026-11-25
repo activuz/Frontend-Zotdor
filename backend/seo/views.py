@@ -26,7 +26,14 @@ from auctions.models import Auction, AuctionMedia, Status
 FINISHED_KEEP_DAYS = 30
 OPEN_STATUSES = (Status.SCHEDULED, Status.LIVE)
 FINISHED_STATUSES = (Status.ENDED, Status.SOLD, Status.UNSOLD)
-STATIC_PAGES = [("/", "hourly", "1.0"), ("/search", "hourly", "0.8")]
+STATIC_PAGES = [
+    ("/", "hourly", "1.0"),
+    ("/search", "hourly", "0.8"),
+    ("/login", "monthly", "0.5"),
+    ("/terms", "yearly", "0.3"),
+    ("/privacy", "yearly", "0.3"),
+    ("/offer", "yearly", "0.3"),
+]
 SITE_NAME = "Zotdor.uz"
 DEFAULT_DESCRIPTION = (
     "Qoramol, qoʻy, echki va otlarni auksion orqali soting va sotib oling. "
@@ -43,7 +50,8 @@ def sitemap_auctions() -> list[Auction]:
     recent = timezone.now() - timedelta(days=FINISHED_KEEP_DAYS)
     open_qs = Auction.objects.filter(status__in=OPEN_STATUSES)
     finished_qs = Auction.objects.filter(status__in=FINISHED_STATUSES, updated_at__gte=recent)
-    return list((open_qs | finished_qs).only("id", "status", "updated_at").order_by("-updated_at")[:45_000])
+    rows = (open_qs | finished_qs).only("id", "status", "updated_at", "seller_id")
+    return list(rows.order_by("-updated_at")[:45_000])
 
 
 @require_GET
@@ -54,13 +62,24 @@ def sitemap_xml(request: HttpRequest) -> HttpResponse:
         f"<priority>{prio}</priority></url>"
         for path, freq, prio in STATIC_PAGES
     ]
-    for a in sitemap_auctions():
+    auctions = sitemap_auctions()
+    for a in auctions:
         is_open = a.status in OPEN_STATUSES
         rows.append(
             f"<url><loc>{xml_escape(f'{site}/a/{a.id}')}</loc>"
             f"<lastmod>{a.updated_at.date().isoformat()}</lastmod>"
             f"<changefreq>{'hourly' if is_open else 'weekly'}</changefreq>"
             f"<priority>{'0.9' if is_open else '0.4'}</priority></url>"
+        )
+    # Public seller profiles (/u/<id>) of everyone who has an auction in this sitemap.
+    sellers: dict[str, str] = {}
+    for a in auctions:
+        day = a.updated_at.date().isoformat()
+        sellers[str(a.seller_id)] = max(sellers.get(str(a.seller_id), day), day)
+    for seller_id, day in sellers.items():
+        rows.append(
+            f"<url><loc>{xml_escape(f'{site}/u/{seller_id}')}</loc><lastmod>{day}</lastmod>"
+            "<changefreq>weekly</changefreq><priority>0.5</priority></url>"
         )
     body = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'

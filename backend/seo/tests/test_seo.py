@@ -37,7 +37,10 @@ def test_sitemap_lists_open_and_recent_auctions_only() -> None:
     assert response["Content-Type"].startswith("application/xml")
     body = response.content.decode()
     assert "<loc>https://web.zotdor.uz/</loc>" in body
-    assert "<loc>https://web.zotdor.uz/search</loc>" in body
+    for path in ("/search", "/login", "/terms", "/privacy", "/offer"):
+        assert f"<loc>https://web.zotdor.uz{path}</loc>" in body
+    assert f"<loc>https://web.zotdor.uz/u/{live.seller_id}</loc>" in body
+    assert body.count(f"/u/{live.seller_id}<") == 1  # one entry per seller, not per auction
     for a in (live, scheduled, sold_recent):
         assert f"https://web.zotdor.uz/a/{a.id}" in body
     for a in (sold_old, *hidden):

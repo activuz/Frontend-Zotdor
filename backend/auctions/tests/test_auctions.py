@@ -20,6 +20,7 @@ from rest_framework.test import APIClient
 from accounts.models import User
 from auctions import services
 from auctions.models import Auction, AuctionMedia, Bid, Status
+from auctions.serializers import AuctionListSerializer
 from core.errors import DomainError
 from core.models import StaffAuditLog
 from deals import services as deal_services
@@ -331,7 +332,9 @@ def test_end_accept_charges_commission_and_reveals_contacts(
 
     assert deal.price == 9_000_000 and deal.commission_amount == 18_000
     w = Wallet.objects.get(user=seller)
-    assert (w.bonus_balance, w.held_amount) == (32_000, 0)
+    # 50 000 bonus - 18 000 commission + 900 cashback (5% of the commission, BR-47)
+    assert (w.bonus_balance, w.held_amount) == (32_900, 0)
+    assert Notification.objects.filter(user=seller, type="bonus_cashback").exists()
     assert Auction.objects.get(id=a.id).status == Status.SOLD
     assert Notification.objects.filter(user=far_buyer, type="bid_not_selected").exists()
 
@@ -428,12 +431,12 @@ def test_mutual_ratings_and_single_rating(seller: User, buyer: User) -> None:
 
 def test_approved_claim_refunds_commission(seller: User, buyer: User, moderator: User) -> None:
     deal = sold_deal(seller, buyer)
-    assert available(seller) == 50_000 - 16_000
+    assert available(seller) == 50_000 - 16_000 + 800  # 800 = 5% cashback
     with pytest.raises(DomainError):
         deal_services.file_claim(deal.id, buyer, "men xaridorman")  # only the seller
     claim = deal_services.file_claim(deal.id, seller, "Xaridor kelmadi")
     deal_services.resolve_claim(claim.id, moderator, approve=True, note="Tasdiqlandi")
-    assert available(seller) == 50_000
+    assert available(seller) == 50_000  # commission refunded, cashback taken back
     assert Deal.objects.get(id=deal.id).status == "failed"
     assert wallet.reconcile() == []
 
@@ -557,6 +560,17 @@ def test_telegram_outbox_is_sent_by_worker(seller: User) -> None:
 
 
 # --- public API -------------------------------------------------------------------------------------
+
+
+def test_feed_card_has_preview_video_for_hover(seller: User) -> None:
+    with_video = live_auction(seller)
+    no_video = draft_with_media(seller, seed=2, video=False)
+    rows = {r["id"]: r for r in APIClient().get("/api/v1/auctions").json()["results"]}
+    assert rows[str(with_video.id)]["preview_video"]["url"].endswith("v.mp4")
+    assert "poster_url" in rows[str(with_video.id)]["preview_video"]
+    # Card data without a processed video has no preview.
+    no_video_row = AuctionListSerializer(no_video).data
+    assert no_video_row["preview_video"] is None
 
 
 def test_feed_sorting_and_visibility(seller: User, buyer: User) -> None:

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from accounts.views import CsrfView, LoginStartView, LoginStatusView, LogoutView, MeView
+from accounts.views import CsrfView, LocationView, LoginStartView, LoginStatusView, LogoutView, MeView
 
 urlpatterns = [
     path("auth/csrf", CsrfView.as_view(), name="auth-csrf"),
@@ -8,4 +8,5 @@ urlpatterns = [
     path("auth/telegram/status/<uuid:request_id>", LoginStatusView.as_view(), name="auth-telegram-status"),
     path("auth/logout", LogoutView.as_view(), name="auth-logout"),
     path("me", MeView.as_view(), name="me"),
+    path("me/location", LocationView.as_view(), name="me-location"),
 ]

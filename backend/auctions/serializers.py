@@ -65,8 +65,22 @@ class CoverSerializer(serializers.Serializer[Any]):
     thumb_url = serializers.CharField()
 
 
+def _preview_video(obj: Auction) -> dict[str, Any] | None:
+    """First processed video: cards play it on hover. Uses the prefetched media, no extra query."""
+    for m in obj.media.all():
+        if m.kind == AuctionMedia.Kind.VIDEO and m.status == AuctionMedia.MediaStatus.READY and m.file_path:
+            return {"url": media_store.url(m.file_path), "poster_url": media_store.url(m.thumb_path)}
+    return None
+
+
+class PreviewVideoSerializer(serializers.Serializer[Any]):
+    url = serializers.CharField()
+    poster_url = serializers.CharField()
+
+
 class AuctionListSerializer(serializers.ModelSerializer[Auction]):
     cover = serializers.SerializerMethodField()
+    preview_video = serializers.SerializerMethodField()
     region = RefSerializer(allow_null=True)
     district = RefSerializer(allow_null=True)
     animal_type = RefSerializer(allow_null=True)
@@ -82,6 +96,7 @@ class AuctionListSerializer(serializers.ModelSerializer[Auction]):
             "title",
             "status",
             "cover",
+            "preview_video",
             "asking_price",
             "top_bid_amount",
             "bidders_count",
@@ -102,6 +117,10 @@ class AuctionListSerializer(serializers.ModelSerializer[Auction]):
     @extend_schema_field(CoverSerializer(allow_null=True))
     def get_cover(self, obj: Auction) -> dict[str, Any] | None:
         return _cover(obj)
+
+    @extend_schema_field(PreviewVideoSerializer(allow_null=True))
+    def get_preview_video(self, obj: Auction) -> dict[str, Any] | None:
+        return _preview_video(obj)
 
     def get_distance_km(self, obj: Auction) -> float | None:
         value = getattr(obj, "distance_km", None)
