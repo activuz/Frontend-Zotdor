@@ -21,24 +21,14 @@ const LABEL = 'Xatolik haqida xabar berish';
 export const ReportProblemButton: React.FC<{
   /** Error text to attach, e.g. from the error boundary or a failed request. */
   error?: string;
-  variant?: 'link' | 'row' | 'button' | 'icon';
+  variant?: 'link' | 'row' | 'button';
   className?: string;
 }> = ({ error, variant = 'link', className = '' }) => {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {variant === 'icon' ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={LABEL}
-          title={LABEL}
-          className={`min-h-touch min-w-touch flex items-center justify-center rounded-xl text-danger hover:bg-danger-soft ${className}`}
-        >
-          <Bug className="w-6 h-6" aria-hidden="true" />
-        </button>
-      ) : variant === 'button' ? (
+      {variant === 'button' ? (
         <Button variant="ghost" className={className} onClick={() => setOpen(true)}>
           <Bug className="w-4 h-4" aria-hidden="true" />
           {LABEL}
@@ -57,12 +47,21 @@ export const ReportProblemButton: React.FC<{
           {LABEL}
         </button>
       )}
-      <Modal open={open} title={LABEL} onClose={() => setOpen(false)}>
-        {open && <ReportForm error={error} onDone={() => setOpen(false)} />}
-      </Modal>
+      <ReportProblemModal open={open} error={error} onClose={() => setOpen(false)} />
     </>
   );
 };
+
+/** The form on its own, for callers with their own trigger (e.g. the header profile menu). */
+export const ReportProblemModal: React.FC<{ open: boolean; error?: string; onClose: () => void }> = ({
+  open,
+  error,
+  onClose,
+}) => (
+  <Modal open={open} title={LABEL} onClose={onClose}>
+    {open && <ReportForm error={error} onDone={onClose} />}
+  </Modal>
+);
 
 const ReportForm: React.FC<{ error?: string; onDone: () => void }> = ({ error, onDone }) => {
   const { data: me } = useMe();
