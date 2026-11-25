@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import User
@@ -23,11 +24,17 @@ class PlaceSerializer(serializers.Serializer[None]):
     name = serializers.CharField()
 
 
+class SavedPointSerializer(serializers.Serializer[None]):
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+
+
 class MeSerializer(serializers.ModelSerializer[User]):
     region = PlaceSerializer(read_only=True, allow_null=True)
     district = PlaceSerializer(read_only=True, allow_null=True)
     needs_profile = serializers.BooleanField(read_only=True)
     has_location = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -42,12 +49,20 @@ class MeSerializer(serializers.ModelSerializer[User]):
             "district",
             "needs_profile",
             "has_location",
+            "location",
             "created_at",
         ]
         read_only_fields = fields
 
     def get_has_location(self, obj: User) -> bool:
         return obj.lat is not None and obj.lng is not None
+
+    # Only ever serialized for the user themself (`/me`), so the map can show their saved point.
+    @extend_schema_field(SavedPointSerializer(allow_null=True))
+    def get_location(self, obj: User) -> dict[str, float] | None:
+        if obj.lat is None or obj.lng is None:
+            return None
+        return {"lat": float(obj.lat), "lng": float(obj.lng)}
 
 
 class LoginStatusSerializer(serializers.Serializer[None]):

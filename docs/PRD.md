@@ -44,6 +44,8 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 ### Auksion
 - **BR-10** Har bir sotuv auksion orqali bo‘ladi. Bitta auksion = bitta hayvon. *(A-01)*
 - **BR-11** Sotuvchi quyidagilarni kiritadi: yo‘nalish, hayvon turi, jins-yosh toifasi, zot (ixtiyoriy), yoshi, vazni (taxminiy yoki aniq), tavsif, so‘raladigan narx, joylashuv (viloyat, tuman), boshlanish sanasi va vaqti, davomiylik.
+- **BR-11a** Sotuvchi ixtiyoriy ravishda molning joylashuvini xaritada belgilaydi (OLX va Avito'dagi "xaritada ko‘rsatish" kabi). Nuqta ~100 m gacha yaxlitlanadi, tuman nuqtaga qarab avtomatik tanlanadi. Belgilanmasa, tuman markazi ishlatiladi. *(2026-11-25)*
+- **BR-12a** Sotuvchi e'lon qilinguncha media tartibini o‘zgartiradi. Birinchi tayyor rasm muqova bo‘ladi. *(2026-11-25)*
 - **BR-12** Davomiylik **10 daqiqadan 12 soatgacha** bo‘ladi.
 - **BR-13** Boshlanish vaqti "hozir" yoki kelajakdagi istalgan vaqt bo‘lishi mumkin, lekin ko‘pi bilan 7 kun oldinga. *(A-02)*
 - **BR-14** Media faqat ilova ichidagi kamera orqali olinadi. Kamida **4 ta rasm** (ko‘pi bilan 10 ta) va kamida **1 ta video** talab qilinadi. Galereyadan yuklab bo‘lmaydi.
@@ -67,6 +69,7 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 - **BR-31** Sotuvchi istalgan faol taklifni tanlay oladi. Tanlash oynasida **eng yuqori 3 ta** va **eng yaqin 3 ta** taklif "Tavsiya" bloki sifatida yuqorida turadi. Qolganlarini summa yoki masofa bo‘yicha saralash mumkin.
 - **BR-32** Tanlash oynasida sotuvchi har bir xaridorning summasi, masofasi, reytingi va bitimlar sonini ko‘radi. Ism va telefon ko‘rinmaydi.
 - **BR-33** Taklif qabul qilinganda bitim yaratiladi, komissiya yechiladi va **shundan keyingina** ikki tomonga bir-birining ismi va telefoni ochiladi.
+- **BR-33a** Belgilangan nuqta (BR-11a) begonalarga faqat taxminiy hudud sifatida ko‘rsatiladi: ~1 km katak markazi va 1,5 km radiusli doira. Aniq nuqta bitim yaratilgandan keyin telefon bilan birga faqat ikki tomonga ochiladi. *(2026-11-25)*
 - **BR-35** Sotuvchi jonli auksionda ham faol taklifni qabul qila oladi, lekin **auksion boshlanganidan kamida 10 daqiqa o‘tgach**. Bunda auksion darhol `sold` holatiga o‘tadi va boshqa xaridorlarga "Auksion muddatidan oldin yakunlandi" xabari boradi. Komissiya va kontaktlarni ochish BR-33 bo‘yicha amalga oshadi.
 - **BR-34** Sotuvchi bitim yaratilganidan keyin 7 kun ichida "bitim bo‘lmadi" arizasini bera oladi. Moderator ariza asosli deb topsa, komissiya balansga qaytariladi. *(A-09)*
 

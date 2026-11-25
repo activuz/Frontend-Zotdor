@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Bookmark, BookmarkCheck, Flag, ImageOff, MapPin, Star } from 'lucide-react';
-import { ApiError, mediaUrl } from '../../api/http';
+import { Bookmark, BookmarkCheck, Flag, ImageOff, MapPin, Play, Share2, Star } from 'lucide-react';
+import { ApiError } from '../../api/http';
+import { MediaCarousel } from '../media/MediaCarousel';
+import { MediaLightbox, Thumb } from '../media/MediaLightbox';
+import { MapView } from '../location/MapView';
 import { useMe } from '../auth/api';
 import { formatDateTime, formatKm, formatRating, formatSom } from '../../lib/format';
 import { useNow } from '../../lib/useNow';
@@ -56,9 +59,10 @@ export const AuctionPage: React.FC = () => {
 const Gallery: React.FC<{ auction: AuctionDetail }> = ({ auction }) => {
   const ready = auction.media.filter((m) => m.status === 'ready');
   const [index, setIndex] = useState(0);
-  const current = ready[Math.min(index, ready.length - 1)];
+  const [viewerAt, setViewerAt] = useState<number | null>(null);
+  const alt = auction.title || 'Eʼlon';
 
-  if (!current) {
+  if (ready.length === 0) {
     return (
       <div className="aspect-[4/3] rounded-2xl border border-line bg-surface flex items-center justify-center text-ink-muted">
         <ImageOff className="w-10 h-10" aria-hidden="true" />
@@ -67,22 +71,16 @@ const Gallery: React.FC<{ auction: AuctionDetail }> = ({ auction }) => {
   }
   return (
     <div>
-      <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-ink">
-        {current.kind === 'video' ? (
-          <video
-            key={current.id}
-            src={mediaUrl(current.url)}
-            poster={mediaUrl(current.thumb_url) || undefined}
-            controls
-            playsInline
-            className="h-full w-full object-contain"
-          />
-        ) : (
-          <img src={mediaUrl(current.url)} alt={auction.title} className="h-full w-full object-contain" />
-        )}
-      </div>
+      <MediaCarousel
+        items={ready}
+        alt={alt}
+        index={index}
+        onIndexChange={setIndex}
+        onOpen={setViewerAt}
+        className="aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface"
+      />
       {ready.length > 1 && (
-        <ul className="mt-2 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Rasmlar">
+        <ul className="mt-2 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Rasmlar va video">
           {ready.map((m, i) => (
             <li key={m.id} className="shrink-0">
               <button
@@ -90,19 +88,73 @@ const Gallery: React.FC<{ auction: AuctionDetail }> = ({ auction }) => {
                 onClick={() => setIndex(i)}
                 aria-label={`${m.kind === 'video' ? 'Video' : 'Rasm'} ${i + 1}`}
                 aria-current={i === index}
-                className={`block h-16 w-20 overflow-hidden rounded-xl border-2 ${i === index ? 'border-brand' : 'border-transparent'}`}
+                className={`relative block h-16 w-20 overflow-hidden rounded-xl border-2 ${i === index ? 'border-brand' : 'border-transparent'}`}
               >
-                {m.thumb_url ? (
-                  <img src={mediaUrl(m.thumb_url)} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="flex h-full items-center justify-center bg-page text-[13px] text-ink">Video</span>
+                <Thumb media={m} />
+                {m.kind === 'video' && (
+                  <Play className="absolute inset-0 m-auto h-6 w-6 fill-surface text-surface drop-shadow" aria-hidden="true" />
                 )}
               </button>
             </li>
           ))}
         </ul>
       )}
+      <MediaLightbox
+        items={ready}
+        alt={alt}
+        openAt={viewerAt}
+        onClose={(last) => {
+          setViewerAt(null);
+          setIndex(last);
+        }}
+      />
     </div>
+  );
+};
+
+/** Approximate area (BR-33a): a ~1.5 km circle, never the seller's pin. */
+const AreaMap: React.FC<{ area: NonNullable<AuctionDetail['area']> }> = ({ area }) => (
+  <section aria-labelledby="area-title" className="overflow-hidden rounded-2xl border border-line bg-surface">
+    <h2 id="area-title" className="px-4 pt-3 text-[15px] font-semibold text-ink">
+      Molning taxminiy joylashuvi
+    </h2>
+    <p className="px-4 text-[13px] text-ink-muted">Aniq manzil bitim tuzilgandan keyin ochiladi.</p>
+    <MapView
+      mode="area"
+      center={{ lat: area.lat, lng: area.lng }}
+      radiusM={area.radius_m}
+      zoom={12}
+      className="mt-3 h-48"
+      label="Molning taxminiy joylashuvi xaritada"
+    />
+  </section>
+);
+
+const ShareButton: React.FC<{ title: string }> = ({ title }) => {
+  const [copied, setCopied] = useState(false);
+  const share = async () => {
+    const url = window.location.href.split('?')[0];
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // The user closed the share sheet.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <Button variant="ghost" className="px-3" onClick={() => void share()}>
+      <Share2 className="w-4 h-4" aria-hidden="true" />
+      <span aria-live="polite">{copied ? 'Havola nusxalandi' : 'Ulashish'}</span>
+    </Button>
   );
 };
 
@@ -134,7 +186,10 @@ const Info: React.FC<{ auction: AuctionDetail }> = ({ auction: a }) => {
           </span>
         )}
       </div>
-      <h1 className="font-display text-[28px] leading-tight text-ink">{a.title || 'Nomsiz eʼlon'}</h1>
+      <div className="flex items-start justify-between gap-2">
+        <h1 className="font-display text-[28px] leading-tight text-ink">{a.title || 'Nomsiz eʼlon'}</h1>
+        <ShareButton title={a.title || 'Zotdor auksioni'} />
+      </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-line bg-surface p-4 text-[15px]">
         {facts
@@ -153,6 +208,8 @@ const Info: React.FC<{ auction: AuctionDetail }> = ({ auction: a }) => {
           <p className="mt-1 whitespace-pre-line text-[15px] text-ink">{a.description}</p>
         </div>
       )}
+
+      {a.area && <AreaMap area={a.area} />}
 
       <div className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
         <div>

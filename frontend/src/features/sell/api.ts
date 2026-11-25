@@ -83,3 +83,30 @@ export function useSubmitAuction(id: string) {
     },
   });
 }
+
+/**
+ * Gallery order (BR-12a): the first photo is the cover. Optimistic, so a drag lands at once;
+ * on error the server order comes back.
+ */
+export function useReorderMedia(auctionId: string) {
+  const client = useQueryClient();
+  const key = ['auction', auctionId];
+  return useMutation({
+    mutationFn: (ids: string[]) => api<AuctionDetail>('PUT', `/auctions/${auctionId}/media/order`, { ids }),
+    onMutate: async (ids) => {
+      await client.cancelQueries({ queryKey: key });
+      const before = client.getQueryData<AuctionDetail>(key);
+      if (before) {
+        const byId = new Map(before.media.map((m) => [m.id, m]));
+        const media = ids.map((id) => byId.get(id)).filter((m): m is Media => Boolean(m));
+        client.setQueryData<AuctionDetail>(key, { ...before, media });
+      }
+      return { before };
+    },
+    onError: (_e, _ids, ctx) => {
+      if (ctx?.before) client.setQueryData(key, ctx.before);
+      void client.invalidateQueries({ queryKey: key });
+    },
+    onSuccess: (a) => client.setQueryData(key, a),
+  });
+}

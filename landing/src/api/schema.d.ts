@@ -615,6 +615,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auctions/{auction_id}/media/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["v1_auctions_media_order_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auctions/{auction_id}/reject-all": {
         parameters: {
             query?: never;
@@ -1197,6 +1213,13 @@ export interface components {
             is_active?: boolean;
             directions: number[];
         };
+        Area: {
+            /** Format: double */
+            lat: number;
+            /** Format: double */
+            lng: number;
+            radius_m: number;
+        };
         AuctionDetail: {
             /** Format: uuid */
             readonly id: string;
@@ -1245,6 +1268,7 @@ export interface components {
             decision_deadline?: string | null;
             /** Format: date-time */
             published_at?: string | null;
+            readonly area: components["schemas"]["Area"] | null;
         };
         AuctionList: {
             /** Format: uuid */
@@ -1379,6 +1403,7 @@ export interface components {
             can_rate: boolean;
             can_claim: boolean;
             claim_status: string | null;
+            location: components["schemas"]["Point"] | null;
         };
         /**
          * @description * `seller` - seller
@@ -1467,6 +1492,10 @@ export interface components {
             /** Format: date-time */
             starts_at?: string | null;
             duration_minutes?: number | null;
+            /** Format: double */
+            lat?: number | null;
+            /** Format: double */
+            lng?: number | null;
         };
         Health: {
             status: components["schemas"]["HealthStatusEnum"];
@@ -1555,6 +1584,7 @@ export interface components {
             readonly district: components["schemas"]["Place"] | null;
             readonly needs_profile: boolean;
             readonly has_location: boolean;
+            readonly location: components["schemas"]["SavedPoint"] | null;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -1576,6 +1606,9 @@ export interface components {
          * @enum {string}
          */
         MediaKindEnum: "photo" | "video";
+        MediaOrderRequest: {
+            ids: string[];
+        };
         /**
          * @description * `processing` - Processing
          *     * `ready` - Ready
@@ -1632,6 +1665,7 @@ export interface components {
             early_accept_from: string | null;
             rejection_reason: string;
             checks: components["schemas"]["Check"][];
+            pin: components["schemas"]["Point"] | null;
         };
         PaginatedAuctionList: {
             count: number;
@@ -1761,6 +1795,7 @@ export interface components {
             decision_deadline?: string | null;
             /** Format: date-time */
             published_at?: string | null;
+            readonly area: components["schemas"]["Area"] | null;
             checks: components["schemas"]["PanelCheck"][];
             events: components["schemas"]["PanelEvent"][];
             seller_phone: string;
@@ -1996,6 +2031,10 @@ export interface components {
             /** Format: date-time */
             starts_at?: string | null;
             duration_minutes?: number | null;
+            /** Format: double */
+            lat?: number | null;
+            /** Format: double */
+            lng?: number | null;
         };
         PatchedProfileUpdateRequest: {
             first_name?: string;
@@ -2048,6 +2087,12 @@ export interface components {
         Place: {
             id: number;
             name: string;
+        };
+        Point: {
+            /** Format: double */
+            lat: number;
+            /** Format: double */
+            lng: number;
         };
         PreviewVideo: {
             url: string;
@@ -2182,6 +2227,12 @@ export interface components {
          * @enum {string}
          */
         ResultEnum: "pass" | "warn" | "fail";
+        SavedPoint: {
+            /** Format: double */
+            lat: number;
+            /** Format: double */
+            lng: number;
+        };
         SellerHistory: {
             auctions: number;
             blocked: number;
@@ -3627,6 +3678,33 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    v1_auctions_media_order_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                auction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaOrderRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MediaOrderRequest"];
+                "multipart/form-data": components["schemas"]["MediaOrderRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuctionDetail"];
+                };
             };
         };
     };

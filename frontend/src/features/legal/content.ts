@@ -143,7 +143,7 @@ export const LEGAL_DOCS: Record<LegalSlug, LegalDoc> = {
           [
             'Telefon raqami va Telegram akkaunt maʼlumotlari (identifikator, username, ism) — kirish uchun.',
             'Profil: ism, familiya, viloyat va tuman.',
-            'Qurilma joylashuvi — faqat siz “Joylashuvimni aniqlash” tugmasini bosib, brauzerda ruxsat bersangiz. U taxminan 100 metrgacha yaxlitlanib saqlanadi va faqat yaqin auksionlarni saralash hamda masofani hisoblash uchun ishlatiladi. Tizimga kirmagan boʻlsangiz, u faqat brauzeringizda turadi. Joylashuv berilmasa, tumaningiz markazi ishlatiladi. Uni istalgan payt profilda oʻchirishingiz mumkin.',
+            'Joylashuvingiz — faqat siz “Joylashuvimni aniqlash” tugmasini bosib brauzerda ruxsat bersangiz yoki nuqtani xaritadan tanlasangiz. U taxminan 100 metrgacha yaxlitlanib saqlanadi va faqat yaqin auksionlarni saralash hamda masofani hisoblash uchun ishlatiladi. Tizimga kirmagan boʻlsangiz, u faqat brauzeringizda turadi. Joylashuv berilmasa, tumaningiz markazi ishlatiladi. Uni istalgan payt profilda oʻchirishingiz mumkin.',
             'Auksionlar, rasm va videolar, takliflar, bitimlar, baholar va shikoyatlar.',
             'Balans harakatlari va Click orqali toʻlovlar haqidagi maʼlumot. Karta maʼlumotlari bizga kelmaydi, ularni Click qayta ishlaydi.',
             'Texnik maʼlumotlar: IP manzil, brauzer turi, kirish vaqti — xavfsizlik va suiisteʼmolning oldini olish uchun.',
@@ -173,6 +173,7 @@ export const LEGAL_DOCS: Record<LegalSlug, LegalDoc> = {
             'Ism va telefon faqat bitim tuzilgandan keyin va faqat bitimning ikki tarafiga ochiladi.',
             'Ochiq profilda ism, familiyaning birinchi harfi, viloyat, reyting va bitimlar soni koʻrsatiladi.',
             'Auksionda viloyat va tuman koʻrsatiladi, aniq manzil koʻrsatilmaydi. Qurilmangiz joylashuvi hech kimga koʻrsatilmaydi: boshqalar faqat taxminiy masofani koʻradi.',
+            'Sotuvchi molning joylashuvini xaritada belgilasa, boshqalarga faqat taxminiy hudud (taxminan 1,5 km radiusli doira) koʻrsatiladi. Aniq nuqta bitim tuzilgandan keyin telefon raqami bilan birga faqat xaridorga ochiladi.',
             'Moderator va administratorlar maʼlumotlarni xizmat vazifasini bajarish uchun koʻradi. Ularning har bir harakati audit jurnaliga yoziladi.',
           ],
         ],

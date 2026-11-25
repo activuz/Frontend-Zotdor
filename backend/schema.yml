@@ -1435,6 +1435,39 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/auctions/{auction_id}/media/order:
+    put:
+      operationId: v1_auctions_media_order_update
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaOrderRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MediaOrderRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaOrderRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetail'
+          description: ''
   /api/v1/auctions/{auction_id}/reject-all:
     post:
       operationId: v1_auctions_reject_all_create
@@ -2353,6 +2386,21 @@ components:
       - directions
       - name
       - slug
+    Area:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        radius_m:
+          type: integer
+      required:
+      - lat
+      - lng
+      - radius_m
     AuctionDetail:
       type: object
       properties:
@@ -2506,10 +2554,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        area:
+          allOf:
+          - $ref: '#/components/schemas/Area'
+          nullable: true
+          readOnly: true
       required:
       - age_label
       - animal_class
       - animal_type
+      - area
       - breed
       - cover
       - deal_id
@@ -2863,6 +2917,10 @@ components:
         claim_status:
           type: string
           nullable: true
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Point'
+          nullable: true
       required:
       - auction_id
       - can_claim
@@ -2873,6 +2931,7 @@ components:
       - cover_url
       - created_at
       - id
+      - location
       - my_rating
       - price
       - role
@@ -3130,6 +3189,14 @@ components:
           maximum: 1440
           minimum: 1
           nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
     Health:
       type: object
       properties:
@@ -3319,6 +3386,11 @@ components:
         has_location:
           type: boolean
           readOnly: true
+        location:
+          allOf:
+          - $ref: '#/components/schemas/SavedPoint'
+          nullable: true
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -3330,6 +3402,7 @@ components:
       - has_location
       - id
       - last_name
+      - location
       - needs_profile
       - phone
       - region
@@ -3383,6 +3456,17 @@ components:
       description: |-
         * `photo` - Photo
         * `video` - Video
+    MediaOrderRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 50
+      required:
+      - ids
     MediaStatusEnum:
       enum:
       - processing
@@ -3517,6 +3601,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Check'
+        pin:
+          allOf:
+          - $ref: '#/components/schemas/Point'
+          nullable: true
       required:
       - can_accept_now
       - can_cancel
@@ -3524,6 +3612,7 @@ components:
       - decision_deadline
       - early_accept_from
       - hold_amount
+      - pin
       - rejection_reason
     PaginatedAuctionList:
       type: object
@@ -3889,6 +3978,11 @@ components:
           type: string
           format: date-time
           nullable: true
+        area:
+          allOf:
+          - $ref: '#/components/schemas/Area'
+          nullable: true
+          readOnly: true
         checks:
           type: array
           items:
@@ -3905,6 +3999,7 @@ components:
       - age_label
       - animal_class
       - animal_type
+      - area
       - breed
       - checks
       - cover
@@ -4546,6 +4641,14 @@ components:
           maximum: 1440
           minimum: 1
           nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
     PatchedProfileUpdateRequest:
       type: object
       properties:
@@ -4696,6 +4799,18 @@ components:
       required:
       - id
       - name
+    Point:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+      required:
+      - lat
+      - lng
     PreviewVideo:
       type: object
       properties:
@@ -5021,6 +5136,18 @@ components:
         * `pass` - Pass
         * `warn` - Warn
         * `fail` - Fail
+    SavedPoint:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+      required:
+      - lat
+      - lng
     SellerHistory:
       type: object
       properties:

@@ -89,6 +89,7 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [ ] Huquqiy matnlarni yurist tekshiruvi va operator rekvizitlari ⛔ mahsulot egasi
 - [x] Auksion kartochkasida hover/fokusda video (`preview_video`, frontend va landing)
 - [x] 404 sahifa, Error Boundary, offline holati
+- [x] Media va joylashuv (2026-11-25): Instagram uslubidagi galereya (svayp, ikki yondagi tugmalar, ko‘rinib turgan videoni avtomatik ijro, to‘liq ekranli ko‘ruvchi), sotish ustasida media tartibini sudrab o‘zgartirish va bosib ko‘rish (BR-12a, `PUT /auctions/{id}/media/order`), xaritadan joylashuv tanlash va profilga saqlash, nuqta yo‘q bo‘lsa eslatma, auksionga ixtiyoriy nuqta (BR-11a) va ommaga faqat taxminiy hudud (BR-33a), bitimda aniq nuqta va yo‘nalish havolalari. Xarita: Leaflet + OSM (D-10a). Telefonda qo‘lda sinov hali qilinmagan
 - [ ] Accessibility tekshiruvi (axe) va 360, 390, 768, 1280 kengliklarda qo‘lda sinov
 
 ## 10-bosqich. Ishga tushirish

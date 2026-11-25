@@ -92,7 +92,8 @@ Boshlang‘ich qiymatlar fixture sifatida beriladi. **Mahsulot egasi tasdiqlamag
 | min_bid, max_bid | bigint | e'lon qilish paytida sozlamadan hisoblanadi |
 | commission_rate_bp | smallint | basis point; 20 = 0.2% |
 | region_id, district_id | FK | |
-| lat, lng | numeric(7,4) NULL | |
+| lat, lng | numeric(7,4) NULL | `location_pinned = false` bo‘lsa tuman markazi, aks holda sotuvchining nuqtasi (~100 m gacha yaxlitlangan) |
+| location_pinned | boolean | default `false`. Sotuvchi xaritada belgilagan (BR-11a). Ommaga faqat taxminiy hudud ko‘rsatiladi (BR-33a) |
 | starts_at, ends_at | timestamptz NULL | `CHECK ends_at - starts_at BETWEEN 10 min AND 12 h` |
 | decision_deadline | timestamptz NULL | `ends_at + 48h` |
 | published_at, ended_at, closed_at | timestamptz NULL | |
@@ -136,7 +137,7 @@ Alohida `media` app yaratilmadi: nom `MEDIA_ROOT`/`MEDIA_URL` bilan to‘qnashad
 | auction_id | FK | |
 | capture_session_id | FK | |
 | kind | varchar(8) | `photo` \| `video` |
-| position | smallint | |
+| position | smallint | galereya tartibi, `PUT /auctions/{id}/media/order` bilan o‘zgaradi (BR-12a). Birinchi tayyor rasm muqova |
 | status | varchar(12) | `processing` \| `ready` \| `failed` |
 | error | varchar(200) | `failed` bo‘lsa foydalanuvchiga ko‘rinadigan sabab |
 | original_path | varchar | qayta ishlanganidan keyin 30 kun saqlanadi |

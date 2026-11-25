@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -18,6 +18,9 @@ import { useLogout, useMe } from '../auth/api';
 import { PageLoading } from '../../components/ui/PageState';
 import { formatDate } from '../../lib/format';
 import { LocationPrompt } from '../location/LocationPrompt';
+import { LocationPicker } from '../location/LocationPicker';
+import { useDeviceLocation } from '../location/useDeviceLocation';
+import { MapView } from '../location/MapView';
 
 const MENU = [
   { to: '/me/auctions', label: 'Auksionlarim', icon: Tag },
@@ -53,9 +56,6 @@ export const ProfilePage: React.FC = () => {
             <dd>{[me.district?.name, me.region?.name].filter(Boolean).join(', ')}</dd>
           </div>
         </dl>
-        <div className="mt-3">
-          <LocationPrompt compact />
-        </div>
         <p className="mt-3 text-[13px] text-ink-muted">{formatDate(me.created_at)} dan beri aʼzo</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
@@ -74,6 +74,8 @@ export const ProfilePage: React.FC = () => {
           </Link>
         </div>
       </section>
+
+      <MyLocation />
 
       <nav aria-label="Shaxsiy boʻlimlar">
         <ul className="bg-surface rounded-2xl border border-line divide-y divide-line">
@@ -109,5 +111,68 @@ export const ProfilePage: React.FC = () => {
         {logout.isPending ? 'Chiqilmoqda…' : 'Chiqish'}
       </button>
     </div>
+  );
+};
+
+/** The saved point (`/me/location`): used for "nearest" sorting and distances, seen by no one. */
+const MyLocation: React.FC = () => {
+  const { point, save, clear, status, message, hasLocation } = useDeviceLocation();
+  const [picking, setPicking] = useState(false);
+  const busy = status === 'locating';
+
+  if (!hasLocation || !point) return <LocationPrompt />;
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-line bg-surface" aria-labelledby="my-location">
+      <h2 id="my-location" className="px-5 pt-4 font-display text-[20px] text-ink">
+        Joylashuvim
+      </h2>
+      <p className="px-5 text-[13px] text-ink-muted">
+        Yaqin auksionlarni saralash va masofa uchun. Bu nuqtani hech kim koʻrmaydi.
+      </p>
+      {/* key: a new point rebuilds the static preview. */}
+      <MapView
+        key={`${point.lat},${point.lng}`}
+        mode="point"
+        center={point}
+        zoom={14}
+        interactive={false}
+        className="mt-3 h-44"
+        label="Saqlangan joylashuvingiz xaritada"
+      />
+      <div className="flex flex-wrap gap-2 p-4">
+        <button
+          type="button"
+          onClick={() => setPicking(true)}
+          className="inline-flex min-h-touch items-center gap-2 rounded-xl border border-line px-4 text-[15px] font-semibold text-ink"
+        >
+          <MapPin className="w-4 h-4 text-brand" aria-hidden="true" />
+          Xaritada oʻzgartirish
+        </button>
+        <button
+          type="button"
+          onClick={() => void clear()}
+          disabled={busy}
+          className="min-h-touch px-4 rounded-xl text-[15px] font-semibold text-ink-muted disabled:opacity-50"
+        >
+          Oʻchirish
+        </button>
+      </div>
+      {message && !picking && (
+        <p role="alert" className="px-5 pb-4 text-[13px] text-danger">
+          {message}
+        </p>
+      )}
+      <LocationPicker
+        open={picking}
+        title="Joylashuvni oʻzgartirish"
+        note="Nuqta profilingizga saqlanadi. Uni hech kim koʻrmaydi."
+        initial={point}
+        busy={busy}
+        error={picking ? message : ''}
+        onConfirm={(p) => void save(p).then((ok) => ok && setPicking(false))}
+        onClose={() => setPicking(false)}
+      />
+    </section>
   );
 };

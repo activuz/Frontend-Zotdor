@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
@@ -145,6 +146,37 @@ class MyBidSerializer(serializers.Serializer[Any]):
     tier = serializers.CharField()
 
 
+class PointSerializer(serializers.Serializer[Any]):
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+
+
+class AreaSerializer(PointSerializer):
+    radius_m = serializers.IntegerField()
+
+
+# BR-33a: strangers see the pin only as the centre of a ~1 km grid cell with a radius that
+# always covers the real point (cell half-diagonal is < 800 m in Uzbekistan).
+AREA_STEP = Decimal("0.01")
+AREA_RADIUS_M = 1500
+
+
+def pinned_point(obj: Auction) -> dict[str, float] | None:
+    if not obj.location_pinned or obj.lat is None or obj.lng is None:
+        return None
+    return {"lat": float(obj.lat), "lng": float(obj.lng)}
+
+
+def approximate_area(obj: Auction) -> dict[str, Any] | None:
+    if not obj.location_pinned or obj.lat is None or obj.lng is None:
+        return None
+    return {
+        "lat": float(obj.lat.quantize(AREA_STEP)),
+        "lng": float(obj.lng.quantize(AREA_STEP)),
+        "radius_m": AREA_RADIUS_M,
+    }
+
+
 class OwnerInfoSerializer(serializers.Serializer[Any]):
     hold_amount = serializers.IntegerField(allow_null=True)
     decision_deadline = serializers.DateTimeField(allow_null=True)
@@ -153,6 +185,7 @@ class OwnerInfoSerializer(serializers.Serializer[Any]):
     early_accept_from = serializers.DateTimeField(allow_null=True)
     rejection_reason = serializers.CharField()
     checks = CheckSerializer(many=True)
+    pin = PointSerializer(allow_null=True)
 
 
 class AuctionDetailSerializer(AuctionListSerializer):
@@ -164,6 +197,7 @@ class AuctionDetailSerializer(AuctionListSerializer):
     owner = serializers.SerializerMethodField()
     deal_id = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    area = serializers.SerializerMethodField()
 
     class Meta(AuctionListSerializer.Meta):
         fields = [
@@ -185,7 +219,12 @@ class AuctionDetailSerializer(AuctionListSerializer):
             "duration_minutes",
             "decision_deadline",
             "published_at",
+            "area",
         ]
+
+    @extend_schema_field(AreaSerializer(allow_null=True))
+    def get_area(self, obj: Auction) -> dict[str, Any] | None:
+        return approximate_area(obj)
 
     def _viewer(self) -> User | None:
         request = self.context.get("request")
@@ -223,6 +262,7 @@ class AuctionDetailSerializer(AuctionListSerializer):
             "early_accept_from": early_from,
             "rejection_reason": obj.rejection_reason,
             "checks": CheckSerializer(checks, many=True).data,
+            "pin": pinned_point(obj),
         }
 
     def get_deal_id(self, obj: Auction) -> str | None:
@@ -266,6 +306,18 @@ class DraftSerializer(serializers.Serializer[Any]):
     start_now = serializers.BooleanField(required=False)
     starts_at = serializers.DateTimeField(required=False, allow_null=True)
     duration_minutes = serializers.IntegerField(min_value=1, max_value=1440, required=False, allow_null=True)
+    # Optional map pin (BR-11a). Send both, or both null to remove it.
+    lat = serializers.FloatField(required=False, allow_null=True)
+    lng = serializers.FloatField(required=False, allow_null=True)
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if ("lat" in attrs) != ("lng" in attrs) or (attrs.get("lat") is None) != (attrs.get("lng") is None):
+            raise serializers.ValidationError({"lat": "Kenglik va uzunlik birga yuboriladi."})
+        return attrs
+
+
+class MediaOrderSerializer(serializers.Serializer[Any]):
+    ids = serializers.ListField(child=serializers.UUIDField(), max_length=50)
 
 
 class SubmitResultSerializer(serializers.Serializer[Any]):

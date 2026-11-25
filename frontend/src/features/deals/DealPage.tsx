@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Phone, Send, Star } from 'lucide-react';
+import { Navigation, Phone, Send, Star } from 'lucide-react';
 import { mediaUrl } from '../../api/http';
 import { formatDateTime, formatRating, formatSom } from '../../lib/format';
 import { PageError, PageLoading } from '../../components/ui/PageState';
 import { Button, buttonClass } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Field';
 import { useClaimDeal, useDeal, useRateDeal, type Deal } from './api';
+import { MapView } from '../location/MapView';
 
 const DEAL_STATUS: Record<string, string> = {
   active: 'Faol bitim',
@@ -78,6 +79,8 @@ export const DealPage: React.FC = () => {
           )}
         </div>
       </section>
+
+      {d.location && <DealLocation point={d.location} />}
 
       <RatingBlock deal={d} />
       {d.role === 'seller' && <ClaimBlock deal={d} />}
@@ -183,5 +186,37 @@ const ClaimBlock: React.FC<{ deal: Deal }> = ({ deal }) => {
         Ariza yuborish
       </Button>
     </form>
+  );
+};
+
+/** BR-33a: the seller's pin opens to both parties with the contacts. */
+const DealLocation: React.FC<{ point: NonNullable<Deal['location']> }> = ({ point }) => {
+  const at = `${point.lat},${point.lng}`;
+  return (
+    <section className="overflow-hidden rounded-2xl border border-line bg-surface" aria-labelledby="deal-location">
+      <h2 id="deal-location" className="px-4 pt-3 text-[15px] font-semibold text-ink-muted">
+        Mol joylashuvi
+      </h2>
+      <p className="px-4 text-[13px] text-ink-muted">Sotuvchi belgilagan nuqta, taxminan 100 m aniqlikda.</p>
+      <MapView mode="point" center={point} zoom={15} className="mt-3 h-52" label="Mol joylashuvi xaritada" />
+      <div className="flex flex-wrap gap-2 p-4">
+        <a
+          href={`https://yandex.uz/maps/?rtext=~${at}&rtt=auto`}
+          target="_blank"
+          rel="noreferrer"
+          className={buttonClass('secondary', 'flex-1')}
+        >
+          <Navigation className="w-5 h-5" aria-hidden="true" /> Yandex Xaritada yoʻl
+        </a>
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${at}`}
+          target="_blank"
+          rel="noreferrer"
+          className={buttonClass('secondary', 'flex-1')}
+        >
+          <Navigation className="w-5 h-5" aria-hidden="true" /> Google Maps
+        </a>
+      </div>
+    </section>
   );
 };

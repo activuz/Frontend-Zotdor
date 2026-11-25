@@ -54,6 +54,9 @@ class Auction(models.Model):
     district = models.ForeignKey("reference.District", on_delete=models.PROTECT, null=True, blank=True)
     lat = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
     lng = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
+    # True: lat/lng is the seller's map pin (BR-11a), shown publicly only as a ~1 km area and
+    # exactly only to the deal parties (BR-33a). False: lat/lng is the district centroid.
+    location_pinned = models.BooleanField(default=False)
 
     start_now = models.BooleanField(default=True)
     starts_at = models.DateTimeField(null=True, blank=True)

@@ -38,11 +38,15 @@ Chetki holatlar:
 - **Foydalanuvchi bloklangan.** Sabab va qo‘llab-quvvatlash kontakti ko‘rsatiladi.
 - **Kompyuterda Telegram yo‘q.** Havolaning QR-kodi ko‘rsatiladi.
 
+## Joylashuv
+
+Foydalanuvchi nuqtasi ikki yo‘l bilan kiritiladi: "Joylashuvimni aniqlash" (brauzer geolokatsiyasi) yoki "Xaritadan tanlash" (to‘liq ekranli xarita, pin markazda). Kirgan foydalanuvchida nuqta profilga saqlanadi (`PUT /me/location`), mehmonda faqat shu tabda. Nuqta saqlanmagan bo‘lsa, bosh sahifa tepasida "Joylashuvingizni kiriting" eslatmasi chiqadi, uni shu sessiya uchun yopish mumkin. Profilda "Joylashuvim" bo‘limi nuqtani xaritada ko‘rsatadi, "Xaritada o‘zgartirish" va "O‘chirish" tugmalari bilan.
+
 ## F2. Auksion yaratish
 
-1. **Ma'lumotlar.** Ketma-ket tanlanadi: yo‘nalish → tur → toifa → zot. Keyin yoshi (yil va oy), vazni hamda "taxminiy" belgisi, narx (raqamlar guruhlab ko‘rsatiladi: `25 000 000`), tavsif, joylashuv (standart: profildagi tuman) kiritiladi. Tavsif yozilayotganda kontakt yoki haqorat aniqlansa, darhol ogohlantiriladi.
+1. **Ma'lumotlar.** Ketma-ket tanlanadi: yo‘nalish → tur → toifa → zot. Keyin yoshi (yil va oy), vazni hamda "taxminiy" belgisi, narx (raqamlar guruhlab ko‘rsatiladi: `25 000 000`), tavsif, joylashuv (standart: profildagi tuman) kiritiladi. Ixtiyoriy "Molning joylashuvi" bloki: "Xaritada belgilash" to‘liq ekranli xaritani ochadi (pin markazda turadi, xarita suriladi, "Mening joylashuvim" tugmasi), yoki "Profildagi joylashuvim" bir bosishda qo‘yadi. Nuqta tanlanganda viloyat va tuman avtomatik to‘ladi. Ostida izoh: xaridorlar faqat taxminiy hududni ko‘radi (BR-11a, BR-33a). Tavsif yozilayotganda kontakt yoki haqorat aniqlansa, darhol ogohlantiriladi.
 2. **Vaqt.** "Hozir boshlash" yoki sana va vaqt tanlanadi. Davomiylik tayyor variantlardan tanlanadi (10 daq, 30 daq, 1, 2, 3, 6, 12 soat) yoki qo‘lda kiritiladi (10 daqiqadan 12 soatgacha). Ekranda tugash vaqti aniq ko‘rsatiladi: "Bugun 18:30 da tugaydi".
-3. **Media.** Kamera oynasi ochiladi. Ekranda "Rasmlar 2/4, video 0/1" hisoblagichi va har bir kadr uchun qisqa ko‘rsatma turadi ("Molni yonidan, to‘liq ko‘rinadigan qilib oling"). Kamera ruxsati berilmagan bo‘lsa, brauzer bo‘yicha ruxsat berish yo‘riqnomasi chiqadi. Kompyuterda: "Iltimos, telefoningizdan davom eting" xabari va shu qoralamaga olib boradigan havola (nusxa olish tugmasi bilan) ko‘rsatiladi. QR-kod hali yo‘q: uning uchun yangi kutubxona kerak, qaror mahsulot egasida. Kompyuter kamerasidan foydalanish ikkinchi darajali tugma sifatida qoldirilgan.
+3. **Media.** Kamera oynasi ochiladi. Ekranda "Rasmlar 2/4, video 0/1" hisoblagichi va har bir kadr uchun qisqa ko‘rsatma turadi ("Molni yonidan, to‘liq ko‘rinadigan qilib oling"). Kamera ruxsati berilmagan bo‘lsa, brauzer bo‘yicha ruxsat berish yo‘riqnomasi chiqadi. Kompyuterda: "Iltimos, telefoningizdan davom eting" xabari va shu qoralamaga olib boradigan havola (nusxa olish tugmasi bilan) ko‘rsatiladi. QR-kod hali yo‘q: uning uchun yangi kutubxona kerak, qaror mahsulot egasida. Kompyuter kamerasidan foydalanish ikkinchi darajali tugma sifatida qoldirilgan. Olingan fayllar to‘rda turadi: faylni bosib turib (yoki tutqichdan ushlab) surib tartib o‘zgartiriladi, tutqich klaviaturada strelkalar bilan ham ishlaydi. Birinchi rasmda "Muqova" belgisi turadi. Faylga bosilsa, to‘liq ekranli ko‘ruvchi ochiladi (BR-12a).
 4. **Ko‘rib chiqish.** Kartochka qanday ko‘rinishi va komissiya rezervi ko‘rsatiladi: "E'lon qilish uchun balansdan 50 000 so‘m vaqtincha band qilinadi". Mavjud balans ham shu yerda turadi. Balans yetmasa, "To‘ldirish" tugmasi chiqadi.
 5. **Yuborish.** "Tekshirilmoqda…" holati, odatda bir necha soniya davom etadi. Natija uch xil bo‘lishi mumkin:
    - O‘tdi → "Auksion bugun 15:00 da boshlanadi" va auksion sahifasiga havola.
@@ -53,6 +57,7 @@ Qoralama avtomatik saqlanadi. Foydalanuvchi chiqib ketsa, keyin davom ettira ola
 
 ## F3. Taklif berish
 
+0. **Galereya.** Rasm va video svayp bilan yoki ikki yondagi oq dumaloq tugmalar bilan almashadi; yuqorida "2 / 5" hisoblagichi, pastda nuqtalar va eskizlar. Ko‘rinib turgan video Instagram'dagidek avtomatik, ovozsiz va takror ijro etiladi; boshqa slaydga o‘tilsa, sahifadan chiqib ketsa yoki tab yashirilsa, pauza qiladi. Videoga bosish ovozni yoqadi, ovoz tanlovi sessiya davomida saqlanadi. Brauzerda "trafikni tejash" yoqilgan bo‘lsa, video bosilgandagina yuklanadi. Rasmga bosilsa, to‘liq ekranli ko‘ruvchi ochiladi (Escape yoki ✕ bilan yopiladi). Nuqta belgilangan e'londa "Molning taxminiy joylashuvi" xaritasi (doira) va "Ulashish" tugmasi bor.
 1. Auksion sahifasida rangli taklif ro‘yxati, qolgan vaqt sanog‘i va sotuvchi narxi ko‘rsatiladi.
 2. Pastki panelda summa maydoni turadi. Tezkor tugmalar ham bor: "Eng yuqori + 100 000", "Sotuvchi narxi".
 3. Tasdiqlash oynasi chiqadi: "23 500 000 so‘m taklif qilasiz. Oldingi taklifingiz (22 000 000) bekor bo‘ladi."
@@ -79,7 +84,7 @@ Muqobil yo‘llar: "Hech birini tanlamayman" tugmasi auksionni `unsold` holatiga
 
 ## F5. Bitimdan keyin
 
-- **Bitim sahifasi:** ikkinchi tomonning ismi, telefoni ("Qo‘ng‘iroq qilish" tugmasi) va Telegram username'i (bo‘lsa), shuningdek narx va sana ko‘rsatiladi.
+- **Bitim sahifasi:** ikkinchi tomonning ismi, telefoni ("Qo‘ng‘iroq qilish" tugmasi) va Telegram username'i (bo‘lsa), shuningdek narx va sana ko‘rsatiladi. Sotuvchi nuqta belgilagan bo‘lsa, "Mol joylashuvi" xaritasi va Yandex Xarita hamda Google Maps'da yo‘l ochish tugmalari chiqadi (BR-33a).
 - **Baholash:** bitimdan 24 soat o‘tgach, ikkala tomonga eslatma boradi. Baho 14 kun ichida qoldiriladi.
 - **"Bitim bo‘lmadi" arizasi** (faqat sotuvchi, 7 kun ichida): sabab yoziladi va ariza moderatorga tushadi. Natija Telegram orqali keladi. Ariza tasdiqlansa, komissiya qaytariladi va bitim `failed` holatiga o‘tadi.
 
