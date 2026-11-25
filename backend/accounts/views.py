@@ -4,10 +4,11 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import login, logout
+from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -22,6 +23,8 @@ from accounts.serializers import (
     MeSerializer,
     ProfileUpdateSerializer,
 )
+from core.errors import DomainError
+from core.http import data_of
 
 POLL_COOKIE = "zd_login"
 POLL_COOKIE_PATH = "/api/v1/auth/"
@@ -34,13 +37,18 @@ def _client_ip(request: Request) -> str | None:
 
 @method_decorator(ensure_csrf_cookie, name="get")
 class CsrfView(APIView):
-    """Sets the csrftoken cookie; the frontend calls it once on startup."""
+    """Sets the csrftoken cookie and returns the token.
+
+    The SPA sends the returned value in X-CSRFToken. Returning it in the body means the SPA
+    never has to read the cookie, which it cannot do when it runs on another subdomain
+    (web.zotdor.uz → api.zotdor.uz) unless CSRF_COOKIE_DOMAIN is shared.
+    """
 
     permission_classes = [AllowAny]
 
-    @extend_schema(responses={204: None})
+    @extend_schema(responses=inline_serializer("CsrfToken", {"csrf_token": serializers.CharField()}))
     def get(self, request: Request) -> Response:
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"csrf_token": get_token(request)})
 
 
 class LoginStartView(APIView):
@@ -117,3 +125,29 @@ class MeView(APIView):
             setattr(user, field, value)
         user.save()
         return Response(MeSerializer(user).data)
+
+
+class LocationView(APIView):
+    """Device position from the browser (Geolocation API). Stored rounded to ~100 m."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=inline_serializer(
+            "LocationIn", {"lat": serializers.FloatField(), "lng": serializers.FloatField()}
+        ),
+        responses=MeSerializer,
+    )
+    def put(self, request: Request) -> Response:
+        data = data_of(request)
+        try:
+            lat, lng = float(data.get("lat")), float(data.get("lng"))  # type: ignore[arg-type]
+        except (TypeError, ValueError) as exc:
+            raise DomainError("invalid_location", "Joylashuvni aniqlab boʻlmadi.") from exc
+        user: User = request.user  # type: ignore[assignment]
+        return Response(MeSerializer(services.set_location(user, lat, lng)).data)
+
+    @extend_schema(responses=MeSerializer)
+    def delete(self, request: Request) -> Response:
+        user: User = request.user  # type: ignore[assignment]
+        return Response(MeSerializer(services.clear_location(user)).data)

@@ -6,11 +6,14 @@ Bu fayl repo bilan ishlaydigan AI agentlar va dasturchilar uchun. Kod yozishdan 
 
 Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgilaydi, xaridorlar taklif beradi, sotuvchi g‘olibni tanlaydi. Platforma sotuvchining balansidan 0.2% komissiya oladi. Batafsil: [docs/PRD.md](docs/PRD.md).
 
-## Joriy holat (2026-11-21)
+## Joriy holat (2026-11-23)
 
-- `backend/` — 1-bosqich tugadi: Telegram orqali kirish, profil, viloyat va tumanlar, toifalar (`reference`). 2-bosqich: hamyon (ledger, rezervlar, bonus, reconcile). Auksionlar va bitimlar hali yo‘q.
-- `frontend/` — kirish, profil, `/me/setup` va `/wallet` sahifalari haqiqiy API bilan ishlaydi. E'lon va auksion ekranlari 3–4-bosqichlargacha **ochiq demo** rejimida: `src/mocks/` ishlatiladi va `DemoNotice` ogohlantirishi ko‘rinadi. Haqiqiy API kelganda `src/mocks/`, `DemoNotice` va `AppLayout` dagi `REAL_DATA_PATHS` olib tashlanadi.
-- `panel/` va `deploy/` hali yo‘q, ular 7- va 10-bosqichlarda yaratiladi.
+- `backend/` — kirish, profil, ma'lumotnomalar, hamyon, auksionlar (media va tekshiruvlar bilan), takliflar, bitimlar va baholar, shikoyatlar, bildirishnomalar (outbox), to‘lovlar (`fake` va Click) hamda panel API tayyor va test qilingan.
+- `frontend/` — barcha ekranlar haqiqiy API bilan ishlaydi (2026-11-23): feed, qidiruv, auksion sahifasi va takliflar, sotish ustasi va kamera, g‘olibni tanlash, bitim, `/me/*`, bildirishnomalar, hamyon (to‘ldirish va qaytarish). Demo rejimi, `src/mocks/` va `DemoNotice` olib tashlandi.
+- `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
+- Production: sayt va panel — Vercel (`web.zotdor.uz`, `panel.zotdor.uz`), API va worker — Render (`api.zotdor.uz`, `render.yaml`), baza va fayllar — Nhost. Qo‘llanma: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Fayllar `auctions/storage.py` orqali saqlanadi (`STORAGE_BACKEND=local|nhost`).
+- `landing/` — `zotdor.uz` reklama sahifasi (Next.js 14, FR-18): platformani tanishtiradi, API'dan sozlamalar, hududlar va ochiq auksionlarni oladi, aloqa formasi `POST /api/v1/leads` ga yuboradi (`leads` app, panelda "Sayt arizalari"). Standart yozuv — oʻzbek lotin, kirill avtomatik transliteratsiya. Tokenlar `frontend/` bilan bir xil. `npm run dev` (port 3002), `npm run api:types`.
+- `deploy/` — muqobil variant: bitta VPS uchun docker compose, nginx, zaxira nusxa va tiklash ([deploy/README.md](deploy/README.md)). Docker faqat Render image'i va shu yerda ishlatiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
 ## Hujjatlar
@@ -25,6 +28,8 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 | [docs/DESIGN.md](docs/DESIGN.md) | tokenlar, tipografika, matn qoidalari |
 | [docs/TESTING.md](docs/TESTING.md) | majburiy test holatlari, "tayyor" ta'rifi |
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | bosqichlar va bog‘liqliklar |
+| [docs/SEO.md](docs/SEO.md) | sarlavhalar, Open Graph, sitemap, qidiruv tizimlariga qo‘shish |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | production: Vercel, Render, Nhost sozlash |
 
 **Hujjat va kod bir-biriga mos bo‘lishi shart.** Modelni, endpointni yoki biznes qoidani o‘zgartirsangiz, tegishli hujjatni o‘sha o‘zgarish ichida yangilang. Biznes qoidasini o‘zgartirish kerak bo‘lsa, avval mahsulot egasidan so‘rang. Uni o‘zingiz hal qilmang.
 
@@ -53,9 +58,11 @@ cd backend && .venv/Scripts/python manage.py spectacular --file schema.yml --val
 # frontend
 cd frontend && npm run dev | npm run lint | npm run build
 cd frontend && npm run api:types        # backend/schema.yml → src/api/schema.d.ts
+cd panel && npm run dev | npm run lint | npm run build | npm run api:types   # port 3001
+cd landing && npm run dev | npm run lint | npm run build | npm run api:types # port 3002
 ```
 
-API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikkalasi ham o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
+API o‘zgarsa, `schema.yml` hamda `frontend/`, `panel/` va `landing/` dagi `schema.d.ts` qayta generatsiya qilinadi va hammasi o‘sha commit'ga qo‘shiladi. Lokal ishlab chiqishda Vite `/api` so‘rovlarini `localhost:8000` ga proxy qiladi, shuning uchun cookie birinchi tomon cookie'si bo‘ladi va login ishlaydi. Frontend unit testlari (Vitest) hali yo‘q.
 
 ## Backend qoidalari
 
@@ -72,7 +79,7 @@ API o‘zgarsa, `schema.yml` va `schema.d.ts` qayta generatsiya qilinadi va ikka
 ## Frontend qoidalari
 
 - API tiplari `src/api/schema.d.ts` dan olinadi va bu fayl generatsiya qilinadi. Server javobi uchun tipni qo‘lda yozmang.
-- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. HTTP faqat `src/api/http.ts` orqali yuboriladi. Yagona istisno — yuqorida aytilgan ochiq demo ekranlari. Yangi demo ekran qo‘shilmaydi.
+- **Mock fallback taqiqlanadi.** API xato bersa, foydalanuvchiga xato ko‘rsatiladi. HTTP faqat `src/api/http.ts` orqali yuboriladi. Demo ekranlar qo‘shilmaydi.
 - So‘rov qiladigan har bir ekranda loading, empty, error va success holatlari bo‘lishi shart.
 - `alert()`, `confirm()` va `any` ishlatilmaydi.
 - Ranglar faqat Tailwind tokenlari orqali beriladi (DESIGN.md §2). `[#xxxxxx]` ishlatilmaydi. 13 px dan kichik matn bo‘lmaydi.

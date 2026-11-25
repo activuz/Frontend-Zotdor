@@ -52,7 +52,9 @@ def refresh_user_stats(user: User) -> None:
     agg = Rating.objects.filter(target=user).aggregate(avg=Avg("score"), n=Count("id"))
     user.rating_avg = Decimal(str(round(agg["avg"], 2))) if agg["avg"] is not None else None
     user.rating_count = agg["n"]
-    user.deals_count = Deal.objects.filter(Q(seller=user) | Q(buyer=user)).exclude(status=Deal.DealStatus.FAILED).count()
+    user.deals_count = (
+        Deal.objects.filter(Q(seller=user) | Q(buyer=user)).exclude(status=Deal.DealStatus.FAILED).count()
+    )
     user.save(update_fields=["rating_avg", "rating_count", "deals_count"])
 
 
@@ -63,14 +65,17 @@ def rate(deal_id: uuid.UUID, user: User, score: int, comment: str = "") -> Ratin
         raise DomainError("invalid_score", "Baho 1 dan 5 gacha boʻlishi kerak.")
     if not can_rate(deal, user):
         raise DomainError("cannot_rate", "Bu bitimni baholab boʻlmaydi.", http.HTTP_409_CONFLICT)
-    from moderation.checks import PROFANITY_ROOTS, _normalize  # reuse the description filter
+    from moderation.checks import _normalize
+    from moderation.wordlist import PROFANITY_ROOTS  # reuse the description filter
 
     words = _normalize(comment).split()
     if any(w.startswith(root) for w in words for root in PROFANITY_ROOTS):
         raise DomainError("profanity", "Izohda haqoratli soʻz bor.")
     target = deal.buyer if user.id == deal.seller_id else deal.seller
     try:
-        rating = Rating.objects.create(deal=deal, author=user, target=target, score=score, comment=comment.strip())
+        rating = Rating.objects.create(
+            deal=deal, author=user, target=target, score=score, comment=comment.strip()
+        )
     except IntegrityError as exc:
         raise DomainError("cannot_rate", "Siz bu bitimni allaqachon baholagansiz.", 409) from exc
     refresh_user_stats(target)
@@ -103,6 +108,7 @@ def resolve_claim(claim_id: uuid.UUID, moderator: User, approve: bool, note: str
     claim.save()
     if approve:
         refunded = wallet.refund_commission(deal.seller, "deal", deal.id, actor=moderator)
+        wallet.reverse_cashback(deal.seller, deal.id, actor=moderator)
         deal.status = Deal.DealStatus.FAILED
         deal.save(update_fields=["status"])
         refresh_user_stats(deal.seller)

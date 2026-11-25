@@ -54,6 +54,9 @@ class Auction(models.Model):
     district = models.ForeignKey("reference.District", on_delete=models.PROTECT, null=True, blank=True)
     lat = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
     lng = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
+    # True: lat/lng is the seller's map pin (BR-11a), shown publicly only as a ~1 km area and
+    # exactly only to the deal parties (BR-33a). False: lat/lng is the district centroid.
+    location_pinned = models.BooleanField(default=False)
 
     start_now = models.BooleanField(default=True)
     starts_at = models.DateTimeField(null=True, blank=True)
@@ -95,7 +98,7 @@ class Auction(models.Model):
         return self.title or str(self.id)
 
 
-class AuctionEvent(models.Model):
+class AuctionEvent(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     id = models.BigAutoField(primary_key=True)
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="events")
     from_status = models.CharField(max_length=16)
@@ -109,7 +112,7 @@ class AuctionEvent(models.Model):
         ordering = ["id"]
 
 
-class CaptureSession(models.Model):
+class CaptureSession(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     """Uploads are accepted only inside a short-lived session opened right before the camera."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -123,7 +126,7 @@ class CaptureSession(models.Model):
         db_table = "capture_sessions"
 
 
-class AuctionMedia(models.Model):
+class AuctionMedia(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class Kind(models.TextChoices):
         PHOTO = "photo"
         VIDEO = "video"
@@ -156,9 +159,9 @@ class AuctionMedia(models.Model):
         ordering = ["position", "received_at"]
 
 
-class AuctionCheck(models.Model):
+class AuctionCheck(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class Result(models.TextChoices):
-        PASS = "pass"
+        PASS = "pass"  # noqa: S105 - check result, not a password
         WARN = "warn"
         FAIL = "fail"
 
@@ -175,7 +178,7 @@ class AuctionCheck(models.Model):
         db_table = "auction_checks"
 
 
-class AuctionBidder(models.Model):
+class AuctionBidder(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     """Stable per-auction pseudonym "Xaridor #N" (BR-24)."""
 
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bidders")
@@ -191,7 +194,7 @@ class AuctionBidder(models.Model):
         ]
 
 
-class Bid(models.Model):
+class Bid(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class BidStatus(models.TextChoices):
         ACTIVE = "active"
         SUPERSEDED = "superseded"
@@ -217,7 +220,7 @@ class Bid(models.Model):
         ]
 
 
-class Watch(models.Model):
+class Watch(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="watchers")
     created_at = models.DateTimeField(auto_now_add=True)

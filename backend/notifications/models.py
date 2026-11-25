@@ -48,3 +48,13 @@ class TelegramOutbox(models.Model):
 
     def __str__(self) -> str:
         return f"outbox {self.id} {self.status}"
+
+
+class SentReminder(models.Model):  # noqa: DJ008 - internal table, not shown in admin
+    """One row per reminder already sent, so a periodic job never repeats it (F8)."""
+
+    key = models.CharField(max_length=120, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "sent_reminders"

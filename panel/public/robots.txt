@@ -1,0 +1,3 @@
+# panel.zotdor.uz is staff-only (docs/SEO.md).
+User-agent: *
+Disallow: /

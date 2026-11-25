@@ -52,6 +52,11 @@ def exception_handler(exc: Exception, context: dict[str, Any]) -> Response | Non
     default_code, default_message = _DEFAULT_MESSAGES.get(
         response.status_code, ("error", "Xatolik yuz berdi.")
     )
+    # DRF's SessionAuthentication reports a bad/missing CSRF token as PermissionDenied.
+    # A distinct code lets the client refresh its token and retry once (e.g. after login,
+    # when Django rotates the token).
+    if isinstance(exc, exceptions.PermissionDenied) and str(exc.detail).startswith("CSRF Failed"):
+        default_code, default_message = "csrf_failed", "Sahifani yangilab, qayta urinib koʻring."
     fields = None
     if isinstance(exc, exceptions.ValidationError) and isinstance(response.data, dict):
         fields = response.data

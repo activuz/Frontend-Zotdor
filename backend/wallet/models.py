@@ -53,6 +53,8 @@ class EntryType(models.TextChoices):
     TOPUP = "topup"
     BONUS_GRANT = "bonus_grant"
     BONUS_EXPIRE = "bonus_expire"
+    BONUS_CASHBACK = "bonus_cashback"
+    BONUS_CASHBACK_REVERSAL = "bonus_cashback_reversal"
     HOLD = "hold"
     HOLD_RELEASE = "hold_release"
     COMMISSION = "commission"

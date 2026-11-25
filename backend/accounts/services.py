@@ -7,10 +7,12 @@ browser: complete_login() polls with the poll secret and receives a session.
 from __future__ import annotations
 
 import hashlib
+import math
 import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
+from decimal import Decimal
 from enum import StrEnum
 
 from django.conf import settings
@@ -22,6 +24,8 @@ from rest_framework import status
 from accounts.models import LoginRequest, User
 from accounts.phone import normalize_phone
 from core.errors import DomainError
+from notifications.services import notify
+from reference.models import District
 from wallet.services import grant_signup_bonus
 
 
@@ -146,7 +150,7 @@ def verify_contact(contact: SharedContact) -> tuple[ContactResult, LoginRequest 
 
 _FAIL_MESSAGES = {
     "foreign_contact": "Faqat oʻzingizning raqamingizni ulashish mumkin.",
-    "phone_mismatch": "Telegram'dagi raqamingiz siz kiritgan raqamga mos kelmadi.",
+    "phone_mismatch": "Telegramʼdagi raqamingiz siz kiritgan raqamga mos kelmadi.",
     "account_conflict": "Bu raqam boshqa Telegram akkauntiga bogʻlangan.",
 }
 
@@ -183,20 +187,95 @@ def complete_login(request_id: uuid.UUID, poll_secret: str | None) -> LoginStatu
         return LoginStatus("pending")
 
     user = User.objects.filter(phone=request.phone).first()
+    bonus = None
     if user is None:
         user = User.objects.create_user(
             phone=request.phone,
             first_name=request.telegram_first_name,
             last_name=request.telegram_last_name,
         )
-        grant_signup_bonus(user)  # BR-43; same transaction, once per account
+        bonus = grant_signup_bonus(user)  # BR-43; same transaction, once per account
     if user.is_blocked:
         raise DomainError("user_blocked", "Akkauntingiz bloklangan.", status.HTTP_403_FORBIDDEN)
 
     user.telegram_user_id = request.telegram_user_id
     user.telegram_username = request.telegram_username
     user.save(update_fields=["telegram_user_id", "telegram_username"])
+    if bonus is not None:
+        # After the Telegram id is saved, so the welcome also goes to the bot chat.
+        amount = f"{bonus.amount:,}".replace(",", " ")
+        notify(
+            user,
+            "bonus_granted",
+            f"Sizga {amount} soʻm bonus berildi",
+            "Bonus auksion komissiyasiga ishlatiladi. "
+            "Har bir bitimdan keyin komissiyaning bir qismi yana bonus hamyonga qaytadi.",
+            "/wallet",
+        )
 
     request.status = LoginRequest.Status.CONSUMED
     request.save(update_fields=["status"])
     return LoginStatus("verified", user=user)
+
+
+# --- location (browser geolocation) --------------------------------------------------------
+
+# Uzbekistan's bounding box with a small margin; points outside are a wrong fix or a VPN.
+UZ_LAT = (37.0, 45.8)
+UZ_LNG = (55.8, 73.3)
+# 3 decimals ≈ 100 m: enough for "nearest auctions", never an exact address (BR-33).
+LOCATION_DECIMALS = 3
+
+
+def _distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp, dl = p2 - p1, math.radians(lng2 - lng1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * 6371 * math.asin(math.sqrt(a))
+
+
+def nearest_district(lat: float, lng: float) -> District | None:
+    """The district whose centroid is closest. ~200 rows, so a scan in Python is fine."""
+    best: tuple[float, District] | None = None
+    for d in District.objects.select_related("region"):
+        km = _distance_km(lat, lng, float(d.lat), float(d.lng))
+        if best is None or km < best[0]:
+            best = (km, d)
+    return best[1] if best else None
+
+
+def check_inside_uzbekistan(lat: float, lng: float) -> None:
+    if not (math.isfinite(lat) and math.isfinite(lng)) or not (
+        UZ_LAT[0] <= lat <= UZ_LAT[1] and UZ_LNG[0] <= lng <= UZ_LNG[1]
+    ):
+        raise DomainError(
+            "location_outside", "Joylashuv Oʻzbekiston hududidan tashqarida. Hududni qoʻlda tanlang."
+        )
+
+
+@transaction.atomic
+def set_location(user: User, lat: float, lng: float) -> User:
+    """Save the device position (rounded) for distances and "nearest" sorting.
+
+    If the profile has no region yet, it is filled from the nearest district, so a new user
+    does not have to pick it by hand. A chosen region/district is never overwritten.
+    """
+    check_inside_uzbekistan(lat, lng)
+    user = User.objects.select_for_update().get(id=user.id)
+    user.lat = Decimal(str(round(lat, LOCATION_DECIMALS)))
+    user.lng = Decimal(str(round(lng, LOCATION_DECIMALS)))
+    fields = ["lat", "lng"]
+    if user.region_id is None:
+        district = nearest_district(lat, lng)
+        if district is not None:
+            user.region, user.district = district.region, district
+            fields += ["region", "district"]
+    user.save(update_fields=fields)
+    return user
+
+
+def clear_location(user: User) -> User:
+    """Forget the device position; distances fall back to the district centroid."""
+    User.objects.filter(id=user.id).update(lat=None, lng=None)
+    user.lat = user.lng = None
+    return user

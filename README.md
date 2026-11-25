@@ -1,4 +1,4 @@
-/bt# Zotdor loyihasi
+# Zotdor loyihasi
 
 ## Biz odamlar o‘rgangan haqiqiy mol bozoridagi jonli savdolashuv muhitini onlayn formatga 1 ga 1 ko‘chirib, unga haqiqiy tasvir va adolatli narx nazorati orqali to‘liq ishonch olib kirdik. Bu
 
@@ -19,8 +19,13 @@ Uning foydalari:
 
 ### Joriy holat
 
-- `frontend/` — hozircha demo, `src/mocks/` dagi soxta ma'lumotlar bilan ishlaydi.
-- `backend/` — poydevor (0-bosqich): API skeleti va `/api/health`. Biznes funksiyalari [implementatsiya rejasi](docs/IMPLEMENTATION_PLAN.md) bo‘yicha qo‘shiladi.
+- `backend/` — API, Telegram bot va fon vazifalari: kirish, hamyon, auksionlar, takliflar, bitimlar, bildirishnomalar, to‘lovlar, panel API.
+- `frontend/` — foydalanuvchi ilovasi, haqiqiy API bilan.
+- `panel/` — moderator va administrator paneli.
+- Production: Vercel (sayt, panel) + Render (API) + Nhost (baza, fayllar) — [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- `deploy/` — muqobil: bitta VPS uchun docker compose, nginx va zaxira nusxa skriptlari.
+
+Qolgan ishlar: [implementatsiya rejasi](docs/IMPLEMENTATION_PLAN.md).
 
 ### Lokal ishga tushirish
 
@@ -39,6 +44,11 @@ cp .env.example .env                         # qiymatlarni to‘ldiring
 cd frontend
 npm ci
 npm run dev                                  # http://localhost:3000
+
+# Panel (moderator yoki admin roli kerak)
+cd panel
+npm ci
+npm run dev                                  # http://localhost:3001
 ```
 
 Batafsil buyruqlar: [AGENTS.md](AGENTS.md#buyruqlar).

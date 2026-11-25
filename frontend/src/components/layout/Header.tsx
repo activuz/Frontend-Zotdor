@@ -1,208 +1,223 @@
-import React, { useState } from 'react';
-import { Search, Plus, User, Globe, MapPin, ChevronDown, Sparkles, ShieldCheck } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useCategories } from '../../api/hooks/useCategories';
-import { CategoryIcon } from '../ui/CategoryIcon';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, Bug, LogOut, Plus, Search, User } from 'lucide-react';
+import { useLogout, useMe } from '../../features/auth/api';
+import { useUnreadCount } from '../../features/notifications/api';
+import { ReportProblemModal } from '../../features/feedback/ReportProblem';
+import { useTaxonomy } from '../../features/reference/api';
 
-export const Header: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('');
-  const [currentLang, setCurrentLang] = useState<'uz' | 'cyrl'>('uz');
+const itemClass =
+  'flex w-full items-center gap-3 min-h-touch px-4 text-left text-[15px] font-semibold hover:bg-brand-soft disabled:opacity-50';
+
+/** Profile button: a small menu instead of going straight to /me. Closes on outside tap, Escape or navigation. */
+const ProfileMenu: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: categories = [] } = useCategories();
+  const logout = useLogout();
+  const [open, setOpen] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim() || selectedRegion) {
-      const params = new URLSearchParams();
-      if (searchQuery.trim()) params.set('q', searchQuery.trim());
-      if (selectedRegion) params.set('region', selectedRegion);
-      navigate(`/search?${params.toString()}`);
-    } else {
-      navigate('/search');
-    }
-  };
+  // A new page closes the menu (adjusted during render, not in an effect).
+  const [path, setPath] = useState(location.pathname);
+  if (path !== location.pathname) {
+    setPath(location.pathname);
+    setOpen(false);
+  }
 
-  const regions = [
-    'Barcha viloyatlar',
-    'Toshkent',
-    'Samarqand',
-    'Farg\'ona',
-    'Buxoro',
-    'Andijon',
-    'Namangan',
-    'Qashqadaryo',
-    'Surxondaryo',
-    'Xorazm',
-    'Jizzax',
-    'Sirdaryo',
-    'Navoiy',
-    'Qoraqalpog\'iston'
-  ];
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        button.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#eef2dc]/95 backdrop-blur-md border-b border-[#c5d4a8] shadow-sm">
-      
-      {/* TOP MAIN HEADER */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-        
-        {/* Left: Brand Logo & Tagline */}
-        <Link to="/" className="flex items-center space-x-2.5 shrink-0 group">
-          <div className="relative">
-            <img 
-              src="/favicon.webp" 
-              alt="Zotdor logo" 
-              className="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#1e3a0f] object-cover group-hover:scale-105 transition-transform" 
-            />
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#a8d45e] border-2 border-[#eef2dc] rounded-full animate-pulse"></span>
-          </div>
-          <div>
-            <span className="text-xl md:text-2xl font-black tracking-tight text-[#1e3a0f] block leading-none font-display">
-              Zotdor<span className="text-[#3d6b2e]">.uz</span>
-            </span>
-            <span className="text-[9px] md:text-[10px] uppercase font-extrabold tracking-wider text-[#4a5e3a] block mt-0.5">
-              CHORVA BOZORI
-            </span>
-          </div>
+    <div ref={root} className="relative">
+      <button
+        ref={button}
+        type="button"
+        aria-label="Profil menyusi"
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpen((o) => !o)}
+        className={`min-h-touch min-w-touch flex items-center justify-center rounded-xl text-ink hover:bg-brand-soft ${open ? 'bg-brand-soft' : ''}`}
+      >
+        <User className="w-6 h-6" aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          id={menuId}
+          className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-line bg-surface py-1 shadow-lg"
+        >
+          <Link to="/me" className={`${itemClass} text-ink`}>
+            <User className="w-5 h-5 text-brand" aria-hidden="true" />
+            Profil
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setReporting(true);
+            }}
+            className={`${itemClass} text-ink`}
+          >
+            <Bug className="w-5 h-5 text-brand" aria-hidden="true" />
+            Xatolik haqida xabar berish
+          </button>
+          <div className="my-1 border-t border-line" />
+          <button
+            type="button"
+            disabled={logout.isPending}
+            onClick={() =>
+              logout.mutate(undefined, {
+                onSuccess: () => {
+                  setOpen(false);
+                  navigate('/', { replace: true });
+                },
+              })
+            }
+            className={`${itemClass} text-danger`}
+          >
+            <LogOut className="w-5 h-5" aria-hidden="true" />
+            {logout.isPending ? 'Chiqilmoqda…' : 'Chiqish'}
+          </button>
+          {logout.isError && (
+            <p role="alert" className="px-4 pb-2 text-[13px] text-danger">
+              {logout.error.message}
+            </p>
+          )}
+        </div>
+      )}
+      <ReportProblemModal open={reporting} onClose={() => setReporting(false)} />
+    </div>
+  );
+};
+
+const navClass = ({ isActive }: { isActive: boolean }) =>
+  `inline-flex items-center min-h-touch px-3 rounded-xl text-[15px] font-semibold ${isActive ? 'bg-brand-soft text-ink' : 'text-ink hover:bg-brand-soft'}`;
+
+export const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const [q, setQ] = useState('');
+  const { data: me } = useMe();
+  const unread = useUnreadCount(Boolean(me));
+  const taxonomy = useTaxonomy();
+  const count = unread.data?.count ?? 0;
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-line bg-page">
+      <div className="max-w-[1200px] mx-auto px-3 sm:px-6 h-16 flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="Zotdor.uz — bosh sahifa">
+          <img src="/favicon.webp" alt="" className="w-9 h-9 rounded-full border border-ink object-cover" />
+          <span className="font-display text-[24px] leading-none text-ink">
+            Zotdor<span className="text-brand">.uz</span>
+          </span>
         </Link>
 
-        {/* Center: Desktop Integrated Search Bar */}
-        <form 
-          onSubmit={handleSearchSubmit} 
-          className="hidden md:flex items-center flex-1 max-w-2xl bg-white border-2 border-[#c5d4a8] focus-within:border-[#3d6b2e] rounded-full p-1 transition-all shadow-inner"
+        <form
+          role="search"
+          className="hidden md:flex flex-1 max-w-md"
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : '/search');
+          }}
         >
-          {/* Region Select */}
-          <div className="relative flex items-center pl-3 border-r border-[#c5d4a8]/70 pr-2">
-            <MapPin className="w-4 h-4 text-[#3d6b2e] shrink-0 mr-1" />
-            <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              className="bg-transparent text-xs font-semibold text-[#1e3a0f] focus:outline-none cursor-pointer pr-4 appearance-none"
-            >
-              <option value="">Barcha hududlar</option>
-              {regions.slice(1).map((reg) => (
-                <option key={reg} value={reg}>{reg}</option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-[#4a5e3a] absolute right-1 pointer-events-none" />
-          </div>
-
-          {/* Search Text Input */}
-          <div className="flex-1 flex items-center px-3">
-            <Search className="w-4 h-4 text-[#4a5e3a] shrink-0 mr-2" />
-            <input
-              type="text"
-              placeholder="Qoraqalpog'iston buqasi, Hisori qo'y, zotdor ot..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs font-medium text-[#1e3a0f] placeholder-[#4a5e3a]/60 bg-transparent focus:outline-none"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="bg-[#3d6b2e] hover:bg-[#1e3a0f] text-white text-xs font-bold px-5 py-2 rounded-full transition-all active:scale-95 flex items-center gap-1 cursor-pointer shrink-0"
-          >
-            <span>Qidirish</span>
+          <label htmlFor="header-q" className="sr-only">
+            Auksion qidirish
+          </label>
+          <input
+            id="header-q"
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buqa, qoʻy, ot…"
+            className="w-full min-h-touch rounded-l-xl border border-line bg-surface px-3 text-[15px] text-ink focus:border-brand focus:outline-none"
+          />
+          <button type="submit" aria-label="Qidirish" className="min-h-touch min-w-touch rounded-r-xl bg-ink text-white flex items-center justify-center">
+            <Search className="w-5 h-5" aria-hidden="true" />
           </button>
         </form>
 
-        {/* Right: Desktop Navigation Links & Action Buttons */}
-        <div className="flex items-center space-x-2.5">
-          
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-1 mr-2 text-xs font-bold text-[#1e3a0f]">
-            <Link
-              to="/"
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                location.pathname === '/' ? 'bg-[#3d6b2e]/10 text-[#3d6b2e]' : 'hover:bg-[#dce8c8]/40'
-              }`}
-            >
-              Bosh sahifa
-            </Link>
-            <Link
-              to="/search"
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                location.pathname === '/search' ? 'bg-[#3d6b2e]/10 text-[#3d6b2e]' : 'hover:bg-[#dce8c8]/40'
-              }`}
-            >
-              Katalog
-            </Link>
-            <Link
-              to="/auction"
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
-                location.pathname === '/auction' ? 'bg-[#3d6b2e]/10 text-[#3d6b2e]' : 'hover:bg-[#dce8c8]/40'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#a8d45e]" />
-              Auksion
-            </Link>
-          </nav>
+        <nav aria-label="Asosiy" className="hidden lg:flex items-center gap-1">
+          <NavLink to="/" end className={navClass}>
+            Bosh sahifa
+          </NavLink>
+          <NavLink to="/search" className={navClass}>
+            Qidiruv
+          </NavLink>
+          {me && (
+            <NavLink to="/me/bids" className={navClass}>
+              Takliflarim
+            </NavLink>
+          )}
+        </nav>
 
-          {/* Language Switcher Button (Desktop & Mobile) */}
-          <button
-            onClick={() => setCurrentLang(currentLang === 'uz' ? 'cyrl' : 'uz')}
-            className="hidden sm:flex items-center space-x-1 text-xs font-bold bg-[#dce8c8]/70 hover:bg-[#dce8c8] text-[#1e3a0f] px-3 py-2 rounded-full border border-[#c5d4a8] transition-colors cursor-pointer"
-            title="Tilni almashtirish"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{currentLang === 'uz' ? 'Latin' : 'Кирилл'}</span>
-          </button>
-
-          {/* Add Listing CTA Button (Desktop Primary CTA) */}
+        <div className="ml-auto flex items-center gap-1">
           <Link
-            to="/add"
-            className="hidden sm:flex items-center space-x-1.5 bg-[#3d6b2e] hover:bg-[#1e3a0f] text-[#eef2dc] px-4 py-2 rounded-full text-xs font-extrabold shadow-sm transition-all active:scale-95 cursor-pointer border border-[#a8d45e]/30"
+            to="/sell"
+            className="hidden sm:inline-flex items-center gap-1 min-h-touch px-4 rounded-xl border border-ink text-[15px] font-semibold text-ink hover:bg-brand-soft"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>+ E'lon qo'shish</span>
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            Sotish
           </Link>
-
-          {/* Profile User Icon Link */}
-          <Link
-            to="/profile"
-            className="p-2 rounded-full bg-[#dce8c8]/60 hover:bg-[#dce8c8] text-[#1e3a0f] transition-colors flex items-center justify-center"
-            title="Profil"
-          >
-            <User className="w-5 h-5" />
-          </Link>
-        </div>
-
-      </div>
-
-      {/* DESKTOP CATEGORIES NAVIGATION BAR */}
-      <div className="hidden md:block border-t border-[#c5d4a8]/60 bg-[#e6eccf]/80">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-x-auto no-scrollbar py-2 text-xs font-bold text-[#1e3a0f]">
-          <div className="flex items-center space-x-2">
-            {categories.map((cat) => (
+          {me ? (
+            <>
               <Link
-                key={cat.id}
-                to={`/category/${cat.id}`}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-all hover:bg-white/80 border ${
-                  location.pathname === `/category/${cat.id}`
-                    ? 'bg-white text-[#1e3a0f] border-[#3d6b2e] shadow-sm'
-                    : 'border-transparent hover:border-[#c5d4a8]'
-                }`}
+                to="/notifications"
+                aria-label={count > 0 ? `Bildirishnomalar, ${count} ta yangi` : 'Bildirishnomalar'}
+                className="relative min-h-touch min-w-touch flex items-center justify-center rounded-xl text-ink hover:bg-brand-soft"
               >
-                <CategoryIcon id={cat.id} className="w-3.5 h-3.5" />
-                <span>{cat.name}</span>
+                <Bell className="w-6 h-6" aria-hidden="true" />
+                {count > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[20px] h-5 px-1 rounded-full bg-danger text-white text-[13px] leading-5 text-center tabular-nums">
+                    {count > 99 ? '99+' : count}
+                  </span>
+                )}
               </Link>
-            ))}
-          </div>
-
-          {/* Pedigree Verified Quick Filter Link */}
-          <Link
-            to="/search?pedigreeOnly=true"
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-[#a8d45e]/40 hover:bg-[#a8d45e]/70 text-[#1e3a0f] border border-[#3d6b2e]/30 shrink-0"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#3d6b2e]" />
-            <span>Zotdor Sertifikatli</span>
-          </Link>
+              <ProfileMenu />
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center min-h-touch px-4 rounded-xl text-[15px] font-semibold text-brand hover:bg-brand-soft"
+            >
+              Kirish
+            </Link>
+          )}
         </div>
       </div>
 
+      {taxonomy.isSuccess && taxonomy.data.directions.length > 0 && (
+        <nav aria-label="Yoʻnalishlar" className="hidden md:block border-t border-line">
+          <ul className="max-w-[1200px] mx-auto px-6 flex gap-1 overflow-x-auto no-scrollbar">
+            {taxonomy.data.directions.map((d) => (
+              <li key={d.id}>
+                <Link
+                  to={`/search?direction=${d.id}`}
+                  className="inline-flex items-center min-h-touch px-3 text-[15px] text-ink hover:text-brand"
+                >
+                  {d.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </header>
   );
 };

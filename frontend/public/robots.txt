@@ -1,0 +1,11 @@
+# web.zotdor.uz — docs/SEO.md
+User-agent: *
+Allow: /
+Disallow: /me
+Disallow: /sell
+Disallow: /deals/
+Disallow: /wallet
+Disallow: /notifications
+Disallow: /a/*/decision
+
+Sitemap: https://web.zotdor.uz/sitemap.xml

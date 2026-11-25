@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import math
 import uuid
 from dataclasses import dataclass
@@ -17,7 +18,9 @@ from django.db.models.functions import Now
 from django.utils import timezone
 from rest_framework import status as http
 
+from accounts import services as accounts
 from auctions import media as media_store
+from auctions import storage
 from auctions.models import (
     EDITABLE_STATUSES,
     Auction,
@@ -33,6 +36,7 @@ from auctions.models import (
 from core.errors import DomainError
 from core.models import PlatformSettings
 from deals.models import Deal
+from deals.services import refresh_user_stats
 from moderation import checks
 from notifications.services import notify
 from wallet import services as wallet
@@ -103,7 +107,9 @@ def transition(auction: Auction, new: str, *, actor: User | None = None, reason:
     """The only way to change Auction.status (AGENTS.md). Caller holds the row lock."""
     old = auction.status
     if new not in ALLOWED[old]:
-        raise DomainError("invalid_transition", "Bu amalni hozirgi holatda bajarib boʻlmaydi.", http.HTTP_409_CONFLICT)
+        raise DomainError(
+            "invalid_transition", "Bu amalni hozirgi holatda bajarib boʻlmaydi.", http.HTTP_409_CONFLICT
+        )
     auction.status = new
     auction.save()
     _event(auction, old, new, actor, reason)
@@ -129,9 +135,21 @@ def _require_active_user(user: User) -> None:
 # --- drafts ---------------------------------------------------------------------------------
 
 DRAFT_FIELDS = (
-    "direction", "animal_type", "animal_class", "breed", "breed_other", "age_months", "weight_kg",
-    "weight_is_estimated", "description", "asking_price", "region", "district", "start_now",
-    "starts_at", "duration_minutes",
+    "direction",
+    "animal_type",
+    "animal_class",
+    "breed",
+    "breed_other",
+    "age_months",
+    "weight_kg",
+    "weight_is_estimated",
+    "description",
+    "asking_price",
+    "region",
+    "district",
+    "start_now",
+    "starts_at",
+    "duration_minutes",
 )
 
 
@@ -139,10 +157,35 @@ def _apply_fields(auction: Auction, data: dict[str, Any]) -> None:
     for name in DRAFT_FIELDS:
         if name in data:
             setattr(auction, name, data[name])
+    if "lat" in data or "lng" in data:
+        _apply_pin(auction, data.get("lat"), data.get("lng"), district_given="district" in data)
     if auction.district is not None:
         auction.region = auction.district.region
-        auction.lat, auction.lng = auction.district.lat, auction.district.lng
+        if not auction.location_pinned:
+            auction.lat, auction.lng = auction.district.lat, auction.district.lng
     auction.title = build_title(auction)
+
+
+def _apply_pin(auction: Auction, lat: float | None, lng: float | None, *, district_given: bool) -> None:
+    """The seller's optional map pin (BR-11a). Stored like a profile point, rounded to ~100 m.
+
+    Without an explicit district the pin decides it: the seller should not pick a region by
+    hand after pointing at the map. Clearing the pin falls back to the district centroid.
+    """
+    if lat is None and lng is None:
+        auction.location_pinned = False
+        return
+    if lat is None or lng is None:
+        raise DomainError("invalid_location", "Joylashuv toʻliq emas: kenglik va uzunlik kerak.")
+    lat, lng = float(lat), float(lng)
+    accounts.check_inside_uzbekistan(lat, lng)
+    auction.lat = Decimal(str(round(lat, accounts.LOCATION_DECIMALS)))
+    auction.lng = Decimal(str(round(lng, accounts.LOCATION_DECIMALS)))
+    auction.location_pinned = True
+    if not district_given:
+        district = accounts.nearest_district(lat, lng)
+        if district is not None:
+            auction.district = district
 
 
 @transaction.atomic
@@ -162,7 +205,9 @@ def update_draft(auction_id: uuid.UUID, user: User, data: dict[str, Any]) -> Auc
     auction = _lock(auction_id)
     _own(auction, user)
     if auction.status not in EDITABLE_STATUSES:
-        raise DomainError("not_editable", "Eʼlon qilingan auksionni tahrirlab boʻlmaydi.", http.HTTP_409_CONFLICT)
+        raise DomainError(
+            "not_editable", "Eʼlon qilingan auksionni tahrirlab boʻlmaydi.", http.HTTP_409_CONFLICT
+        )
     _apply_fields(auction, data)
     auction.save()
     return auction
@@ -194,44 +239,62 @@ def open_capture_session(auction_id: uuid.UUID, user: User, user_agent: str = ""
     )
 
 
+def _check_media_allowed(
+    auction: Auction, user: User, kind: str, session_id: uuid.UUID, settings: PlatformSettings
+) -> CaptureSession:
+    _own(auction, user)
+    if auction.status not in EDITABLE_STATUSES:
+        raise DomainError("not_editable", "Bu auksionga media qoʻshib boʻlmaydi.", http.HTTP_409_CONFLICT)
+    session = CaptureSession.objects.filter(id=session_id, auction=auction, user=user).first()
+    if session is None or session.expires_at <= timezone.now():
+        raise DomainError("capture_session_expired", "Kamera seansi tugadi. Kamerani qaytadan oching.")
+    if kind not in (AuctionMedia.Kind.PHOTO, AuctionMedia.Kind.VIDEO):
+        raise DomainError("unsupported_media", "Notoʻgʻri media turi.")
+    existing = auction.media.exclude(status=AuctionMedia.MediaStatus.FAILED).filter(kind=kind).count()
+    limit = settings.photos_max if kind == AuctionMedia.Kind.PHOTO else settings.videos_max
+    if existing >= limit:
+        noun = "rasm" if kind == AuctionMedia.Kind.PHOTO else "video"
+        raise DomainError("too_many_media", f"Koʻpi bilan {limit} ta {noun} qoʻshish mumkin.")
+    return session
+
+
 def add_media(
     auction_id: uuid.UUID,
     user: User,
-    upload: UploadedFile,
+    upload: UploadedFile[bytes],
     kind: str,
     session_id: uuid.UUID,
     client_meta: dict[str, Any],
 ) -> AuctionMedia:
     settings = PlatformSettings.load()
+    # Cheap check first, then the upload OUTSIDE any transaction (it may be an HTTP call to
+    # Nhost), then the same checks again under the row lock before the row is created.
     with transaction.atomic():
-        auction = _lock(auction_id)
-        _own(auction, user)
-        if auction.status not in EDITABLE_STATUSES:
-            raise DomainError("not_editable", "Bu auksionga media qoʻshib boʻlmaydi.", http.HTTP_409_CONFLICT)
-        session = CaptureSession.objects.filter(id=session_id, auction=auction, user=user).first()
-        if session is None or session.expires_at <= timezone.now():
-            raise DomainError("capture_session_expired", "Kamera seansi tugadi. Kamerani qaytadan oching.")
-        if kind not in (AuctionMedia.Kind.PHOTO, AuctionMedia.Kind.VIDEO):
-            raise DomainError("unsupported_media", "Notoʻgʻri media turi.")
-        existing = auction.media.exclude(status=AuctionMedia.MediaStatus.FAILED).filter(kind=kind).count()
-        limit = settings.photos_max if kind == AuctionMedia.Kind.PHOTO else settings.videos_max
-        if existing >= limit:
-            noun = "rasm" if kind == AuctionMedia.Kind.PHOTO else "video"
-            raise DomainError("too_many_media", f"Koʻpi bilan {limit} ta {noun} qoʻshish mumkin.")
-        try:
-            stored, size = media_store.store_original(auction.id, upload, kind)
-        except media_store.MediaError as exc:
-            raise DomainError("file_too_large", str(exc)) from exc
-        position = (auction.media.aggregate(m=Max("position"))["m"] or 0) + 1
-        item = AuctionMedia.objects.create(
-            auction=auction,
-            capture_session=session,
-            kind=kind,
-            position=position,
-            original_path=media_store.rel(stored),
-            size_bytes=size,
-            client_meta={k: str(v)[:200] for k, v in list(client_meta.items())[:20]},
-        )
+        _check_media_allowed(_lock(auction_id), user, kind, session_id, settings)
+    try:
+        stored, size = media_store.store_original(auction_id, upload, kind)
+    except media_store.StorageUnavailable as exc:
+        # Our storage failed, not the user's file: 503 so it is not mistaken for a bad upload.
+        raise DomainError("storage_unavailable", str(exc), http.HTTP_503_SERVICE_UNAVAILABLE) from exc
+    except media_store.MediaError as exc:
+        raise DomainError("file_too_large", str(exc), http.HTTP_413_REQUEST_ENTITY_TOO_LARGE) from exc
+    try:
+        with transaction.atomic():
+            auction = _lock(auction_id)
+            session = _check_media_allowed(auction, user, kind, session_id, settings)
+            position = (auction.media.aggregate(m=Max("position"))["m"] or 0) + 1
+            item = AuctionMedia.objects.create(
+                auction=auction,
+                capture_session=session,
+                kind=kind,
+                position=position,
+                original_path=stored,
+                size_bytes=size,
+                client_meta={k: str(v)[:200] for k, v in list(client_meta.items())[:20]},
+            )
+    except BaseException:
+        storage.delete(stored)
+        raise
     if kind == AuctionMedia.Kind.PHOTO or django_settings.MEDIA_PROCESS_SYNC:
         media_store.process(item, settings.video_max_s)
     else:
@@ -247,9 +310,33 @@ def delete_media(auction_id: uuid.UUID, media_id: uuid.UUID, user: User) -> None
     _own(auction, user)
     if auction.status not in EDITABLE_STATUSES:
         raise DomainError("not_editable", "Eʼlon qilingan auksion mediasini oʻzgartirib boʻlmaydi.", 409)
-    deleted, _ = auction.media.filter(id=media_id).delete()
-    if not deleted:
+    item = auction.media.filter(id=media_id).first()
+    if item is None:
         raise DomainError("not_found", "Fayl topilmadi.", http.HTTP_404_NOT_FOUND)
+    refs = [item.original_path, item.file_path, item.thumb_path]
+    item.delete()
+    # Files go only once the row is gone for good; a rollback keeps them.
+    transaction.on_commit(lambda: _delete_files(refs))
+
+
+@transaction.atomic
+def reorder_media(auction_id: uuid.UUID, user: User, ids: list[uuid.UUID]) -> None:
+    """Set the gallery order (BR-12a). The first ready photo becomes the cover everywhere."""
+    auction = _lock(auction_id)
+    _own(auction, user)
+    if auction.status not in EDITABLE_STATUSES:
+        raise DomainError("not_editable", "Eʼlon qilingan auksion mediasini oʻzgartirib boʻlmaydi.", 409)
+    items = {m.id: m for m in auction.media.all()}
+    if len(ids) != len(set(ids)) or set(ids) != set(items):
+        raise DomainError("invalid_order", "Fayllar roʻyxati eskirgan. Sahifani yangilab, qayta urining.")
+    for position, media_id in enumerate(ids, start=1):
+        items[media_id].position = position
+    AuctionMedia.objects.bulk_update(items.values(), ["position"])
+
+
+def _delete_files(refs: list[str]) -> None:
+    for ref in refs:
+        storage.delete(ref)
 
 
 # --- submit / publish -----------------------------------------------------------------------
@@ -278,15 +365,19 @@ def _validate_ready(a: Auction, s: PlatformSettings) -> None:
     ]
     if missing:
         raise DomainError("incomplete", "Toʻldirilmagan maydonlar: " + ", ".join(missing) + ".")
-    assert a.animal_type is not None and a.animal_class is not None and a.direction is not None
-    if a.animal_class.animal_type_id != a.animal_type_id or (a.breed and a.breed.animal_type_id != a.animal_type_id):
+    if a.animal_type is None or a.animal_class is None or a.direction is None:
+        raise DomainError("incomplete", "Hayvon turi, toifa va yoʻnalishni tanlang.")
+    if a.animal_class.animal_type_id != a.animal_type_id or (
+        a.breed and a.breed.animal_type_id != a.animal_type_id
+    ):
         raise DomainError("invalid_taxonomy", "Toifa yoki zot tanlangan hayvon turiga mos emas.")
-    if not a.animal_type.directions.filter(id=a.direction_id).exists():
+    if not a.animal_type.directions.filter(id=a.direction.id).exists():
         raise DomainError("invalid_taxonomy", "Bu hayvon turi tanlangan yoʻnalishga kirmaydi.")
     duration = a.duration_minutes or 0
     if not s.min_duration_min <= duration <= s.max_duration_min:
         raise DomainError(
-            "invalid_duration", f"Davomiylik {s.min_duration_min} daqiqadan {s.max_duration_min // 60} soatgacha boʻlsin."
+            "invalid_duration",
+            f"Davomiylik {s.min_duration_min} daqiqadan {s.max_duration_min // 60} soatgacha boʻlsin.",
         )
     if not a.start_now:
         if a.starts_at is None:
@@ -296,7 +387,8 @@ def _validate_ready(a: Auction, s: PlatformSettings) -> None:
             raise DomainError("invalid_start", "Boshlanish vaqti oʻtib ketgan.")
         if a.starts_at > now + timedelta(days=s.max_schedule_ahead_days):
             raise DomainError(
-                "invalid_start", f"Boshlanishni koʻpi bilan {s.max_schedule_ahead_days} kun oldinga belgilash mumkin."
+                "invalid_start",
+                f"Boshlanishni koʻpi bilan {s.max_schedule_ahead_days} kun oldinga belgilash mumkin.",
             )
     if a.media.filter(status=AuctionMedia.MediaStatus.PROCESSING).exists():
         raise DomainError("media_processing", "Video hali qayta ishlanmoqda. Birozdan keyin yuboring.")
@@ -313,7 +405,9 @@ def _schedule(a: Auction) -> None:
 def _go_public(a: Auction, actor: User | None) -> None:
     _schedule(a)
     a.published_at = timezone.now()
-    transition(a, Status.LIVE if a.starts_at and a.starts_at <= timezone.now() else Status.SCHEDULED, actor=actor)
+    transition(
+        a, Status.LIVE if a.starts_at and a.starts_at <= timezone.now() else Status.SCHEDULED, actor=actor
+    )
 
 
 @transaction.atomic
@@ -334,7 +428,9 @@ def submit(auction_id: uuid.UUID, user: User) -> SubmitResult:
     results = checks.run_all(a, s)
     run_id = uuid.uuid4()
     AuctionCheck.objects.bulk_create(
-        AuctionCheck(auction=a, run_id=run_id, check_name=r.name, result=r.result, message=r.message, details=r.details)
+        AuctionCheck(
+            auction=a, run_id=run_id, check_name=r.name, result=r.result, message=r.message, details=r.details
+        )
         for r in results
     )
     if any(r.result == checks.FAIL for r in results):
@@ -369,7 +465,9 @@ def cancel(auction_id: uuid.UUID, user: User, reason: str = "") -> Auction:
     a = _lock(auction_id)
     _own(a, user)
     if a.status == Status.LIVE and a.bids.filter(status=Bid.BidStatus.ACTIVE).exists():
-        raise DomainError("has_bids", "Taklif tushgan jonli auksionni bekor qilib boʻlmaydi.", http.HTTP_409_CONFLICT)
+        raise DomainError(
+            "has_bids", "Taklif tushgan jonli auksionni bekor qilib boʻlmaydi.", http.HTTP_409_CONFLICT
+        )
     if a.status not in (Status.PENDING_REVIEW, Status.SCHEDULED, Status.LIVE):
         raise DomainError("invalid_transition", "Bu auksionni bekor qilib boʻlmaydi.", http.HTTP_409_CONFLICT)
     a.cancel_reason = reason[:500]
@@ -434,7 +532,9 @@ def place_bid(auction_id: uuid.UUID, user: User, amount: int) -> Bid:
     # The time window is checked by the database (NFR-03): a late worker never lets a bid in.
     a = (
         Auction.objects.select_for_update()
-        .filter(id=auction_id, status__in=(Status.SCHEDULED, Status.LIVE), starts_at__lte=Now(), ends_at__gt=Now())
+        .filter(
+            id=auction_id, status__in=(Status.SCHEDULED, Status.LIVE), starts_at__lte=Now(), ends_at__gt=Now()
+        )
         .first()
     )
     if a is None:
@@ -444,15 +544,23 @@ def place_bid(auction_id: uuid.UUID, user: User, amount: int) -> Bid:
     if a.seller_id == user.id:
         raise DomainError("own_auction", "Oʻz auksioningizga taklif bera olmaysiz.", http.HTTP_403_FORBIDDEN)
     if amount < (a.min_bid or 0):
-        raise DomainError("bid_too_low", f"Taklif kamida {a.min_bid:,} soʻm boʻlishi kerak.".replace(",", " "))
+        raise DomainError(
+            "bid_too_low", f"Taklif kamida {a.min_bid:,} soʻm boʻlishi kerak.".replace(",", " ")
+        )
     if a.max_bid and amount > a.max_bid:
-        raise DomainError("bid_too_high", f"Taklif koʻpi bilan {a.max_bid:,} soʻm boʻlishi mumkin.".replace(",", " "))
+        raise DomainError(
+            "bid_too_high", f"Taklif koʻpi bilan {a.max_bid:,} soʻm boʻlishi mumkin.".replace(",", " ")
+        )
     last = Bid.objects.filter(auction=a, bidder=user).order_by("-created_at").first()
     if last and timezone.now() - last.created_at < timedelta(seconds=10):
         raise DomainError("rate_limited", "Bir necha soniyadan keyin qayta urinib koʻring.", 429)
 
-    previous_top = Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).order_by("-amount", "created_at").first()
-    Bid.objects.filter(auction=a, bidder=user, status=Bid.BidStatus.ACTIVE).update(status=Bid.BidStatus.SUPERSEDED)
+    previous_top = (
+        Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).order_by("-amount", "created_at").first()
+    )
+    Bid.objects.filter(auction=a, bidder=user, status=Bid.BidStatus.ACTIVE).update(
+        status=Bid.BidStatus.SUPERSEDED
+    )
     if not AuctionBidder.objects.filter(auction=a, user=user).exists():
         next_no = (AuctionBidder.objects.filter(auction=a).aggregate(m=Max("pseudonym_no"))["m"] or 0) + 1
         AuctionBidder.objects.create(auction=a, user=user, pseudonym_no=next_no)
@@ -494,7 +602,8 @@ def ranked_bids(a: Auction) -> list[RankedBid]:
     names = dict(AuctionBidder.objects.filter(auction=a).values_list("user_id", "pseudonym_no"))
     bids = Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).order_by("-amount", "created_at")
     return [
-        RankedBid(b, i, tier_for(i), f"Xaridor #{names.get(b.bidder_id, '?')}") for i, b in enumerate(bids, start=1)
+        RankedBid(b, i, tier_for(i), f"Xaridor #{names.get(b.bidder_id, '?')}")
+        for i, b in enumerate(bids, start=1)
     ]
 
 
@@ -536,7 +645,9 @@ def decision_rows(a: Auction) -> tuple[list[DecisionRow], list[DecisionRow]]:
     highest = {row.ranked.bid.id for row in rows[:3]}
     nearest = {
         row.ranked.bid.id
-        for row in sorted((r for r in rows if r.distance_km is not None), key=lambda r: r.distance_km or 0)[:3]
+        for row in sorted((r for r in rows if r.distance_km is not None), key=lambda r: r.distance_km or 0)[
+            :3
+        ]
     }
     for row in rows:
         if row.ranked.bid.id in highest:
@@ -560,7 +671,9 @@ def accept_bid(auction_id: uuid.UUID, user: User, bid_id: uuid.UUID) -> Deal:
                 "Auksion boshlanganidan keyin kamida 10 daqiqa oʻtishi kerak.",
                 http.HTTP_409_CONFLICT,
             )
-        raise DomainError("decision_window_closed", "Xaridorni tanlash muddati tugagan.", http.HTTP_409_CONFLICT)
+        raise DomainError(
+            "decision_window_closed", "Xaridorni tanlash muddati tugagan.", http.HTTP_409_CONFLICT
+        )
     bid = Bid.objects.select_for_update().filter(id=bid_id, auction=a, status=Bid.BidStatus.ACTIVE).first()
     if bid is None:
         raise DomainError("bid_not_active", "Bu taklif endi faol emas.", http.HTTP_409_CONFLICT)
@@ -572,16 +685,38 @@ def accept_bid(auction_id: uuid.UUID, user: User, bid_id: uuid.UUID) -> Deal:
         auction=a, bid=bid, seller=a.seller, buyer=bid.bidder, price=bid.amount, commission_amount=commission
     )
     wallet.capture_commission(HOLD_REF, a.id, commission, charge_ref_type="deal", charge_ref_id=deal.id)
+    cashback = wallet.grant_cashback(a.seller, commission, deal.id)
+    refresh_user_stats(a.seller)
+    refresh_user_stats(bid.bidder)
     if early:
         a.ends_at = now
     a.accepted_bid = bid
     a.closed_at = now
     transition(a, Status.SOLD, actor=user, reason="early accept" if early else "")
 
-    notify(bid.bidder, "bid_accepted", "Taklifingiz qabul qilindi", f"{a.title}. Sotuvchi kontaktlari ochildi.", f"/deals/{deal.id}")
-    for other in Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).exclude(id=bid.id).select_related("bidder"):
-        text = "Auksion muddatidan oldin yakunlandi" if early else "Auksion yakunlandi, taklifingiz tanlanmadi"
+    notify(
+        bid.bidder,
+        "bid_accepted",
+        "Taklifingiz qabul qilindi",
+        f"{a.title}. Sotuvchi kontaktlari ochildi.",
+        f"/deals/{deal.id}",
+    )
+    for other in (
+        Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).exclude(id=bid.id).select_related("bidder")
+    ):
+        text = (
+            "Auksion muddatidan oldin yakunlandi" if early else "Auksion yakunlandi, taklifingiz tanlanmadi"
+        )
         notify(other.bidder, "bid_not_selected", text, a.title, f"/a/{a.id}")
+    if cashback:
+        notify(
+            a.seller,
+            "bonus_cashback",
+            f"Bonus hamyonga {cashback:,} soʻm tushdi".replace(",", " "),
+            "Bitimdagi komissiyaning bir qismi bonus sifatida qaytdi. "
+            "Uni keyingi auksionlar komissiyasiga ishlatishingiz mumkin.",
+            "/wallet",
+        )
     return deal
 
 
@@ -600,7 +735,9 @@ def _close_unsold(a: Auction, *, actor: User | None, reason: str) -> None:
     transition(a, Status.UNSOLD, actor=actor, reason=reason)
     wallet.release_hold(HOLD_REF, a.id)
     for b in Bid.objects.filter(auction=a, status=Bid.BidStatus.ACTIVE).select_related("bidder"):
-        notify(b.bidder, "bid_not_selected", "Auksion yakunlandi, taklifingiz tanlanmadi", a.title, f"/a/{a.id}")
+        notify(
+            b.bidder, "bid_not_selected", "Auksion yakunlandi, taklifingiz tanlanmadi", a.title, f"/a/{a.id}"
+        )
 
 
 def _notify_watchers(a: Auction, title: str, *, exclude: set[Any] | None = None) -> None:
@@ -617,9 +754,15 @@ def tick() -> dict[str, int]:
     """Advance time-based states. Idempotent; safe to run every minute from several workers."""
     counts = {"started": 0, "ended": 0, "expired": 0}
     now = timezone.now()
-    for aid in Auction.objects.filter(status=Status.SCHEDULED, starts_at__lte=now).values_list("id", flat=True):
+    for aid in Auction.objects.filter(status=Status.SCHEDULED, starts_at__lte=now).values_list(
+        "id", flat=True
+    ):
         with transaction.atomic():
-            a = Auction.objects.select_for_update(skip_locked=True).filter(id=aid, status=Status.SCHEDULED).first()
+            a = (
+                Auction.objects.select_for_update(skip_locked=True)
+                .filter(id=aid, status=Status.SCHEDULED)
+                .first()
+            )
             if a:
                 transition(a, Status.LIVE)
                 notify(a.seller, "auction_started", "Auksioningiz boshlandi", a.title, f"/a/{a.id}")
@@ -636,19 +779,32 @@ def tick() -> dict[str, int]:
                     a.seller,
                     "auction_ended",
                     "Auksion tugadi — xaridorni tanlang",
-                    f"{a.active_bids_count} ta taklif. Tanlash uchun {PlatformSettings.load().decision_window_h} soat bor.",
+                    f"{a.active_bids_count} ta taklif. "
+                    f"Tanlash uchun {PlatformSettings.load().decision_window_h} soat bor.",
                     f"/a/{a.id}/decision",
                 )
             else:
                 _close_unsold(a, actor=None, reason="no bids")
                 notify(a.seller, "auction_unsold", "Auksion taklifsiz tugadi", a.title, f"/a/{a.id}")
             counts["ended"] += 1
-    for aid in Auction.objects.filter(status=Status.ENDED, decision_deadline__lt=now).values_list("id", flat=True):
+    for aid in Auction.objects.filter(status=Status.ENDED, decision_deadline__lt=now).values_list(
+        "id", flat=True
+    ):
         with transaction.atomic():
-            a = Auction.objects.select_for_update(skip_locked=True).filter(id=aid, status=Status.ENDED).first()
+            a = (
+                Auction.objects.select_for_update(skip_locked=True)
+                .filter(id=aid, status=Status.ENDED)
+                .first()
+            )
             if a:
                 _close_unsold(a, actor=None, reason="decision window expired")
-                notify(a.seller, "auction_unsold", "Tanlash muddati tugadi, auksion sotilmadi", a.title, f"/a/{a.id}")
+                notify(
+                    a.seller,
+                    "auction_unsold",
+                    "Tanlash muddati tugadi, auksion sotilmadi",
+                    a.title,
+                    f"/a/{a.id}",
+                )
                 counts["expired"] += 1
     return counts
 
@@ -660,10 +816,8 @@ def watch(auction_id: uuid.UUID, user: User) -> None:
     a = Auction.objects.filter(id=auction_id).first()
     if a is None:
         raise DomainError("not_found", "Auksion topilmadi.", http.HTTP_404_NOT_FOUND)
-    try:
+    with contextlib.suppress(IntegrityError):
         Watch.objects.get_or_create(user=user, auction=a)
-    except IntegrityError:
-        pass
 
 
 def unwatch(auction_id: uuid.UUID, user: User) -> None:
@@ -671,7 +825,11 @@ def unwatch(auction_id: uuid.UUID, user: User) -> None:
 
 
 def visible_to(user: User | None) -> Q:
-    q = Q(status__in=[s.value for s in (Status.SCHEDULED, Status.LIVE, Status.ENDED, Status.SOLD, Status.UNSOLD)])
+    q = Q(
+        status__in=[
+            s.value for s in (Status.SCHEDULED, Status.LIVE, Status.ENDED, Status.SOLD, Status.UNSOLD)
+        ]
+    )
     if user is not None and user.is_authenticated:
         q |= Q(seller=user)
         if user.is_moderator_or_admin:

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 
 
-class Payment(models.Model):
+class Payment(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class Provider(models.TextChoices):
         CLICK = "click"
         FAKE = "fake"
@@ -36,14 +36,16 @@ class Payment(models.Model):
         db_table = "payments"
 
 
-class RefundRequest(models.Model):
+class RefundRequest(models.Model):  # noqa: DJ008 - internal table, not shown in admin
     class RefundStatus(models.TextChoices):
         OPEN = "open"
         DONE = "done"
         REJECTED = "rejected"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="refund_requests")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="refund_requests"
+    )
     amount = models.BigIntegerField()
     click_reference = models.CharField(max_length=64)
     reason = models.TextField(max_length=1000)

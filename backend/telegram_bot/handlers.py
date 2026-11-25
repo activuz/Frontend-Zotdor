@@ -35,8 +35,8 @@ MSG_CONFLICT = "Bu raqam boshqa Telegram akkauntiga bogʻlangan, shu sababli kir
 def _mismatch_message(telegram_phone: str) -> str:
     shown = mask_phone(telegram_phone) if telegram_phone else "boshqa"
     return (
-        f"Telegram'dagi raqamingiz ({shown}) saytda kiritilgan raqamga mos kelmadi. "
-        "Saytda Telegram'ga bogʻlangan raqamni kiriting."
+        f"Telegramʼdagi raqamingiz ({shown}) saytda kiritilgan raqamga mos kelmadi. "
+        "Saytda Telegramʼga bogʻlangan raqamni kiriting."
     )
 
 

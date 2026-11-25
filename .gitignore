@@ -15,6 +15,7 @@ dist-ssr
 # Python
 *.pyc
 *__pycache__/
+*_cache*
 .venv
 
 
@@ -28,3 +29,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deploy secrets
+.env

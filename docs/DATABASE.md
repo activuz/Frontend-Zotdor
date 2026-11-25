@@ -38,7 +38,7 @@ users 1─* notifications, telegram_outbox, watchlist, reports;  staff_audit_log
 | first_name, last_name | varchar(64) | Telegram'dan olinadi, profilda tahrirlanadi |
 | role | varchar(16) | `user` \| `moderator` \| `admin` |
 | region_id, district_id | FK NULL | birinchi kirishdan keyin to‘ldirish so‘raladi |
-| lat, lng | numeric(7,4) NULL | ~10 m aniqlikkacha yaxlitlanadi. Ixtiyoriy, masofa uchun |
+| lat, lng | numeric(7,4) NULL | Brauzer geolokatsiyasi (`PUT /me/location`), 3 xonagacha (~100 m) yaxlitlanadi. Ixtiyoriy, faqat masofa va "yaqin" saralash uchun; hech kimga ko‘rsatilmaydi. Bo‘lmasa tuman markazi ishlatiladi |
 | is_blocked | bool | |
 | blocked_reason | text NULL | |
 | rating_avg | numeric(3,2) NULL | denormal |
@@ -92,7 +92,8 @@ Boshlang‘ich qiymatlar fixture sifatida beriladi. **Mahsulot egasi tasdiqlamag
 | min_bid, max_bid | bigint | e'lon qilish paytida sozlamadan hisoblanadi |
 | commission_rate_bp | smallint | basis point; 20 = 0.2% |
 | region_id, district_id | FK | |
-| lat, lng | numeric(7,4) NULL | |
+| lat, lng | numeric(7,4) NULL | `location_pinned = false` bo‘lsa tuman markazi, aks holda sotuvchining nuqtasi (~100 m gacha yaxlitlangan) |
+| location_pinned | boolean | default `false`. Sotuvchi xaritada belgilagan (BR-11a). Ommaga faqat taxminiy hudud ko‘rsatiladi (BR-33a) |
 | starts_at, ends_at | timestamptz NULL | `CHECK ends_at - starts_at BETWEEN 10 min AND 12 h` |
 | decision_deadline | timestamptz NULL | `ends_at + 48h` |
 | published_at, ended_at, closed_at | timestamptz NULL | |
@@ -122,7 +123,11 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 
 **watchlist** (user_id, auction_id, created_at). PK juft.
 
-### media
+### media (`auctions` app ichida)
+Alohida `media` app yaratilmadi: nom `MEDIA_ROOT`/`MEDIA_URL` bilan to‘qnashadi va media auksionsiz yashamaydi. Modellar `auctions/models.py` da, qayta ishlash `auctions/media.py` da, saqlash `auctions/storage.py` da.
+
+`original_path`, `file_path`, `thumb_path` — saqlash havolasi: `local` rejimda `MEDIA_ROOT` ga nisbatan yo‘l (`auctions/<auction_id>/<nom>`), `nhost` rejimda `nhost:<file_id>`. Havola o‘z backend'ini bildiradi, shuning uchun backend almashtirilganda eski qatorlar ham to‘g‘ri URL beradi.
+
 **capture_sessions** (id, user_id, auction_id, expires_at, user_agent, created_at)
 
 **auction_media**
@@ -132,10 +137,11 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 | auction_id | FK | |
 | capture_session_id | FK | |
 | kind | varchar(8) | `photo` \| `video` |
-| position | smallint | |
-| status | varchar(12) | `uploaded` \| `processing` \| `ready` \| `failed` |
+| position | smallint | galereya tartibi, `PUT /auctions/{id}/media/order` bilan o‘zgaradi (BR-12a). Birinchi tayyor rasm muqova |
+| status | varchar(12) | `processing` \| `ready` \| `failed` |
+| error | varchar(200) | `failed` bo‘lsa foydalanuvchiga ko‘rinadigan sabab |
 | original_path | varchar | qayta ishlanganidan keyin 30 kun saqlanadi |
-| file_path, thumb_path, poster_path | varchar NULL | |
+| file_path, thumb_path | varchar | bo‘sh satr = hali yo‘q. Video uchun `thumb_path` — poster kadr |
 | width, height | int NULL | |
 | duration_ms | int NULL | |
 | size_bytes | int | |
@@ -143,7 +149,7 @@ Indekslar: partial UNIQUE `(auction_id, bidder_id) WHERE status='active'` — ha
 | received_at | timestamptz | server vaqti |
 | client_meta | jsonb | qurilma, kamera sozlamalari (faqat diagnostika uchun) |
 
-**auction_checks** (id, auction_id, run_id, check_name, result `pass|warn|fail`, details jsonb, created_at)
+**auction_checks** (id, auction_id, run_id, check_name, result `pass|warn|fail`, message — foydalanuvchiga ko‘rinadigan matn, details jsonb, created_at). Tekshiruvlar: `text_contacts`, `text_profanity`, `media_count`, `media_freshness`, `media_quality`, `media_duplicate`.
 
 ### deals
 **deals**
@@ -181,7 +187,7 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 | id | bigserial PK | |
 | user_id | FK | |
 | bucket | varchar(8) | `main` \| `bonus` \| `hold` |
-| type | varchar(24) | `topup`, `bonus_grant`, `bonus_expire`, `hold`, `hold_release`, `commission`, `commission_refund`, `refund_payout`, `adjustment` |
+| type | varchar(24) | `topup`, `bonus_grant`, `bonus_expire`, `bonus_cashback`, `bonus_cashback_reversal` (BR-47, `ref_type=deal`), `hold`, `hold_release`, `commission`, `commission_refund`, `refund_payout`, `adjustment` |
 | amount | bigint | ishorali |
 | balance_after | bigint | shu bucket'ning yangi qoldig‘i |
 | ref_type, ref_id | varchar, uuid NULL | `auction`, `deal`, `payment`, `refund_request` |
@@ -209,16 +215,19 @@ Mavjud balans = `main_balance + bonus_balance - held_amount`.
 
 ### notifications
 - **notifications** (id, user_id, type, title, body, link, read_at NULL, created_at). Indeks `(user_id, read_at, created_at DESC)`.
-- **telegram_outbox** (id, chat_id bigint, text, reply_markup jsonb NULL, status `pending|sent|failed`, attempts, next_attempt_at, sent_at, error, created_at).
+- **telegram_outbox** (id, chat_id bigint, text, status `pending|sent|failed`, attempts, next_attempt_at, sent_at, error, created_at).
+- **sent_reminders** (id, key UNIQUE, created_at) — vaqtga bog‘liq eslatmalar (tugashiga 10 daqiqa, tanlash muddati, baholash, bonus yonishi) bir martadan ortiq yuborilmasligi uchun. Kalit misoli: `ending:<auction_id>:<user_id>`.
 
 ### moderation va core
 - **reports** (id, reporter_id, target_type `auction|user`, target_id, reason `fake|wrong_info|abuse|fraud|other`, comment, status `open|resolved|dismissed`, handled_by_id, created_at, handled_at)
-- **platform_settings** — bitta qatorli jadval: `commission_rate_bp=20`, `signup_bonus=50000`, `bonus_ttl_days=90`, `min_bid_pct=50`, `max_bid_pct=300`, `min_duration_min=10`, `max_duration_min=720`, `max_schedule_ahead_days=7`, `decision_window_h=48`, `early_accept_min_minutes=10`, `claim_window_days=7`, `rating_window_days=14`, `photos_min=4`, `photos_max=10`, `videos_min=1`, `videos_max=2`, `video_max_s=30`. O‘zgarishlar audit jurnaliga yoziladi.
+- **bug_reports** (id, user_id NULL `ON DELETE SET NULL`, message ≤2000, contact (faqat mehmon), page_url ≤500, user_agent ≤300, viewport, error_text ≤2000, ip, status `new|resolved|closed`, handled_by_id, handled_note, created_at, handled_at) — "Xatolik haqida xabar berish" (FR-19). Indekslar: `(status, created_at)`, `(ip, created_at)`.
+- **leads** (id, name, phone `+998XXXXXXXXX`, region_id NULL, role `seller|buyer|both`, message, source (utm), ip, status `new|contacted|closed`, handled_by_id, handled_note, created_at, handled_at) — landing aloqa formasi (FR-18). Indekslar: `(status, created_at)`, `(phone, created_at)`, `(ip, created_at)` — cheklov soʻrovlari uchun.
+- **platform_settings** — bitta qatorli jadval: `commission_rate_bp=20`, `signup_bonus=50000`, `bonus_ttl_days=90`, `cashback_pct=5` (BR-47), `min_bid_pct=50`, `max_bid_pct=300`, `min_duration_min=10`, `max_duration_min=720`, `max_schedule_ahead_days=7`, `decision_window_h=48`, `early_accept_min_minutes=10`, `claim_window_days=7`, `rating_window_days=14`, `photos_min=4`, `photos_max=10`, `videos_min=1`, `videos_max=2`, `video_max_s=30`. O‘zgarishlar audit jurnaliga yoziladi.
 - **staff_audit_log** (id, actor_id, action, target_type, target_id, before jsonb, after jsonb, ip, created_at)
 
 ## Demo tiplaridan farqlar
 
-Demo'dagi `src/types/index.ts` bilan solishtirganda:
+Olib tashlangan demo (`src/types/index.ts`, 2026-11-23 da o‘chirildi) bilan solishtirganda:
 - `announcements` va `auctions` birlashtirildi, chunki oddiy e'lonlar bo‘lmaydi.
 - `users.balance` o‘rniga `wallets` va `wallet_entries` keldi.
 - `blocked_objects` o‘rniga `users.is_blocked` va `auctions.status='blocked'` ishlatiladi.

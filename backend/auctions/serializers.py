@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
@@ -65,8 +66,22 @@ class CoverSerializer(serializers.Serializer[Any]):
     thumb_url = serializers.CharField()
 
 
+def _preview_video(obj: Auction) -> dict[str, Any] | None:
+    """First processed video: cards play it on hover. Uses the prefetched media, no extra query."""
+    for m in obj.media.all():
+        if m.kind == AuctionMedia.Kind.VIDEO and m.status == AuctionMedia.MediaStatus.READY and m.file_path:
+            return {"url": media_store.url(m.file_path), "poster_url": media_store.url(m.thumb_path)}
+    return None
+
+
+class PreviewVideoSerializer(serializers.Serializer[Any]):
+    url = serializers.CharField()
+    poster_url = serializers.CharField()
+
+
 class AuctionListSerializer(serializers.ModelSerializer[Auction]):
     cover = serializers.SerializerMethodField()
+    preview_video = serializers.SerializerMethodField()
     region = RefSerializer(allow_null=True)
     district = RefSerializer(allow_null=True)
     animal_type = RefSerializer(allow_null=True)
@@ -78,14 +93,35 @@ class AuctionListSerializer(serializers.ModelSerializer[Auction]):
     class Meta:
         model = Auction
         fields = [
-            "id", "title", "status", "cover", "asking_price", "top_bid_amount", "bidders_count",
-            "active_bids_count", "starts_at", "ends_at", "region", "district", "distance_km",
-            "animal_type", "animal_class", "age_label", "weight_kg", "weight_is_estimated", "is_watched",
+            "id",
+            "title",
+            "status",
+            "cover",
+            "preview_video",
+            "asking_price",
+            "top_bid_amount",
+            "bidders_count",
+            "active_bids_count",
+            "starts_at",
+            "ends_at",
+            "region",
+            "district",
+            "distance_km",
+            "animal_type",
+            "animal_class",
+            "age_label",
+            "weight_kg",
+            "weight_is_estimated",
+            "is_watched",
         ]
 
     @extend_schema_field(CoverSerializer(allow_null=True))
     def get_cover(self, obj: Auction) -> dict[str, Any] | None:
         return _cover(obj)
+
+    @extend_schema_field(PreviewVideoSerializer(allow_null=True))
+    def get_preview_video(self, obj: Auction) -> dict[str, Any] | None:
+        return _preview_video(obj)
 
     def get_distance_km(self, obj: Auction) -> float | None:
         value = getattr(obj, "distance_km", None)
@@ -110,6 +146,37 @@ class MyBidSerializer(serializers.Serializer[Any]):
     tier = serializers.CharField()
 
 
+class PointSerializer(serializers.Serializer[Any]):
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+
+
+class AreaSerializer(PointSerializer):
+    radius_m = serializers.IntegerField()
+
+
+# BR-33a: strangers see the pin only as the centre of a ~1 km grid cell with a radius that
+# always covers the real point (cell half-diagonal is < 800 m in Uzbekistan).
+AREA_STEP = Decimal("0.01")
+AREA_RADIUS_M = 1500
+
+
+def pinned_point(obj: Auction) -> dict[str, float] | None:
+    if not obj.location_pinned or obj.lat is None or obj.lng is None:
+        return None
+    return {"lat": float(obj.lat), "lng": float(obj.lng)}
+
+
+def approximate_area(obj: Auction) -> dict[str, Any] | None:
+    if not obj.location_pinned or obj.lat is None or obj.lng is None:
+        return None
+    return {
+        "lat": float(obj.lat.quantize(AREA_STEP)),
+        "lng": float(obj.lng.quantize(AREA_STEP)),
+        "radius_m": AREA_RADIUS_M,
+    }
+
+
 class OwnerInfoSerializer(serializers.Serializer[Any]):
     hold_amount = serializers.IntegerField(allow_null=True)
     decision_deadline = serializers.DateTimeField(allow_null=True)
@@ -118,6 +185,7 @@ class OwnerInfoSerializer(serializers.Serializer[Any]):
     early_accept_from = serializers.DateTimeField(allow_null=True)
     rejection_reason = serializers.CharField()
     checks = CheckSerializer(many=True)
+    pin = PointSerializer(allow_null=True)
 
 
 class AuctionDetailSerializer(AuctionListSerializer):
@@ -129,14 +197,34 @@ class AuctionDetailSerializer(AuctionListSerializer):
     owner = serializers.SerializerMethodField()
     deal_id = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    area = serializers.SerializerMethodField()
 
     class Meta(AuctionListSerializer.Meta):
         fields = [
             *AuctionListSerializer.Meta.fields,
-            "media", "description", "direction", "breed", "breed_other", "age_months", "min_bid", "max_bid",
-            "seller", "my_bid", "owner", "deal_id", "is_owner", "start_now", "duration_minutes",
-            "decision_deadline", "published_at",
+            "media",
+            "description",
+            "direction",
+            "breed",
+            "breed_other",
+            "age_months",
+            "min_bid",
+            "max_bid",
+            "seller",
+            "my_bid",
+            "owner",
+            "deal_id",
+            "is_owner",
+            "start_now",
+            "duration_minutes",
+            "decision_deadline",
+            "published_at",
+            "area",
         ]
+
+    @extend_schema_field(AreaSerializer(allow_null=True))
+    def get_area(self, obj: Auction) -> dict[str, Any] | None:
+        return approximate_area(obj)
 
     def _viewer(self) -> User | None:
         request = self.context.get("request")
@@ -168,11 +256,13 @@ class AuctionDetailSerializer(AuctionListSerializer):
         return {
             "hold_amount": obj.hold_amount,
             "decision_deadline": obj.decision_deadline,
-            "can_cancel": obj.status in ("pending_review", "scheduled") or (obj.status == "live" and not has_bids),
+            "can_cancel": obj.status in ("pending_review", "scheduled")
+            or (obj.status == "live" and not has_bids),
             "can_accept_now": allowed and has_bids,
             "early_accept_from": early_from,
             "rejection_reason": obj.rejection_reason,
             "checks": CheckSerializer(checks, many=True).data,
+            "pin": pinned_point(obj),
         }
 
     def get_deal_id(self, obj: Auction) -> str | None:
@@ -184,20 +274,50 @@ class AuctionDetailSerializer(AuctionListSerializer):
 
 
 class DraftSerializer(serializers.Serializer[Any]):
-    direction_id = serializers.PrimaryKeyRelatedField(queryset=Direction.objects.filter(is_active=True), source="direction", required=False, allow_null=True)
-    animal_type_id = serializers.PrimaryKeyRelatedField(queryset=AnimalType.objects.filter(is_active=True), source="animal_type", required=False, allow_null=True)
-    animal_class_id = serializers.PrimaryKeyRelatedField(queryset=AnimalClass.objects.filter(is_active=True), source="animal_class", required=False, allow_null=True)
-    breed_id = serializers.PrimaryKeyRelatedField(queryset=Breed.objects.filter(is_active=True), source="breed", required=False, allow_null=True)
+    direction_id = serializers.PrimaryKeyRelatedField(
+        queryset=Direction.objects.filter(is_active=True), source="direction", required=False, allow_null=True
+    )
+    animal_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=AnimalType.objects.filter(is_active=True),
+        source="animal_type",
+        required=False,
+        allow_null=True,
+    )
+    animal_class_id = serializers.PrimaryKeyRelatedField(
+        queryset=AnimalClass.objects.filter(is_active=True),
+        source="animal_class",
+        required=False,
+        allow_null=True,
+    )
+    breed_id = serializers.PrimaryKeyRelatedField(
+        queryset=Breed.objects.filter(is_active=True), source="breed", required=False, allow_null=True
+    )
     breed_other = serializers.CharField(max_length=64, required=False, allow_blank=True)
     age_months = serializers.IntegerField(min_value=0, max_value=480, required=False, allow_null=True)
     weight_kg = serializers.IntegerField(min_value=0, max_value=3000, required=False, allow_null=True)
     weight_is_estimated = serializers.BooleanField(required=False)
     description = serializers.CharField(max_length=2000, required=False, allow_blank=True)
-    asking_price = serializers.IntegerField(min_value=1000, max_value=10_000_000_000, required=False, allow_null=True)
-    district_id = serializers.PrimaryKeyRelatedField(queryset=District.objects.all(), source="district", required=False, allow_null=True)
+    asking_price = serializers.IntegerField(
+        min_value=1000, max_value=10_000_000_000, required=False, allow_null=True
+    )
+    district_id = serializers.PrimaryKeyRelatedField(
+        queryset=District.objects.all(), source="district", required=False, allow_null=True
+    )
     start_now = serializers.BooleanField(required=False)
     starts_at = serializers.DateTimeField(required=False, allow_null=True)
     duration_minutes = serializers.IntegerField(min_value=1, max_value=1440, required=False, allow_null=True)
+    # Optional map pin (BR-11a). Send both, or both null to remove it.
+    lat = serializers.FloatField(required=False, allow_null=True)
+    lng = serializers.FloatField(required=False, allow_null=True)
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if ("lat" in attrs) != ("lng" in attrs) or (attrs.get("lat") is None) != (attrs.get("lng") is None):
+            raise serializers.ValidationError({"lat": "Kenglik va uzunlik birga yuboriladi."})
+        return attrs
+
+
+class MediaOrderSerializer(serializers.Serializer[Any]):
+    ids = serializers.ListField(child=serializers.UUIDField(), max_length=50)
 
 
 class SubmitResultSerializer(serializers.Serializer[Any]):

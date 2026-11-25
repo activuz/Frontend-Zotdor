@@ -44,6 +44,8 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 ### Auksion
 - **BR-10** Har bir sotuv auksion orqali bo‘ladi. Bitta auksion = bitta hayvon. *(A-01)*
 - **BR-11** Sotuvchi quyidagilarni kiritadi: yo‘nalish, hayvon turi, jins-yosh toifasi, zot (ixtiyoriy), yoshi, vazni (taxminiy yoki aniq), tavsif, so‘raladigan narx, joylashuv (viloyat, tuman), boshlanish sanasi va vaqti, davomiylik.
+- **BR-11a** Sotuvchi ixtiyoriy ravishda molning joylashuvini xaritada belgilaydi (OLX va Avito'dagi "xaritada ko‘rsatish" kabi). Nuqta ~100 m gacha yaxlitlanadi, tuman nuqtaga qarab avtomatik tanlanadi. Belgilanmasa, tuman markazi ishlatiladi. *(2026-11-25)*
+- **BR-12a** Sotuvchi e'lon qilinguncha media tartibini o‘zgartiradi. Birinchi tayyor rasm muqova bo‘ladi. *(2026-11-25)*
 - **BR-12** Davomiylik **10 daqiqadan 12 soatgacha** bo‘ladi.
 - **BR-13** Boshlanish vaqti "hozir" yoki kelajakdagi istalgan vaqt bo‘lishi mumkin, lekin ko‘pi bilan 7 kun oldinga. *(A-02)*
 - **BR-14** Media faqat ilova ichidagi kamera orqali olinadi. Kamida **4 ta rasm** (ko‘pi bilan 10 ta) va kamida **1 ta video** talab qilinadi. Galereyadan yuklab bo‘lmaydi.
@@ -67,6 +69,7 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 - **BR-31** Sotuvchi istalgan faol taklifni tanlay oladi. Tanlash oynasida **eng yuqori 3 ta** va **eng yaqin 3 ta** taklif "Tavsiya" bloki sifatida yuqorida turadi. Qolganlarini summa yoki masofa bo‘yicha saralash mumkin.
 - **BR-32** Tanlash oynasida sotuvchi har bir xaridorning summasi, masofasi, reytingi va bitimlar sonini ko‘radi. Ism va telefon ko‘rinmaydi.
 - **BR-33** Taklif qabul qilinganda bitim yaratiladi, komissiya yechiladi va **shundan keyingina** ikki tomonga bir-birining ismi va telefoni ochiladi.
+- **BR-33a** Belgilangan nuqta (BR-11a) begonalarga faqat taxminiy hudud sifatida ko‘rsatiladi: ~1 km katak markazi va 1,5 km radiusli doira. Aniq nuqta bitim yaratilgandan keyin telefon bilan birga faqat ikki tomonga ochiladi. *(2026-11-25)*
 - **BR-35** Sotuvchi jonli auksionda ham faol taklifni qabul qila oladi, lekin **auksion boshlanganidan kamida 10 daqiqa o‘tgach**. Bunda auksion darhol `sold` holatiga o‘tadi va boshqa xaridorlarga "Auksion muddatidan oldin yakunlandi" xabari boradi. Komissiya va kontaktlarni ochish BR-33 bo‘yicha amalga oshadi.
 - **BR-34** Sotuvchi bitim yaratilganidan keyin 7 kun ichida "bitim bo‘lmadi" arizasini bera oladi. Moderator ariza asosli deb topsa, komissiya balansga qaytariladi. *(A-09)*
 
@@ -74,9 +77,11 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 - **BR-40** Komissiya: **qabul qilingan taklif summasining 0.2%**, butun so‘mgacha yuqoriga yaxlitlanadi. Uni faqat sotuvchi to‘laydi. Stavka sozlamada saqlanadi, e'lon qilish paytida auksionga yoziladi va keyin o‘zgarmaydi. *(A-11)*
 - **BR-41** Auksionni e'lon qilish uchun sotuvchining mavjud balansida sotuvchi narxining 0.2% i bo‘lishi kerak. Bu summa **rezerv** qilinadi. Bitim bo‘lsa, haqiqiy komissiya yechiladi va qolgani rezervdan qaytadi. Bitim bo‘lmasa yoki auksion bekor qilinsa, rezerv to‘liq qaytadi.
 - **BR-42** Haqiqiy komissiya rezervdan katta bo‘lsa (taklif narxdan yuqori bo‘lgan holat), farq balansdan yechiladi. Balans yetmasa, asosiy balans manfiyga tushadi. Qarz yopilmaguncha foydalanuvchi yangi auksion ocha olmaydi. *(A-12)*
-- **BR-43** Yangi akkauntga **50 000 so‘m bonus** beriladi. Bonus faqat komissiyaga sarflanadi, naqd qilib bo‘lmaydi va 90 kundan keyin yonib ketadi. Komissiya avval bonusdan, keyin asosiy balansdan yechiladi. *(A-10)*
+- **BR-43** Yangi akkauntga **50 000 so‘m bonus** beriladi. Bonus faqat komissiyaga sarflanadi, naqd qilib bo‘lmaydi va oxirgi bonus tushumidan 90 kun o‘tgach yonib ketadi (BR-47). Komissiya avval bonusdan, keyin asosiy balansdan yechiladi. *(A-10)*
 - **BR-44** Asosiy balans faqat Click orqali to‘ldiriladi. Click shartnomasi tuzilmaguncha admin balansni qo‘lda to‘ldira oladi va bu audit jurnaliga yoziladi.
 - **BR-45** Balansdan pul yechish funksiyasi yo‘q. Foydalanuvchi "pulni qaytarish" arizasini beradi (summa, Click to‘lov raqami, sabab). Moderator pulni Click kabineti orqali qo‘lda qaytaradi va arizani yopadi. Shundan keyin summa balansdan ayiriladi.
+- **BR-47** *(2026-11-25, mahsulot egasi)* Keshbek: har bir bitimda yechilgan komissiyaning **5%** i (`cashback_pct`, panelda o‘zgaradi) butun so‘mgacha pastga yaxlitlanib sotuvchining bonus hamyoniga tushadi. Bonus yig‘ilib boradi va bir martalik emas. Har yangi bonus tushganda butun bonus qoldig‘ining amal qilish muddati `bonus_ttl_days` (90 kun) ga yangilanadi. "Bitim bo‘lmadi" arizasi tasdiqlanib komissiya qaytarilsa, shu bitimning keshbeki bonus qoldig‘idan (qolgan qismi doirasida) qaytarib olinadi. Xaridorga keshbek berilmaydi.
+- **BR-48** *(2026-11-25)* Yangi akkauntga bonus berilganda foydalanuvchiga sayt va Telegram orqali bildirishnoma yuboriladi.
 - **BR-46** Har bir pul harakati o‘zgarmas jurnal yozuvi (ledger) sifatida saqlanadi. Balans faqat shu jurnal orqali o‘zgaradi.
 
 ### Reyting
@@ -108,7 +113,9 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 | FR-14 | Shikoyat qilish | 60 |
 | FR-15 | Mening auksionlarim, Mening takliflarim, Mening bitimlarim | — |
 | FR-16 | Panel: moderatsiya navbati, shikoyatlar, arizalar, foydalanuvchilar, balansni tuzatish, sozlamalar, toifalar, audit jurnali, asosiy statistika | 44–45, 61–62 |
-| FR-17 | Huquqiy sahifalar: foydalanish shartlari (oferta), maxfiylik siyosati. **Matnni mahsulot egasi yoki yurist beradi** | — |
+| FR-19 | "Xatolik haqida xabar berish" formasi: sayt pastida, profil menyusida va xato ekranlarida. Foydalanuvchi muammoni yozadi; sahifa manzili, ekran oʻlchami, brauzer va (boʻlsa) xato matni avtomatik qoʻshiladi. Mehmon ham yubora oladi (kontakt ixtiyoriy). Xabar panelda koʻrib chiqiladi, xodimlar Telegram chatiga nusxa yuboriladi *(2026-11-25)* | — |
+| FR-18 | Landing sahifa (`zotdor.uz`): platformani tanishtiradi, saytdan haqiqiy auksionlar va sozlamalarni koʻrsatadi, FAQ va aloqa formasi. Forma arizasi (`leads`) bazaga yoziladi, panelda koʻrib chiqiladi, xodimlar Telegram chatiga nusxa yuboriladi | — |
+| FR-17 | Huquqiy sahifalar: foydalanish shartlari, maxfiylik siyosati, ommaviy oferta (`/terms`, `/privacy`, `/offer`). Matnlar mahsulot egasining roziligi bilan BR qoidalari asosida qoralama sifatida yozildi (2026-11-25, `frontend/src/features/legal/content.ts`). **Yurist ko‘rib chiqishi va operator rekvizitlari (nom, STIR, manzil) qo‘shilishi kerak** | — |
 
 ## 7. Nofunksional talablar
 
