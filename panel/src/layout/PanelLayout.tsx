@@ -24,6 +24,7 @@ export const PanelLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     { to: '/claims', label: '“Bitim boʻlmadi”', count: q?.claims },
     { to: '/refunds', label: 'Pul qaytarish', count: q?.refunds },
     { to: '/leads', label: 'Sayt arizalari', count: q?.leads },
+    { to: '/bug-reports', label: 'Xatolik xabarlari', count: q?.bug_reports },
     { to: '/users', label: 'Foydalanuvchilar' },
     { to: '/settings', label: 'Sozlamalar' },
     { to: '/taxonomy', label: 'Toifalar va tumanlar', admin: true },

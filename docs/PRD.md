@@ -113,6 +113,7 @@ Zotdor — chorva mollarini **faqat auksion shaklida** sotish platformasi. Sotuv
 | FR-14 | Shikoyat qilish | 60 |
 | FR-15 | Mening auksionlarim, Mening takliflarim, Mening bitimlarim | — |
 | FR-16 | Panel: moderatsiya navbati, shikoyatlar, arizalar, foydalanuvchilar, balansni tuzatish, sozlamalar, toifalar, audit jurnali, asosiy statistika | 44–45, 61–62 |
+| FR-19 | "Xatolik haqida xabar berish" formasi: sayt pastida, profil menyusida va xato ekranlarida. Foydalanuvchi muammoni yozadi; sahifa manzili, ekran oʻlchami, brauzer va (boʻlsa) xato matni avtomatik qoʻshiladi. Mehmon ham yubora oladi (kontakt ixtiyoriy). Xabar panelda koʻrib chiqiladi, xodimlar Telegram chatiga nusxa yuboriladi *(2026-11-25)* | — |
 | FR-18 | Landing sahifa (`zotdor.uz`): platformani tanishtiradi, saytdan haqiqiy auksionlar va sozlamalarni koʻrsatadi, FAQ va aloqa formasi. Forma arizasi (`leads`) bazaga yoziladi, panelda koʻrib chiqiladi, xodimlar Telegram chatiga nusxa yuboriladi | — |
 | FR-17 | Huquqiy sahifalar: foydalanish shartlari, maxfiylik siyosati, ommaviy oferta (`/terms`, `/privacy`, `/offer`). Matnlar mahsulot egasining roziligi bilan BR qoidalari asosida qoralama sifatida yozildi (2026-11-25, `frontend/src/features/legal/content.ts`). **Yurist ko‘rib chiqishi va operator rekvizitlari (nom, STIR, manzil) qo‘shilishi kerak** | — |
 

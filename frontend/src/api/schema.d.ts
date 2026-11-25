@@ -85,6 +85,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/panel/bug-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["panel_bug_reports_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/panel/bug-reports/{report_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["panel_bug_reports_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/panel/claims": {
         parameters: {
             query?: never;
@@ -750,6 +782,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bug-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description "Xatolik haqida xabar berish" (FR-19). Guests too; a logged-in user is attached. */
+        post: operations["v1_bug_reports_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/config": {
         parameters: {
             query?: never;
@@ -1332,6 +1381,27 @@ export interface components {
             sort?: number;
             is_active?: boolean;
         };
+        BugReportCreated: {
+            /** Format: uuid */
+            id: string;
+        };
+        BugReportInRequest: {
+            message: string;
+            contact?: string;
+            page_url?: string;
+            viewport?: string;
+            error?: string;
+        };
+        BugReportStatusInRequest: {
+            status: components["schemas"]["BugReportStatusInStatusEnum"];
+            note?: string;
+        };
+        /**
+         * @description * `resolved` - resolved
+         *     * `closed` - closed
+         * @enum {string}
+         */
+        BugReportStatusInStatusEnum: "resolved" | "closed";
         CancelInRequest: {
             reason?: string;
         };
@@ -1698,6 +1768,12 @@ export interface components {
             next: string | null;
             previous: string | null;
         };
+        PaginatedPanelBugReportList: {
+            results: components["schemas"]["PanelBugReport"][];
+            count: number;
+            next: string | null;
+            previous: string | null;
+        };
         PaginatedPanelClaimList: {
             results: components["schemas"]["PanelClaim"][];
             count: number;
@@ -1844,6 +1920,25 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
+        PanelBugReport: {
+            /** Format: uuid */
+            id: string;
+            message: string;
+            /** Format: uuid */
+            user_id: string | null;
+            user_phone: string | null;
+            contact: string;
+            page_url: string;
+            user_agent: string;
+            viewport: string;
+            error_text: string;
+            status: string;
+            handled_note: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            handled_at: string | null;
+        };
         PanelCheck: {
             check_name: string;
             result: string;
@@ -1899,6 +1994,7 @@ export interface components {
             claims: number;
             refunds: number;
             leads: number;
+            bug_reports: number;
         };
         PanelRefund: {
             /** Format: uuid */
@@ -2499,6 +2595,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedPanelAuditList"];
+                };
+            };
+        };
+    };
+    panel_bug_reports_retrieve: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPanelBugReportList"];
+                };
+            };
+        };
+    };
+    panel_bug_reports_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BugReportStatusInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BugReportStatusInRequest"];
+                "multipart/form-data": components["schemas"]["BugReportStatusInRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelBugReport"];
                 };
             };
         };
@@ -3869,6 +4013,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+        };
+    };
+    v1_bug_reports_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BugReportInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BugReportInRequest"];
+                "multipart/form-data": components["schemas"]["BugReportInRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BugReportCreated"];
                 };
             };
         };

@@ -39,6 +39,8 @@ envVarGroups:
         generateValue: true
       - key: LEADS_TELEGRAM_CHAT_ID
         sync: false
+      - key: SUPPORT_TELEGRAM_CHAT_ID
+        sync: false
       - key: PAYMENTS_PROVIDER
         value: click
       - key: CLICK_SERVICE_ID

@@ -28,6 +28,8 @@ from core.http import data_of
 from core.models import PlatformSettings, StaffAuditLog
 from deals import services as deal_services
 from deals.models import Deal, DealClaim
+from feedback import services as bug_services
+from feedback.models import BugReport
 from leads import services as lead_services
 from leads.models import Lead
 from moderation.models import Report
@@ -91,6 +93,7 @@ class StatsView(ModView):
                     "claims": DealClaim.objects.filter(status=DealClaim.ClaimStatus.OPEN).count(),
                     "refunds": RefundRequest.objects.filter(status=RefundRequest.RefundStatus.OPEN).count(),
                     "leads": Lead.objects.filter(status=Lead.LeadStatus.NEW).count(),
+                    "bug_reports": BugReport.objects.filter(status=BugReport.ReportStatus.NEW).count(),
                 },
                 "deals_7d": Deal.objects.filter(created_at__gte=week).count(),
                 "commission_7d": -(
@@ -308,6 +311,65 @@ class LeadStatusView(ModView):
                 ip=_ip(request),
             )
         return Response(_lead_row(lead))
+
+
+# --- bug reports (FR-19) ----------------------------------------------------------------------
+
+
+def _bug_row(r: BugReport) -> dict[str, Any]:
+    return {
+        "id": r.id,
+        "message": r.message,
+        "user_id": r.user_id,
+        "user_phone": r.user.phone if r.user else None,
+        "contact": r.contact,
+        "page_url": r.page_url,
+        "user_agent": r.user_agent,
+        "viewport": r.viewport,
+        "error_text": r.error_text,
+        "status": r.status,
+        "handled_note": r.handled_note,
+        "created_at": r.created_at,
+        "handled_at": r.handled_at,
+    }
+
+
+class BugReportListView(ModView):
+    @extend_schema(parameters=[OpenApiParameter("status", str)], responses=schemas.PanelBugReportPage)
+    def get(self, request: Request) -> Response:
+        st = request.query_params.get("status", BugReport.ReportStatus.NEW)
+        qs = BugReport.objects.select_related("user").order_by("-created_at")
+        if st != "all":
+            qs = qs.filter(status=st)
+        return _page(request, self, qs, _bug_row)
+
+
+class BugReportStatusView(ModView):
+    @extend_schema(
+        request=inline_serializer(
+            "BugReportStatusIn",
+            {
+                "status": serializers.ChoiceField(["resolved", "closed"]),
+                "note": serializers.CharField(required=False),
+            },
+        ),
+        responses=schemas.PanelBugReport,
+    )
+    def post(self, request: Request, report_id: uuid.UUID) -> Response:
+        with transaction.atomic():
+            report, before = bug_services.set_status(
+                report_id, _text(request, "status"), _text(request, "note"), _staff(request)
+            )
+            audit.log(
+                _staff(request),
+                f"bug_report.{report.status}",
+                "bug_report",
+                report.id,
+                before=before,
+                after={"status": report.status, "note": report.handled_note},
+                ip=_ip(request),
+            )
+        return Response(_bug_row(report))
 
 
 # --- claims --------------------------------------------------------------------------------

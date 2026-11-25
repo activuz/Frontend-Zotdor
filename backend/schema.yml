@@ -118,6 +118,58 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPanelAuditList'
           description: ''
+  /api/panel/bug-reports:
+    get:
+      operationId: panel_bug_reports_retrieve
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - panel
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPanelBugReportList'
+          description: ''
+  /api/panel/bug-reports/{report_id}/status:
+    post:
+      operationId: panel_bug_reports_status_create
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - panel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BugReportStatusInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BugReportStatusInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BugReportStatusInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelBugReport'
+          description: ''
   /api/panel/claims:
     get:
       operationId: panel_claims_retrieve
@@ -1623,6 +1675,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/LoginStatus'
           description: ''
+  /api/v1/bug-reports:
+    post:
+      operationId: v1_bug_reports_create
+      description: '"Xatolik haqida xabar berish" (FR-19). Guests too; a logged-in
+        user is attached.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BugReportInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BugReportInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BugReportInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BugReportCreated'
+          description: ''
   /api/v1/config:
     get:
       operationId: v1_config_retrieve
@@ -2757,6 +2838,48 @@ components:
       required:
       - animal_type
       - name
+    BugReportCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      required:
+      - id
+    BugReportInRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+        contact:
+          type: string
+        page_url:
+          type: string
+        viewport:
+          type: string
+        error:
+          type: string
+      required:
+      - message
+    BugReportStatusInRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/BugReportStatusInStatusEnum'
+        note:
+          type: string
+          minLength: 1
+      required:
+      - status
+    BugReportStatusInStatusEnum:
+      enum:
+      - resolved
+      - closed
+      type: string
+      description: |-
+        * `resolved` - resolved
+        * `closed` - closed
     CancelInRequest:
       type: object
       properties:
@@ -3693,6 +3816,26 @@ components:
       - next
       - previous
       - results
+    PaginatedPanelBugReportList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PanelBugReport'
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+      required:
+      - count
+      - next
+      - previous
+      - results
     PaginatedPanelClaimList:
       type: object
       properties:
@@ -4154,6 +4297,56 @@ components:
       - ip
       - target_id
       - target_type
+    PanelBugReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        user_phone:
+          type: string
+          nullable: true
+        contact:
+          type: string
+        page_url:
+          type: string
+        user_agent:
+          type: string
+        viewport:
+          type: string
+        error_text:
+          type: string
+        status:
+          type: string
+        handled_note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        handled_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - contact
+      - created_at
+      - error_text
+      - handled_at
+      - handled_note
+      - id
+      - message
+      - page_url
+      - status
+      - user_agent
+      - user_id
+      - user_phone
+      - viewport
     PanelCheck:
       type: object
       properties:
@@ -4293,7 +4486,10 @@ components:
           type: integer
         leads:
           type: integer
+        bug_reports:
+          type: integer
       required:
+      - bug_reports
       - claims
       - leads
       - pending_review
