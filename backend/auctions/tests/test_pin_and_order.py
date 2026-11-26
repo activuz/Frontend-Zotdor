@@ -150,14 +150,16 @@ def media_ids(a: Auction) -> list[str]:
 
 def test_media_can_be_reordered_and_first_photo_is_cover(seller: User) -> None:
     a = draft_with_media(seller, photos=3, video=True)
-    ids = media_ids(a)
-    new = [ids[3], ids[2], ids[0], ids[1]]  # the video first, then the third photo
+    media = Auction.objects.get(id=a.id).media.order_by("position", "received_at")
+    video = next(str(m.id) for m in media if m.kind == "video")
+    photos = [m for m in media if m.kind == "photo"]
+    # The video first, then the third photo: the cover is the first *photo* in the new order.
+    new = [video, str(photos[2].id), str(photos[0].id), str(photos[1].id)]
     r = client_for(seller).put(f"/api/v1/auctions/{a.id}/media/order", {"ids": new}, format="json")
     assert r.status_code == 200
     body = r.json()
     assert [m["id"] for m in body["media"]] == new
-    third = Auction.objects.get(id=a.id).media.get(id=ids[2])
-    assert body["cover"]["thumb_url"].endswith(third.thumb_path)
+    assert body["cover"]["thumb_url"].endswith(photos[2].thumb_path)
 
 
 @pytest.mark.parametrize("change", ["missing", "extra", "duplicate"])

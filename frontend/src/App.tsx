@@ -58,6 +58,8 @@ export const App: React.FC = () => (
             <Route path="/wallet/test-payment/:id" element={auth(<TestPaymentPage />)} />
             <Route path="/u/:id" element={<PublicProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
+            {/* The bot's "back" link for logins begun in the Android app (an App Link path). */}
+            <Route path="/app/login" element={<Navigate to="/login?continue=1" replace />} />
             <Route path="/terms" element={<LegalPage slug="terms" />} />
             <Route path="/privacy" element={<LegalPage slug="privacy" />} />
             <Route path="/offer" element={<LegalPage slug="offer" />} />

@@ -23,7 +23,7 @@ Asosiy manzil: `https://api.zotdor.uz/api/v1`. Panel endpointlari `/api/panel` o
 | Metod | Yo‘l | Tavsif |
 |---|---|---|
 | GET | `/auth/csrf` | CSRF cookie'ni o‘rnatadi va `{csrf_token}` qaytaradi. Mijoz tokenni javobdan oladi va `X-CSRFToken` da yuboradi (boshqa subdomendan cookie o‘qib bo‘lmaydi). Token noto‘g‘ri yoki eskirgan bo‘lsa `403 csrf_failed` — mijoz yangi token olib, bir marta qayta urinadi |
-| POST | `/auth/telegram/start` | `{phone}` → `201 {request_id, deep_link, expires_at}` va `zd_login` cookie'si |
+| POST | `/auth/telegram/start` | `{phone, client?: "web" | "app"}` → `201 {request_id, deep_link, expires_at}` va `zd_login` cookie'si. `client` (standart `web`) — kirish qayerda boshlangani: tasdiqdan keyin bot "Zotdorʼga qaytish" tugmasini shunga qarab beradi (`web` → `/login?continue=1`, `app` → `/app/login`), chunki kirish faqat cookie turgan joyda yakunlanadi |
 | GET | `/auth/telegram/status/{request_id}` | `zd_login` cookie talab qilinadi. Javob: `{status: pending\|verified\|failed\|expired, fail_reason?, message?, user?}`. `verified` bo‘lsa sessiya ochiladi va `user` qaytadi. So‘rov bir martalik |
 | POST | `/auth/logout` | `204` |
 | GET | `/me` | joriy foydalanuvchi, `needs_profile: bool` (ism, viloyat yoki tuman bo‘lmasa `true`), `has_location` va `location: {lat, lng} \| null` (saqlangan nuqta, faqat egasiga) |

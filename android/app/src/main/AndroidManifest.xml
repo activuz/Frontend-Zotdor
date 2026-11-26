@@ -33,12 +33,24 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- App Links: web.zotdor.uz links open here (needs /.well-known/assetlinks.json). -->
+            <!-- App Links: web.zotdor.uz content links open here (needs /.well-known/assetlinks.json).
+                 /login is left out on purpose: a login begun in a browser must end in that
+                 browser (the poll cookie is there); the bot sends app logins to /app/login. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="${appHost}" />
+                <data android:path="/" />
+                <data android:pathPrefix="/a/" />
+                <data android:pathPrefix="/u/" />
+                <data android:pathPrefix="/deals/" />
+                <data android:pathPrefix="/me" />
+                <data android:path="/notifications" />
+                <data android:pathPrefix="/search" />
+                <data android:pathPrefix="/sell" />
+                <data android:pathPrefix="/wallet" />
+                <data android:pathPrefix="/app/" />
             </intent-filter>
         </activity>
 

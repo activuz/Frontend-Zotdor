@@ -1488,6 +1488,12 @@ export interface components {
             approve: boolean;
             note?: string;
         };
+        /**
+         * @description * `web` - web
+         *     * `app` - app
+         * @enum {string}
+         */
+        ClientEnum: "web" | "app";
         Counterparty: {
             /** Format: uuid */
             id: string;
@@ -1677,6 +1683,8 @@ export interface components {
         };
         LoginStartRequest: {
             phone: string;
+            /** @default web */
+            client: components["schemas"]["ClientEnum"];
         };
         LoginStartResponse: {
             /** Format: uuid */

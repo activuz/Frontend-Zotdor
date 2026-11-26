@@ -31,7 +31,9 @@ export function useMe() {
 
 export function useStartLogin() {
   return useMutation({
-    mutationFn: (phone: string) => api<LoginStart>('POST', '/auth/telegram/start', { phone }),
+    // `client`: the bot's "back" button reopens the app or the browser where the login began.
+    mutationFn: (phone: string) =>
+      api<LoginStart>('POST', '/auth/telegram/start', { phone, client: inNativeApp() ? 'app' : 'web' }),
   });
 }
 

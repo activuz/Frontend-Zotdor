@@ -17,7 +17,7 @@ Ilova — `web.zotdor.uz` ni ochadigan native qobiq (Kotlin). Sayt WebView ichid
 - **Internet yo‘q ekrani** — ilova ichiga joylangan, birinchi ochilishda ham ishlaydi. Aloqa tiklanishi bilan sahifa o‘zi qayta yuklanadi. Saytdagi service worker ilova ichida ro‘yxatdan o‘tmaydi (`native.ts`), shuning uchun xatoni har doim ilova ko‘radi.
 - **Bildirishnomalar** — Firebase Cloud Messaging. Server faqat `data` xabar yuboradi (`send_fcm`), bildirishnomani ilovaning o‘zi chizadi: ilova ikonkasi, brend rangi, kanal, bosilganda kerakli sahifa (ilova yopiq bo‘lsa ham). Kanallar (foydalanuvchi telefon sozlamalarida alohida o‘chira oladi): Takliflar, Auksionlar, Bitimlar, Hamyon, Umumiy. Turi → kanal: `notifications.services.fcm_channel`.
 - **Ruxsatlar** — sayt so‘raganda Android oynasi chiqadi: joylashuv (`navigator.geolocation`), kamera (`getUserMedia`, faqat video, faqat o‘z saytimiz), bildirishnoma (Android 13+: birinchi ochilishda bir marta, keyin faqat profildagi "Bildirishnomalar" qatoridan). Rad etilsa — tushuntirish va sozlamalarga yo‘l.
-- **Havolalar** — `web.zotdor.uz` ichidagilar ilovada; `tel:`, Telegram, Yandex/Google xarita va boshqa saytlar o‘z ilovasida. `web.zotdor.uz/...` havolasi telefonda bosilsa ilova ochiladi (App Links, pastga qarang).
+- **Havolalar** — `web.zotdor.uz` ichidagilar ilovada; `tel:`, Telegram, Yandex/Google xarita va boshqa saytlar o‘z ilovasida. `web.zotdor.uz` havolasi boshqa ilovadan (Telegram, SMS, xabarlar) bosilsa ilova ochiladi (App Links): bosh sahifa, `/a/`, `/u/`, `/deals/`, `/me`, `/notifications`, `/search`, `/sell`, `/wallet`, `/app/`. `/login` ataylab kiritilmagan: brauzerda boshlangan kirish o‘sha brauzerda tugashi kerak. Chrome manzil qatoriga yozilgan yoki saytning o‘z ichidagi havolalar App Link’ni ishga tushirmaydi — bu Android’ning odatiy xatti-harakati.
 - **Ilova hissi** — splash (logo), status va navigatsiya paneli sayt sarlavhasi rangida, "orqaga" tugmasi sahifalar bo‘yicha, sahifa tepasida pastga tortib yangilash, yuqorida yuklanish chizig‘i, burilishda sahifa qayta yuklanmaydi.
 
 ## Sayt bilan aloqa (`window.ZotdorAndroid`)
@@ -41,6 +41,17 @@ Ilova sahifaga `zotdor-native` hodisasini yuboradi: `{type: "push-token", token}
 3. Server uchun **service account** kaliti (Project settings → Service accounts → Generate new private key) — bu maxfiy kalit. JSON’ni bitta qiymat sifatida Render’dagi `zotdor-backend` guruhiga `FIREBASE_SERVICE_ACCOUNT_JSON` nomi bilan kiriting. Hech qachon frontend env’iga (Vercel) yoki repo’ga qo‘ymang.
 
 Ikkala fayl **bitta Firebase loyihasidan** bo‘lishi shart: ilova tokeni boshqa loyihaning kaliti bilan yuborilsa, `SENDER_ID_MISMATCH` xatosi bo‘ladi va token o‘chiriladi.
+
+## App Links tekshiruvi
+
+Android `assetlinks.json` ni ilova **o‘rnatilayotganda** tekshiradi. Fayl keyin deploy qilingan bo‘lsa yoki imzo boshqa bo‘lsa, havolalar brauzerda ochiladi. Telefon ulangan holda:
+
+```
+adb shell pm verify-app-links --re-verify uz.zotdor.web
+adb shell pm get-app-links uz.zotdor.web      # kutilgan natija: web.zotdor.uz: verified
+```
+
+Yoki ilovani o‘chirib qayta o‘rnating. Qo‘lda: Sozlamalar → Ilovalar → Zotdor → "Standart bo‘yicha ochish" → "Qo‘llab-quvvatlanadigan havolalarni ochish" yoqilgan va `web.zotdor.uz` belgilangan bo‘lsin.
 
 ## Chiqarish (release)
 

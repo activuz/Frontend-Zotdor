@@ -106,6 +106,9 @@ class LoginRequest(models.Model):
     telegram_first_name = models.CharField(max_length=64, blank=True)
     telegram_last_name = models.CharField(max_length=64, blank=True)
     ip = models.GenericIPAddressField(null=True, blank=True)
+    # Where the login started: the bot's "back" button must reopen that place, because only
+    # it holds the poll cookie (web = the browser, app = the Android app, FR-21).
+    client = models.CharField(max_length=8, default="web")
     expires_at = models.DateTimeField()
     verified_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

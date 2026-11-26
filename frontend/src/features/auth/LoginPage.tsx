@@ -23,16 +23,55 @@ function useCountdown(until: string | undefined): string {
   return `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
 }
 
+/**
+ * The pending Telegram attempt is kept in this browser (or app) until it ends, so the bot's
+ * "Zotdorʼga qaytish" link, which opens a fresh page, continues the same login. The server only
+ * finishes it where it began (the poll cookie lives there).
+ */
+const ATTEMPT_KEY = 'zotdor_login_attempt';
+interface SavedAttempt {
+  attempt: LoginStart;
+  next: string;
+}
+
+function loadAttempt(): SavedAttempt | null {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ATTEMPT_KEY) ?? 'null') as SavedAttempt | null;
+    if (saved && new Date(saved.attempt.expires_at).getTime() > Date.now()) return saved;
+    localStorage.removeItem(ATTEMPT_KEY);
+  } catch {
+    // Unreadable storage: just start over.
+  }
+  return null;
+}
+
+function saveAttempt(saved: SavedAttempt | null): void {
+  try {
+    if (saved) localStorage.setItem(ATTEMPT_KEY, JSON.stringify(saved));
+    else localStorage.removeItem(ATTEMPT_KEY);
+  } catch {
+    // Storage unavailable: the login still works in this page.
+  }
+}
+
 export const LoginPage: React.FC = () => {
   const [params] = useSearchParams();
-  const next = safeNext(params.get('next'));
+  const [resumed] = useState(loadAttempt);
+  const next = resumed?.next ?? safeNext(params.get('next'));
   const { data: me, isPending: meLoading } = useMe();
   const [digits, setDigits] = useState('');
-  const [attempt, setAttempt] = useState<LoginStart | null>(null);
+  const [attempt, setAttemptState] = useState<LoginStart | null>(resumed?.attempt ?? null);
   const start = useStartLogin();
+  const setAttempt = (a: LoginStart | null) => {
+    saveAttempt(a ? { attempt: a, next } : null);
+    setAttemptState(a);
+  };
 
   if (meLoading) return <PageLoading />;
-  if (me) return <Navigate to={me.needs_profile ? `/me/setup?next=${encodeURIComponent(next)}` : next} replace />;
+  if (me) {
+    saveAttempt(null);
+    return <Navigate to={me.needs_profile ? `/me/setup?next=${encodeURIComponent(next)}` : next} replace />;
+  }
 
   if (attempt) {
     return <WaitForTelegram attempt={attempt} next={next} onRestart={() => setAttempt(null)} />;
@@ -115,6 +154,7 @@ const WaitForTelegram: React.FC<{ attempt: LoginStart; next: string; onRestart: 
   const timeLeft = useCountdown(attempt.expires_at);
 
   useEffect(() => {
+    if (data?.status && data.status !== 'pending') saveAttempt(null);
     if (data?.status === 'verified' && data.user) {
       queryClient.setQueryData(ME_KEY, data.user);
       navigate(data.user.needs_profile ? `/me/setup?next=${encodeURIComponent(next)}` : next, { replace: true });

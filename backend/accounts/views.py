@@ -58,7 +58,9 @@ class LoginStartView(APIView):
     def post(self, request: Request) -> Response:
         payload = LoginStartSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
-        started = services.start_login(payload.validated_data["phone"], _client_ip(request))
+        started = services.start_login(
+            payload.validated_data["phone"], _client_ip(request), payload.validated_data["client"]
+        )
         response = Response(
             {
                 "request_id": started.request.id,

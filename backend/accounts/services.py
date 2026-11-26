@@ -40,7 +40,7 @@ class StartedLogin:
     poll_secret: str
 
 
-def start_login(raw_phone: str, ip: str | None) -> StartedLogin:
+def start_login(raw_phone: str, ip: str | None, client: str = "web") -> StartedLogin:
     if not (settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_BOT_USERNAME):
         raise DomainError(
             "login_unavailable", "Kirish vaqtincha ishlamayapti. Birozdan keyin urinib koʻring.", 503
@@ -67,6 +67,7 @@ def start_login(raw_phone: str, ip: str | None) -> StartedLogin:
         token_hash=_hash(token),
         poll_secret_hash=_hash(poll_secret),
         ip=ip,
+        client=client if client in ("web", "app") else "web",
         expires_at=timezone.now() + timedelta(seconds=settings.LOGIN_REQUEST_TTL_SECONDS),
     )
     deep_link = f"https://t.me/{settings.TELEGRAM_BOT_USERNAME}?start={token}"

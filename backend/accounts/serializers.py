@@ -11,6 +11,7 @@ from reference.models import District, Region
 
 class LoginStartSerializer(serializers.Serializer[None]):
     phone = serializers.CharField(max_length=32)
+    client = serializers.ChoiceField(["web", "app"], required=False, default="web")
 
 
 class LoginStartResponseSerializer(serializers.Serializer[None]):

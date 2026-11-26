@@ -29,7 +29,7 @@ Har bir oqim uchun asosiy yo‘l va muhim chetki holatlar keltirilgan. Biznes qo
 2. Raqamni kiritadi. Maydon `+998` bilan boshlanadi va `90 123 45 67` ko‘rinishidagi niqobga ega.
 3. "Telegram orqali tasdiqlash" tugmasini bosadi va Telegram ilovasi ochiladi (`deep_link`). Sahifada ko‘rsatma va qolgan vaqt (10 daqiqa) chiqadi.
 4. Botda "Raqamni ulashish" tugmasi bosiladi.
-5. Sayt har 2 soniyada holatni tekshiradi. Tasdiqlangach, foydalanuvchi `next` sahifasiga qaytadi.
+5. Sayt har 2 soniyada holatni tekshiradi. Tasdiqlangach, foydalanuvchi `next` sahifasiga qaytadi. Bot tasdiqdan keyin "Zotdorʼga qaytish" tugmasini yuboradi: kirish saytda boshlangan bo‘lsa — o‘sha brauzerdagi `/login` (ilova uni ochmaydi), ilovada boshlangan bo‘lsa — `/app/login` (ilovani ochadi). Kutilayotgan urinish brauzerda (localStorage) saqlanadi, shuning uchun qaytish havolasidan ochilgan yangi sahifa ham kutishni davom ettiradi.
 6. Birinchi marta kirgan bo‘lsa, profilni to‘ldirish so‘raladi: ism, viloyat va tuman. Shu payt 50 000 so‘m bonus haqida xabar ko‘rsatiladi.
 
 Chetki holatlar:
