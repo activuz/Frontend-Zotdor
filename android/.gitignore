@@ -1,0 +1,12 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+captures/
+# Per-developer / secret: Firebase client config and signing keys
+app/google-services.json
+*.jks
+*.keystore
+keystore.properties

@@ -104,6 +104,8 @@ Muqobil yo‘llar: "Hech birini tanlamayman" tugmasi auksionni `unsold` holatiga
 
 ## F8. Bildirishnomalar matrisasi
 
+Ilova ichidagi har bir bildirishnoma push xabar sifatida ham yuboriladi: foydalanuvchi shu qurilmada yoqqan bo‘lsa, kompyuter yoki telefonga sayt yopiq bo‘lsa ham keladi (FR-20). Push’ga bosilsa, bildirishnomadagi sahifa ochiladi. Yoqish tugmasi bildirishnomalar sahifasi tepasida va profilda; ruxsat oynasi faqat shu tugma bosilganda chiqadi. iPhone’da avval "Bosh ekranga qo‘shish" yo‘riqnomasi ko‘rsatiladi, bloklangan bo‘lsa brauzer sozlamalari yo‘riqnomasi.
+
 | Hodisa | Kimga | Telegram | Ilova ichida |
 |---|---|---|---|
 | Auksion e'lon qilindi, moderatsiyada yoki rad etildi | sotuvchi | ✓ | ✓ |

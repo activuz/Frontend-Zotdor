@@ -4,6 +4,7 @@ import { formatDateTime } from '../../lib/format';
 import { EmptyState, PageError, PageLoading } from '../../components/ui/PageState';
 import { Button } from '../../components/ui/Button';
 import { useMarkRead, useNotifications, type Notification } from './api';
+import { PushToggle } from './PushToggle';
 
 /** In-app notifications (F8). Links are app paths produced by the backend. */
 export const NotificationsPage: React.FC = () => {
@@ -21,6 +22,9 @@ export const NotificationsPage: React.FC = () => {
             Hammasini oʻqilgan qilish
           </Button>
         )}
+      </div>
+      <div className="mb-4">
+        <PushToggle />
       </div>
       {list.isPending && <PageLoading />}
       {list.isError && <PageError message={list.error.message} onRetry={() => void list.refetch()} />}

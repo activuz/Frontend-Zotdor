@@ -23,6 +23,7 @@ import { LocationPicker } from '../location/LocationPicker';
 import { useDeviceLocation } from '../location/useDeviceLocation';
 import { MapView } from '../location/MapView';
 import { ReportProblemButton } from '../feedback/ReportProblem';
+import { PushToggle } from '../notifications/PushToggle';
 
 const MENU = [
   { to: '/me/auctions', label: 'Auksionlarim', icon: Tag },
@@ -84,6 +85,8 @@ export const ProfilePage: React.FC = () => {
       </section>
 
       <MyLocation />
+
+      <PushToggle />
 
       <nav aria-label="Shaxsiy boʻlimlar">
         <ul className="bg-surface rounded-2xl border border-line divide-y divide-line">

@@ -18,7 +18,7 @@
       "destination": "https://api.zotdor.uz/api/seo/a/:id"
     },
     {
-      "source": "/((?!api/|media/|assets/|robots.txt|sitemap.xml).*)",
+      "source": "/((?!api/|media/|assets/|\\.well-known/|robots.txt|sitemap.xml).*)",
       "destination": "/index.html"
     }
   ],
@@ -49,6 +49,24 @@
         {
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; connect-src 'self' https://api.zotdor.uz; img-src 'self' data: blob: https://api.zotdor.uz https://*.nhost.run https://tile.openstreetmap.org; media-src 'self' blob: https://api.zotdor.uz https://*.nhost.run; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
         }
       ]
     },

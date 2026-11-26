@@ -164,6 +164,16 @@ LOGIN_RATE_PER_IP_PER_HOUR = 20
 # --- Landing contact requests (FR-18) ---------------------------------------
 # Staff Telegram chat (user or group id) that gets a copy of every new request. Empty = off.
 LEADS_TELEGRAM_CHAT_ID = env.get("LEADS_TELEGRAM_CHAT_ID", "")
+# Web Push (FR-20). Generate once with `manage.py generate_vapid_keys`. Empty = push is off.
+VAPID_PUBLIC_KEY = env.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = env.get("VAPID_PRIVATE_KEY", "")
+# Contact for the push services (Google, Mozilla, Apple): a URL or mailto: of the operator.
+VAPID_SUBJECT = env.get("VAPID_SUBJECT", "https://web.zotdor.uz")
+PUSH_SUBSCRIPTIONS_PER_USER = 10
+# Android app push (FR-21): the Firebase service account JSON, as one env string or a file path.
+# Never commit it. Empty = the app gets no push (in-app and Telegram still work).
+FIREBASE_SERVICE_ACCOUNT_JSON = env.get("FIREBASE_SERVICE_ACCOUNT_JSON", "")
+FIREBASE_SERVICE_ACCOUNT_FILE = env.get("FIREBASE_SERVICE_ACCOUNT_FILE", "")
 LEADS_PER_PHONE_PER_DAY = 3
 LEADS_PER_IP_PER_HOUR = 10
 # "Xatolik haqida xabar berish" (FR-19): staff chat for new reports; empty = the leads chat.

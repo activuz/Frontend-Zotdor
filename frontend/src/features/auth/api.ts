@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/http';
 import type { components } from '../../api/schema';
+import { disablePush } from '../notifications/push';
+import { forgetNativeDevice, inNativeApp } from '../notifications/native';
 
 export type Me = components['schemas']['Me'];
 export type LoginStart = components['schemas']['LoginStartResponse'];
@@ -48,7 +50,11 @@ export function useLoginStatus(requestId: string | null) {
 export function useLogout() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: () => api<void>('POST', '/auth/logout'),
+    mutationFn: async () => {
+      // A shared phone must not keep getting this account's notifications (FR-20).
+      await (inNativeApp() ? forgetNativeDevice() : disablePush()).catch(() => undefined);
+      return api<void>('POST', '/auth/logout');
+    },
     onSuccess: () => client.setQueryData(ME_KEY, null),
   });
 }

@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, Bug, LogOut, Plus, Search, User } from 'lucide-react';
 import { useLogout, useMe } from '../../features/auth/api';
 import { useUnreadCount } from '../../features/notifications/api';
+import { enablePush } from '../../features/notifications/push';
+import { inNativeApp, onNativeEvent, syncNativeDevice } from '../../features/notifications/native';
 import { ReportProblemModal } from '../../features/feedback/ReportProblem';
 import { useTaxonomy } from '../../features/reference/api';
 
@@ -116,6 +118,21 @@ export const Header: React.FC = () => {
   const [q, setQ] = useState('');
   const { data: me } = useMe();
   const unread = useUnreadCount(Boolean(me));
+  // A browser that already allowed notifications is (re)attached to whoever logs in on it.
+  // Never shows a permission dialog: that only happens from the "Yoqish" button (FR-20).
+  const meId = me?.id;
+  useEffect(() => {
+    if (!meId) return;
+    if (!inNativeApp()) {
+      void enablePush({ prompt: false }).catch(() => undefined);
+      return;
+    }
+    // Android app (FR-21): send its Firebase token now and whenever the app gets a new one.
+    void syncNativeDevice().catch(() => undefined);
+    return onNativeEvent((e) => {
+      if (e.type === 'push-token') void syncNativeDevice().catch(() => undefined);
+    });
+  }, [meId]);
   const taxonomy = useTaxonomy();
   const count = unread.data?.count ?? 0;
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same tokens as the site (docs/DESIGN.md §2, frontend/tailwind.config.js). -->
+<resources>
+    <color name="ink">#1E3A0F</color>
+    <color name="ink_muted">#4A5E3A</color>
+    <color name="brand">#3D6B2E</color>
+    <color name="brand_soft">#DCE8C8</color>
+    <color name="page">#EEF2DC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="line">#C5D4A8</color>
+</resources>

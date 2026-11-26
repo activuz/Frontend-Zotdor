@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uz.zotdor.web",
+      "sha256_cert_fingerprints": [
+        "57:FD:CE:3F:DD:D9:AD:53:CD:4E:E5:F1:47:33:F8:BB:C7:06:48:06:1F:53:9B:0F:FA:73:E7:0D:CF:9E:7D:C6"
+      ]
+    }
+  }
+]

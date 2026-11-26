@@ -147,6 +147,7 @@ export const LEGAL_DOCS: Record<LegalSlug, LegalDoc> = {
             'Auksionlar, rasm va videolar, takliflar, bitimlar, baholar va shikoyatlar.',
             'Balans harakatlari va Click orqali toʻlovlar haqidagi maʼlumot. Karta maʼlumotlari bizga kelmaydi, ularni Click qayta ishlaydi.',
             'Texnik maʼlumotlar: IP manzil, brauzer turi, kirish vaqti — xavfsizlik va suiisteʼmolning oldini olish uchun.',
+            'Brauzer bildirishnomalarini yoqsangiz: brauzeringiz bergan obuna manzili va shifrlash kalitlari — faqat sizga bildirishnoma yuborish uchun. Ularni bildirishnomalar sahifasida yoki tizimdan chiqib oʻchirishingiz mumkin.',
             'Xatolik haqida xabar yuborsangiz: yozgan matningiz, sahifa manzili, ekran oʻlchami, brauzer turi va xato matni — faqat muammoni tuzatish uchun.',
             'zotdor.uz saytidagi ariza formasi orqali yuborilgan ism, telefon, hudud va xabar.',
           ],

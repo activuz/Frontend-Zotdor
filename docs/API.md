@@ -153,6 +153,11 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | POST | `/notifications/read` | `{ids?}` — `ids` bo‘lmasa, hammasi o‘qilgan deb belgilanadi |
 | GET | `/notifications/unread-count` | |
 | POST | `/reports` | `{target_type, target_id, reason, comment?}` |
+| GET | `/push/public-key` | Web Push (FR-20) uchun VAPID ochiq kaliti: `{public_key: string | null}`. `null` — serverda push o‘chirilgan. Ochiq, sessiyasiz |
+| POST | `/me/push-subscriptions` | Shu brauzerning obunasi, `PushSubscription.toJSON()` ko‘rinishida: `{endpoint, keys: {p256dh, auth}}` → `201`. `endpoint` bo‘yicha upsert: brauzer oxirgi kirgan foydalanuvchiga o‘tadi. Foydalanuvchida ko‘pi bilan 10 ta qurilma, eskilari o‘chadi. Xato: `invalid_subscription` (400, `https` bo‘lmagan yoki bo‘sh kalit) |
+| DELETE | `/me/push-subscriptions` | `{endpoint}` → `204`. Faqat o‘z obunasi o‘chadi. Frontend uni tizimdan chiqishdan oldin chaqiradi |
+| POST | `/me/devices` | Android ilova (FR-21) Firebase tokeni: `{token, platform: "android", app_version?}` → `201`. Token bo‘yicha upsert: ilova oxirgi kirgan foydalanuvchiga o‘tadi. Ilova ichidagi sayt yuboradi. Xato: `invalid_device` (400) |
+| DELETE | `/me/devices` | `{token}` → `204`, faqat o‘z tokeni. Chiqishda chaqiriladi |
 | POST | `/bug-reports` | "Xatolik haqida xabar berish" (FR-19). Ochiq; kirgan foydalanuvchi bogʻlanadi (sessiya bilan, CSRF kerak). `{message, contact?, page_url?, viewport?, error?}` → `201 {id}`. `contact` faqat mehmondan saqlanadi. Kontekst maydonlari rad etilmaydi, kesiladi. Brauzer nomi `User-Agent` sarlavhasidan olinadi. Xatolar: `message_too_short` (10 belgidan kam), `message_too_long` (2000 dan ortiq), `rate_limited` (429: bitta foydalanuvchi yoki IP'dan soatiga 5 ta) |
 | POST | `/leads` | Landing aloqa formasi (FR-18). Ochiq, sessiyasiz va CSRF'siz. `{name, phone, role: seller|buyer|both, region?, message?, utm?}` → `201 {id}`. Xatolar: `invalid_name`, `invalid_phone`, `invalid_role`, `invalid_region`, `message_too_long`, `rate_limited` (429: bitta raqamdan sutkasiga 3 ta, bitta IP'dan soatiga 10 ta) |
 | GET | `/users/{id}` | Ommaviy profil: `display_name`, viloyat, reyting, bitimlar soni, so‘nggi baholar |

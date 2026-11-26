@@ -7,3 +7,5 @@ procrastinate[django]==3.12.0
 gunicorn==27.0.1
 django-stubs-ext==6.1.2
 Pillow==13.0.0
+pywebpush==2.5.0
+google-auth==2.63.1

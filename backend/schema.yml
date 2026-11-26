@@ -1927,6 +1927,41 @@ paths:
                 items:
                   $ref: '#/components/schemas/Deal'
           description: ''
+  /api/v1/me/devices:
+    post:
+      operationId: v1_me_devices_create
+      description: The Android app's Firebase token (FR-21), sent by the site running
+        inside the app.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          description: No response body
+    delete:
+      operationId: v1_me_devices_destroy
+      description: The Android app's Firebase token (FR-21), sent by the site running
+        inside the app.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/me/location:
     put:
       operationId: v1_me_location_update
@@ -1959,6 +1994,41 @@ paths:
       operationId: v1_me_location_destroy
       description: Device position from the browser (Geolocation API). Stored rounded
         to ~100 m.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/me/push-subscriptions:
+    post:
+      operationId: v1_me_push_subscriptions_create
+      description: This browser's push subscription, exactly as `PushSubscription.toJSON()`
+        gives it.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushSubscriptionInRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PushSubscriptionInRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PushSubscriptionInRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          description: No response body
+    delete:
+      operationId: v1_me_push_subscriptions_destroy
+      description: This browser's push subscription, exactly as `PushSubscription.toJSON()`
+        gives it.
       tags:
       - v1
       security:
@@ -2106,6 +2176,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/push/public-key:
+    get:
+      operationId: v1_push_public_key_retrieve
+      description: VAPID public key for `pushManager.subscribe`; null when push is
+        not configured.
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushPublicKey'
           description: ''
   /api/v1/reference/regions:
     get:
@@ -3139,6 +3225,20 @@ components:
       - rating_count
       - tags
       - tier
+    DeviceInRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+        app_version:
+          type: string
+          minLength: 1
+      required:
+      - platform
+      - token
     Direction:
       type: object
       properties:
@@ -4995,6 +5095,11 @@ components:
       required:
       - id
       - name
+    PlatformEnum:
+      enum:
+      - android
+      type: string
+      description: '* `android` - android'
     Point:
       type: object
       properties:
@@ -5158,6 +5263,37 @@ components:
       - member_since
       - rating_avg
       - region
+    PushPublicKey:
+      type: object
+      properties:
+        public_key:
+          type: string
+          nullable: true
+      required:
+      - public_key
+    PushSubscriptionInRequest:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          minLength: 1
+        keys:
+          $ref: '#/components/schemas/PushSubscriptionKeysRequest'
+      required:
+      - endpoint
+      - keys
+    PushSubscriptionKeysRequest:
+      type: object
+      properties:
+        p256dh:
+          type: string
+          minLength: 1
+        auth:
+          type: string
+          minLength: 1
+      required:
+      - auth
+      - p256dh
     RatingInRequest:
       type: object
       properties:

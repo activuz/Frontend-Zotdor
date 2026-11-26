@@ -32,3 +32,8 @@ dist-ssr
 
 # Deploy secrets
 .env
+
+# Firebase: service account keys are server secrets (env only); the Android client config is per-developer
+google-services.json
+*service-account*.json
+*firebase-adminsdk*.json

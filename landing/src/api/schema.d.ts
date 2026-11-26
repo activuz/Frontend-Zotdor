@@ -945,6 +945,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description The Android app's Firebase token (FR-21), sent by the site running inside the app. */
+        post: operations["v1_me_devices_create"];
+        /** @description The Android app's Firebase token (FR-21), sent by the site running inside the app. */
+        delete: operations["v1_me_devices_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/location": {
         parameters: {
             query?: never;
@@ -958,6 +976,24 @@ export interface paths {
         post?: never;
         /** @description Device position from the browser (Geolocation API). Stored rounded to ~100 m. */
         delete: operations["v1_me_location_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description This browser's push subscription, exactly as `PushSubscription.toJSON()` gives it. */
+        post: operations["v1_me_push_subscriptions_create"];
+        /** @description This browser's push subscription, exactly as `PushSubscription.toJSON()` gives it. */
+        delete: operations["v1_me_push_subscriptions_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1070,6 +1106,23 @@ export interface paths {
         put?: never;
         /** @description Local development only; returns 404 unless DEBUG and PAYMENTS_PROVIDER=fake. */
         post: operations["v1_payments_fake_complete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/push/public-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description VAPID public key for `pushManager.subscribe`; null when push is not configured. */
+        get: operations["v1_push_public_key_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1505,6 +1558,11 @@ export interface components {
             rating_count: number;
             deals_count: number;
             tags: string[];
+        };
+        DeviceInRequest: {
+            token: string;
+            platform: components["schemas"]["PlatformEnum"];
+            app_version?: string;
         };
         Direction: {
             readonly id: number;
@@ -2184,6 +2242,11 @@ export interface components {
             id: number;
             name: string;
         };
+        /**
+         * @description * `android` - android
+         * @enum {string}
+         */
+        PlatformEnum: "android";
         Point: {
             /** Format: double */
             lat: number;
@@ -2247,6 +2310,17 @@ export interface components {
             /** Format: date-time */
             member_since: string;
             region: components["schemas"]["Ref"] | null;
+        };
+        PushPublicKey: {
+            public_key: string | null;
+        };
+        PushSubscriptionInRequest: {
+            endpoint: string;
+            keys: components["schemas"]["PushSubscriptionKeysRequest"];
+        };
+        PushSubscriptionKeysRequest: {
+            p256dh: string;
+            auth: string;
         };
         RatingInRequest: {
             score: number;
@@ -4264,6 +4338,48 @@ export interface operations {
             };
         };
     };
+    v1_me_devices_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DeviceInRequest"];
+                "multipart/form-data": components["schemas"]["DeviceInRequest"];
+            };
+        };
+        responses: {
+            /** @description No response body */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_me_devices_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     v1_me_location_update: {
         parameters: {
             query?: never;
@@ -4290,6 +4406,48 @@ export interface operations {
         };
     };
     v1_me_location_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_me_push_subscriptions_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionInRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PushSubscriptionInRequest"];
+                "multipart/form-data": components["schemas"]["PushSubscriptionInRequest"];
+            };
+        };
+        responses: {
+            /** @description No response body */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_me_push_subscriptions_destroy: {
         parameters: {
             query?: never;
             header?: never;
@@ -4454,6 +4612,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Payment"];
+                };
+            };
+        };
+    };
+    v1_push_public_key_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushPublicKey"];
                 };
             };
         };

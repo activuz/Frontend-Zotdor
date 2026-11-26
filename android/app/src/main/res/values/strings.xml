@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zotdor</string>
+
+    <string name="offline_title">Internet aloqasi yoʻq</string>
+    <string name="offline_text">Sahifani ochib boʻlmadi. Internetni yoki mobil maʼlumotlarni tekshiring. Aloqa tiklanishi bilan sahifa oʻzi ochiladi.</string>
+    <string name="retry">Qayta urinish</string>
+
+    <string name="location_denied">Joylashuvga ruxsat berilmadi. Uni ilova sozlamalarida yoqishingiz mumkin.</string>
+    <string name="camera_denied">Kameraga ruxsat berilmadi. Rasm va video olish uchun ilova sozlamalarida yoqing.</string>
+    <string name="no_app_for_link">Bu havolani ochadigan ilova topilmadi.</string>
+
+    <string name="channel_bids">Takliflar</string>
+    <string name="channel_bids_desc">Taklifingizdan oʻzib ketishsa yoki taklifingiz qabul qilinsa</string>
+    <string name="channel_auctions">Auksionlar</string>
+    <string name="channel_auctions_desc">Auksion boshlansa, tugasa yoki xaridorni tanlash vaqti kelsa</string>
+    <string name="channel_deals">Bitimlar</string>
+    <string name="channel_deals_desc">Bitim tuzilsa, baholash va arizalar natijasi</string>
+    <string name="channel_wallet">Hamyon</string>
+    <string name="channel_wallet_desc">Balans toʻldirilsa, bonus va qaytarishlar</string>
+    <string name="channel_general">Umumiy</string>
+    <string name="channel_general_desc">Boshqa xabarlar</string>
+</resources>
