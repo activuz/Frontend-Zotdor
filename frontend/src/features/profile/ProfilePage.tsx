@@ -86,8 +86,6 @@ export const ProfilePage: React.FC = () => {
 
       <MyLocation />
 
-      <PushToggle />
-
       <nav aria-label="Shaxsiy boʻlimlar">
         <ul className="bg-surface rounded-2xl border border-line divide-y divide-line">
           {MENU.map(({ to, label, icon: Icon }) => (
@@ -106,6 +104,8 @@ export const ProfilePage: React.FC = () => {
           ))}
         </ul>
       </nav>
+
+      <PushToggle />
 
       {/* The footer with these links is hidden on phones. */}
       <section aria-labelledby="legal-title" className="pt-2">

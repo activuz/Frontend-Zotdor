@@ -104,7 +104,7 @@ Muqobil yo‘llar: "Hech birini tanlamayman" tugmasi auksionni `unsold` holatiga
 
 ## F8. Bildirishnomalar matrisasi
 
-Ilova ichidagi har bir bildirishnoma push xabar sifatida ham yuboriladi: foydalanuvchi shu qurilmada yoqqan bo‘lsa, kompyuter yoki telefonga sayt yopiq bo‘lsa ham keladi (FR-20). Push’ga bosilsa, bildirishnomadagi sahifa ochiladi. Yoqish tugmasi bildirishnomalar sahifasi tepasida va profilda; ruxsat oynasi faqat shu tugma bosilganda chiqadi. iPhone’da avval "Bosh ekranga qo‘shish" yo‘riqnomasi ko‘rsatiladi, bloklangan bo‘lsa brauzer sozlamalari yo‘riqnomasi.
+Ilova ichidagi har bir bildirishnoma push xabar sifatida ham yuboriladi: foydalanuvchi shu qurilmada yoqqan bo‘lsa, kompyuter yoki telefonga sayt yopiq bo‘lsa ham keladi (FR-20). Push’ga bosilsa, bildirishnomadagi sahifa ochiladi. Ruxsat yengil so‘raladi (majburiy emas): saytda kirgandan keyin bir marta pastda kichik "Bildirishnomalarni yoqasizmi?" kartochkasi ("Yoqish" / "Keyinroq"), brauzer oynasi faqat "Yoqish" bosilganda; Android ilovada birinchi ochilishda tizim oynasi bir marta. Rad etilsa yoki yopilsa qayta so‘ralmaydi — profilda menyudan keyin ixcham "Bildirishnomalar" qatori qoladi (holat va bitta tugma), bildirishnomalar sahifasi tepasida ham. iPhone’da avval "Bosh ekranga qo‘shish" yo‘riqnomasi ko‘rsatiladi, bloklangan bo‘lsa brauzer sozlamalari yo‘riqnomasi.
 
 | Hodisa | Kimga | Telegram | Ilova ichida |
 |---|---|---|---|

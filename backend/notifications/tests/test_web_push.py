@@ -43,13 +43,19 @@ def client_for(user: User | None) -> APIClient:
 # --- config and subscriptions --------------------------------------------------------------------
 
 
-def test_public_key_is_open_to_everyone() -> None:
-    assert client_for(None).get("/api/v1/push/public-key").json() == {"public_key": "BPublicKeyForTests"}
+def test_public_key_is_open_to_everyone(settings: Any) -> None:
+    settings.FIREBASE_SERVICE_ACCOUNT_JSON = '{"project_id": "zotdor-test"}'
+    body = client_for(None).get("/api/v1/push/public-key").json()
+    assert body == {"public_key": "BPublicKeyForTests", "app_push": True}
 
 
 def test_public_key_is_null_when_push_is_not_configured(settings: Any) -> None:
     settings.VAPID_PRIVATE_KEY = ""
-    assert client_for(None).get("/api/v1/push/public-key").json() == {"public_key": None}
+    settings.FIREBASE_SERVICE_ACCOUNT_JSON = ""
+    settings.FIREBASE_SERVICE_ACCOUNT_FILE = ""
+    body = client_for(None).get("/api/v1/push/public-key").json()
+    # Both flags let anyone check the production config from outside (docs/DEPLOYMENT.md).
+    assert body == {"public_key": None, "app_push": False}
 
 
 def test_subscribe_is_idempotent_per_endpoint(user: User) -> None:

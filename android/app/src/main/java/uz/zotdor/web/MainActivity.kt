@@ -217,7 +217,10 @@ class MainActivity : ComponentActivity() {
             override fun onPageFinished(view: WebView, url: String) {
                 progress.isVisible = false
                 swipe.isRefreshing = false
-                if (!offline.isVisible) ready = true
+                if (!offline.isVisible) {
+                    ready = true
+                    askNotificationsOnce()
+                }
                 CookieManager.getInstance().flush()
             }
 
@@ -337,6 +340,17 @@ class MainActivity : ComponentActivity() {
     }
 
     // --- notifications (called through WebBridge) -------------------------------------------------
+
+    /**
+     * First launch only (Android 13+): the system dialog, once the first page is on screen. After
+     * that the choice is remembered (Notifier.markAsked) and only the profile row offers it again.
+     * Android 12 and older grant notifications by default.
+     */
+    private fun askNotificationsOnce() {
+        if (Build.VERSION.SDK_INT >= 33 && Notifier.permission(this) == "default") {
+            requestNotificationPermission()
+        }
+    }
 
     fun requestNotificationPermission() {
         val state = Notifier.permission(this)

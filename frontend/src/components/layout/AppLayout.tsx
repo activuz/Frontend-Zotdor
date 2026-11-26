@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { Footer } from './Footer';
 import { OfflineBanner } from './OfflineBanner';
+import { PushPrompt } from '../../features/notifications/PushPrompt';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-page text-ink flex flex-col">
@@ -19,5 +20,6 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     </main>
     <Footer />
     <BottomNav />
+    <PushPrompt />
   </div>
 );

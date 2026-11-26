@@ -1119,7 +1119,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description VAPID public key for `pushManager.subscribe`; null when push is not configured. */
+        /**
+         * @description VAPID public key for `pushManager.subscribe` (null = browser push off) and whether the
+         *     server can push to the Android app (Firebase configured). Public: no secrets in it.
+         */
         get: operations["v1_push_public_key_retrieve"];
         put?: never;
         post?: never;
@@ -2313,6 +2316,7 @@ export interface components {
         };
         PushPublicKey: {
             public_key: string | null;
+            app_push: boolean;
         };
         PushSubscriptionInRequest: {
             endpoint: string;

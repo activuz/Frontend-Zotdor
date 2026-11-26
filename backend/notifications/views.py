@@ -69,16 +69,25 @@ class MarkReadView(APIView):
 
 
 class PushPublicKeyView(APIView):
-    """VAPID public key for `pushManager.subscribe`; null when push is not configured."""
+    """VAPID public key for `pushManager.subscribe` (null = browser push off) and whether the
+    server can push to the Android app (Firebase configured). Public: no secrets in it."""
 
     permission_classes = [AllowAny]
     authentication_classes: list[type] = []
 
     @extend_schema(
-        responses=inline_serializer("PushPublicKey", {"public_key": serializers.CharField(allow_null=True)})
+        responses=inline_serializer(
+            "PushPublicKey",
+            {"public_key": serializers.CharField(allow_null=True), "app_push": serializers.BooleanField()},
+        )
     )
     def get(self, request: Request) -> Response:
-        return Response({"public_key": settings.VAPID_PUBLIC_KEY if services.push_enabled() else None})
+        return Response(
+            {
+                "public_key": settings.VAPID_PUBLIC_KEY if services.push_enabled() else None,
+                "app_push": services.fcm_enabled(),
+            }
+        )
 
 
 class PushSubscriptionView(APIView):

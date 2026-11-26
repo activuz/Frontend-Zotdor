@@ -153,7 +153,7 @@ Xato kodlari: `auction_not_live` (409), `bid_too_low`, `bid_too_high`, `own_auct
 | POST | `/notifications/read` | `{ids?}` — `ids` bo‘lmasa, hammasi o‘qilgan deb belgilanadi |
 | GET | `/notifications/unread-count` | |
 | POST | `/reports` | `{target_type, target_id, reason, comment?}` |
-| GET | `/push/public-key` | Web Push (FR-20) uchun VAPID ochiq kaliti: `{public_key: string | null}`. `null` — serverda push o‘chirilgan. Ochiq, sessiyasiz |
+| GET | `/push/public-key` | `{public_key: string | null, app_push: bool}`. `public_key` — Web Push (FR-20) uchun VAPID ochiq kaliti, `null` bo‘lsa brauzer push’i o‘chiq; `app_push` — serverda Firebase kaliti bor (Android ilova push’i, FR-21). Ochiq, sessiyasiz: production sozlamasini tekshirish uchun ham |
 | POST | `/me/push-subscriptions` | Shu brauzerning obunasi, `PushSubscription.toJSON()` ko‘rinishida: `{endpoint, keys: {p256dh, auth}}` → `201`. `endpoint` bo‘yicha upsert: brauzer oxirgi kirgan foydalanuvchiga o‘tadi. Foydalanuvchida ko‘pi bilan 10 ta qurilma, eskilari o‘chadi. Xato: `invalid_subscription` (400, `https` bo‘lmagan yoki bo‘sh kalit) |
 | DELETE | `/me/push-subscriptions` | `{endpoint}` → `204`. Faqat o‘z obunasi o‘chadi. Frontend uni tizimdan chiqishdan oldin chaqiradi |
 | POST | `/me/devices` | Android ilova (FR-21) Firebase tokeni: `{token, platform: "android", app_version?}` → `201`. Token bo‘yicha upsert: ilova oxirgi kirgan foydalanuvchiga o‘tadi. Ilova ichidagi sayt yuboradi. Xato: `invalid_device` (400) |

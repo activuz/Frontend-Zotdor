@@ -1,155 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BellOff, BellRing } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Alert } from '../../components/ui/Field';
-import { disablePush, enablePush, pushState, type PushState } from './push';
-import { inNativeApp, nativeBridge, onNativeEvent, syncNativeDevice } from './native';
+import { usePush } from './usePush';
 
-const TEXT: Partial<Record<PushState, string>> = {
-  on: 'Taklifingizdan oʻzib ketishsa, auksion boshlansa yoki bitim tuzilsa, sayt yopiq boʻlsa ham xabar keladi.',
-  off: 'Taklifingizdan oʻzib ketishsa, auksion boshlansa yoki bitim tuzilsa, sayt yopiq boʻlsa ham darhol xabar oling.',
-  'ios-install':
-    'iPhone yoki iPadʼda bildirishnoma olish uchun saytni bosh ekranga qoʻshing: Safariʼda “Ulashish” tugmasi → “Bosh ekranga qoʻshish”. Keyin saytni bosh ekrandagi belgidan ochib, shu yerda yoqing.',
-  denied:
-    'Bildirishnomalar brauzer sozlamalarida bloklangan. Manzil qatoridagi qulf belgisini bosing, “Bildirishnomalar” bandida “Ruxsat berish”ni tanlang va sahifani yangilang.',
-};
+const HINT_IOS =
+  'iPhone yoki iPadʼda: Safariʼda “Ulashish” → “Bosh ekranga qoʻshish”, keyin saytni bosh ekrandagi belgidan ochib yoqing.';
+const HINT_BLOCKED =
+  'Manzil qatoridagi qulf belgisini bosing, “Bildirishnomalar”da “Ruxsat berish”ni tanlang va sahifani yangilang.';
+
+const actionClass =
+  'shrink-0 min-h-touch px-4 rounded-xl text-[15px] font-semibold disabled:opacity-50';
 
 /**
- * "Telefon va kompyuterga bildirishnoma" (FR-20): turns Web Push on or off for this browser.
- * Hidden when the server has push switched off or the browser cannot do it at all.
+ * Compact "Bildirishnomalar" row (FR-20, FR-21), like the location row: status on the left,
+ * one action on the right. Hidden where the server or the browser cannot push at all.
  */
-export const PushToggle: React.FC = () => (inNativeApp() ? <NativePushToggle /> : <WebPushToggle />);
-
-const NATIVE_DENIED =
-  'Bildirishnomalar telefon sozlamalarida oʻchirilgan. “Sozlamalarni ochish”ni bosing va Zotdor uchun bildirishnomalarga ruxsat bering.';
-
-/** Inside the Android app: the permission is the phone's, notifications come through Firebase (FR-21). */
-const NativePushToggle: React.FC = () => {
-  const app = nativeBridge();
-  const read = (): PushState => {
-    const p = app?.notificationPermission();
-    return p === 'granted' ? 'on' : p === 'denied' ? 'denied' : 'off';
-  };
-  const [state, setState] = useState<PushState>(read);
-
-  useEffect(
-    () =>
-      onNativeEvent((e) => {
-        if (e.type !== 'notification-permission') return;
-        setState(e.value === 'granted' ? 'on' : e.value === 'denied' ? 'denied' : 'off');
-        if (e.value === 'granted') void syncNativeDevice().catch(() => undefined);
-      }),
-    [],
-  );
-
-  if (!app) return null;
-  const on = state === 'on';
-  return (
-    <section
-      aria-labelledby="push-title"
-      className={`rounded-2xl border p-4 space-y-3 ${on ? 'border-line bg-surface' : 'border-brand bg-brand-soft'}`}
-    >
-      <div className="flex items-start gap-3">
-        {on ? (
-          <BellRing className="mt-0.5 w-5 h-5 shrink-0 text-brand" aria-hidden="true" />
-        ) : (
-          <BellOff className="mt-0.5 w-5 h-5 shrink-0 text-ink-muted" aria-hidden="true" />
-        )}
-        <div>
-          <h2 id="push-title" className="text-[17px] font-semibold text-ink">
-            {on ? 'Bildirishnomalar yoqilgan' : 'Bildirishnomalarni yoqing'}
-          </h2>
-          <p className="text-[15px] text-ink">{state === 'denied' ? NATIVE_DENIED : TEXT[state]}</p>
-        </div>
-      </div>
-      {state === 'off' && (
-        <Button variant="primary" className="w-full sm:w-auto" onClick={() => app.requestNotificationPermission()}>
-          <BellRing className="w-4 h-4" aria-hidden="true" />
-          Bildirishnomalarni yoqish
-        </Button>
-      )}
-      {state !== 'off' && (
-        <Button variant="ghost" onClick={() => app.openNotificationSettings()}>
-          {on ? 'Bildirishnoma sozlamalari' : 'Sozlamalarni ochish'}
-        </Button>
-      )}
-    </section>
-  );
-};
-
-const WebPushToggle: React.FC = () => {
-  const [state, setState] = useState<PushState>('loading');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let alive = true;
-    pushState()
-      .then((s) => alive && setState(s))
-      .catch(() => alive && setState('unconfigured'));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const run = async (action: () => Promise<PushState>) => {
-    setBusy(true);
-    setError('');
-    try {
-      setState(await action());
-    } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : 'Bildirishnomalarni yoqib boʻlmadi. Qayta urinib koʻring.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
+export const PushToggle: React.FC = () => {
+  const { state, busy, error, native, enable, disable, openSettings } = usePush();
   if (state === 'loading' || state === 'unconfigured' || state === 'unsupported') return null;
+
   const on = state === 'on';
+  const status =
+    state === 'on'
+      ? 'Yoqilgan — sayt yopiq boʻlsa ham xabar keladi'
+      : state === 'denied'
+        ? native
+          ? 'Telefon sozlamalarida oʻchirilgan'
+          : 'Brauzerda bloklangan'
+        : state === 'ios-install'
+          ? 'iPhoneʼda avval bosh ekranga qoʻshing'
+          : 'Oʻchirilgan';
+
+  let action: React.ReactNode = null;
+  if (state === 'off') {
+    action = (
+      <button type="button" onClick={enable} disabled={busy} className={`${actionClass} bg-ink text-surface`}>
+        {busy ? 'Yoqilmoqda…' : 'Yoqish'}
+      </button>
+    );
+  } else if (on || (state === 'denied' && native)) {
+    action = (
+      <button
+        type="button"
+        onClick={native ? openSettings : disable}
+        disabled={busy}
+        className={`${actionClass} text-ink-muted hover:bg-brand-soft`}
+      >
+        {native ? 'Sozlamalar' : busy ? 'Oʻchirilmoqda…' : 'Oʻchirish'}
+      </button>
+    );
+  }
+
+  const hint = state === 'ios-install' ? HINT_IOS : state === 'denied' && !native ? HINT_BLOCKED : '';
 
   return (
     <section
-      aria-labelledby="push-title"
-      className={`rounded-2xl border p-4 space-y-3 ${on ? 'border-line bg-surface' : 'border-brand bg-brand-soft'}`}
+      aria-label="Bildirishnomalar"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-line bg-surface px-4 py-2"
     >
-      <div className="flex items-start gap-3">
-        {on ? (
-          <BellRing className="mt-0.5 w-5 h-5 shrink-0 text-brand" aria-hidden="true" />
-        ) : (
-          <BellOff className="mt-0.5 w-5 h-5 shrink-0 text-ink-muted" aria-hidden="true" />
-        )}
-        <div>
-          <h2 id="push-title" className="text-[17px] font-semibold text-ink">
-            {on ? 'Bu qurilmada bildirishnomalar yoqilgan' : 'Telefon va kompyuterga bildirishnoma'}
-          </h2>
-          <p className="text-[15px] text-ink">{TEXT[state]}</p>
-        </div>
-      </div>
-      {error && <Alert>{error}</Alert>}
-      {state === 'off' && (
-        <Button
-          variant="primary"
-          className="w-full sm:w-auto"
-          disabled={busy}
-          onClick={() => void run(() => enablePush({ prompt: true }))}
-        >
-          <BellRing className="w-4 h-4" aria-hidden="true" />
-          {busy ? 'Yoqilmoqda…' : 'Bildirishnomalarni yoqish'}
-        </Button>
+      {on ? (
+        <BellRing className="w-5 h-5 shrink-0 text-brand" aria-hidden="true" />
+      ) : (
+        <BellOff className="w-5 h-5 shrink-0 text-ink-muted" aria-hidden="true" />
       )}
-      {on && (
-        <Button
-          variant="ghost"
-          disabled={busy}
-          onClick={() =>
-            void run(async () => {
-              await disablePush();
-              return 'off';
-            })
-          }
-        >
-          {busy ? 'Oʻchirilmoqda…' : 'Bu qurilmada oʻchirish'}
-        </Button>
+      <div className="min-w-0 flex-1 py-1">
+        <p className="text-[15px] font-semibold text-ink">Bildirishnomalar</p>
+        <p className="text-[13px] text-ink-muted">{status}</p>
+      </div>
+      {action}
+      {hint && <p className="w-full pb-1 text-[13px] text-ink-muted">{hint}</p>}
+      {error && (
+        <p role="alert" className="w-full pb-1 text-[13px] text-danger">
+          {error}
+        </p>
       )}
     </section>
   );
