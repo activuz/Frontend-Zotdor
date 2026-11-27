@@ -42,10 +42,15 @@ ngrok bitta subdomen = bitta hostname. Bizga faqat API kerak, shuning uchun bitt
 
 ## 2. Birinchi marta tayyorlash
 
-1. PostgreSQL 17+ (shu kompyuterda 19 o‘rnatilgan) va lokal baza:
+1. PostgreSQL 17+ (shu kompyuterda 19 o‘rnatilgan) va lokal baza. `postgres` paroli o‘rnatishda berilgan. `<parol>` — `selfhost\.env` dagi `DATABASE_URL` bilan bir xil:
    ```powershell
-   & "C:\Program Files\PostgreSQL\19\bin\psql.exe" -U postgres -c "CREATE ROLE zotdor LOGIN PASSWORD '<parol>' CREATEDB;" -c "CREATE DATABASE zotdor OWNER zotdor;"
+   $psql = "C:\Program Files\PostgreSQL\19\bin\psql.exe"
+   # Foydalanuvchi bo‘lmasa yaratadi, bo‘lsa parolini yangilaydi
+   & $psql -h localhost -U postgres -c "DO `$`$BEGIN IF EXISTS (SELECT FROM pg_roles WHERE rolname='zotdor') THEN ALTER ROLE zotdor LOGIN CREATEDB PASSWORD '<parol>'; ELSE CREATE ROLE zotdor LOGIN CREATEDB PASSWORD '<parol>'; END IF; END`$`$;"
+   # Baza (allaqachon bo‘lsa, "already exists" xatosi chiqadi — bu normal)
+   & $psql -h localhost -U postgres -c "CREATE DATABASE zotdor OWNER zotdor;"
    ```
+   `start.ps1` ishga tushishdan oldin ulanishni tekshiradi. Kirib bo‘lmasa, shu bandga yo‘naltiradi.
 2. `backend\.venv` (AGENTS.md → Buyruqlar), `ffmpeg`/`ffprobe` PATH'da.
 3. ngrok: `winget install ngrok.ngrok`, keyin `ngrok config add-authtoken <token>` (dashboard.ngrok.com). 1-variantda ngrok dashboard → Domains → `api.zotdor.uz` qo‘shing va ko‘rsatilgan CNAME'ni DNS'ga yozing (Render o‘rniga).
 4. `Copy-Item selfhost\.env.example selfhost\.env` va to‘ldiring. Qiymatlarni Render → Environment'dan oling. `DJANGO_SECRET_KEY` Render'dagi bilan bir xil bo‘lsa, foydalanuvchilar qayta kirmaydi. `TELEGRAM_WEBHOOK_SECRET` ham bir xil bo‘lishi kerak.

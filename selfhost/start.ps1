@@ -23,6 +23,13 @@ if (-not (Test-Path $Python)) {
 }
 $port = if ($env:PORT) { $env:PORT } else { '8000' }
 
+Write-Step 'Lokal bazaga ulanish'
+& (Get-PgTool 'psql') -X -A -t -q -d $dbUrl -c 'select 1;' 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Stop-WithError ("DATABASE_URL bilan lokal bazaga kirib bo'lmadi: foydalanuvchi yoki baza yo'q, yoki parol mos emas. " +
+        "Yaratish yoki parolni tiklash: docs/SELFHOST.md, 2-bo'lim, 1-band.")
+}
+
 Write-Step 'Paketlar (waitress bilan)'
 Invoke-Tool $Python @('-m', 'pip', 'install', '-q', '-r', (Join-Path $SelfHost 'requirements.txt'))
 
