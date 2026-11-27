@@ -2,6 +2,8 @@ import { api, ApiError } from '../../api/http';
 import type { components } from '../../api/schema';
 import { inNativeApp } from './native';
 
+const SW_URL = inNativeApp() ? '/sw.js?app=1' : '/sw.js';
+
 type PushPublicKey = components['schemas']['PushPublicKey'];
 type PushSubscriptionIn = components['schemas']['PushSubscriptionInRequest'];
 
@@ -37,19 +39,21 @@ export function pushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 }
 
-/** Called once at start-up: the worker also serves the offline page. */
+/**
+ * Called once at start-up: the worker serves push, the cached app shell and the offline page.
+ * The Android app registers it too (for the shell); `?app=1` tells the worker to leave failed
+ * loads to the app's own offline screen. Push in the app goes through Firebase (FR-21).
+ */
 export function registerServiceWorker(): void {
-  // In the Android app the native shell shows its own offline screen and push (FR-21); a
-  // worker answering failed loads with offline.html would hide those errors from it.
-  if (!('serviceWorker' in navigator) || inNativeApp()) return;
+  if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    navigator.serviceWorker.register(SW_URL).catch(() => undefined);
   });
 }
 
 async function registration(): Promise<ServiceWorkerRegistration> {
   const existing = await navigator.serviceWorker.getRegistration('/');
-  return existing ?? navigator.serviceWorker.register('/sw.js');
+  return existing ?? navigator.serviceWorker.register(SW_URL);
 }
 
 let keyPromise: Promise<string | null> | null = null;

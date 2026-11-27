@@ -57,7 +57,11 @@ export function useLogout() {
       await (inNativeApp() ? forgetNativeDevice() : disablePush()).catch(() => undefined);
       return api<void>('POST', '/auth/logout');
     },
-    onSuccess: () => client.setQueryData(ME_KEY, null),
+    onSuccess: () => {
+      client.setQueryData(ME_KEY, null);
+      // The feed carries this account's distances and watch marks; the device cache must not keep them.
+      client.removeQueries({ queryKey: ['feed'] });
+    },
   });
 }
 

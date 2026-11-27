@@ -13,6 +13,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 - `panel/` — moderator va admin paneli (port 3001): navbatlar, foydalanuvchilar, sozlamalar, toifalar, audit. Tiplar o‘sha `backend/schema.yml` dan (`npm run api:types`); panel javoblari `panel_api/schemas.py` da tasvirlangan.
 - Production: sayt va panel — Vercel (`web.zotdor.uz`, `panel.zotdor.uz`), API va worker — Render (`api.zotdor.uz`, `render.yaml`), baza va fayllar — Nhost. Qo‘llanma: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Fayllar `auctions/storage.py` orqali saqlanadi (`STORAGE_BACKEND=local|nhost`).
 - `landing/` — `zotdor.uz` reklama sahifasi (Next.js 14, FR-18): platformani tanishtiradi, API'dan sozlamalar, hududlar va ochiq auksionlarni oladi, aloqa formasi `POST /api/v1/leads` ga yuboradi (`leads` app, panelda "Sayt arizalari"). Standart yozuv — oʻzbek lotin, kirill avtomatik transliteratsiya. Tokenlar `frontend/` bilan bir xil. `npm run dev` (port 3002), `npm run api:types`.
+- `selfhost/` — B reja (2026-11-27): API (waitress) va worker shu Windows kompyuterda, ngrok orqali tashqariga; sayt va panel Vercel'da qoladi. `selfhost/.env` o‘qiladi (`ZOTDOR_ENV_FILE`), `backend/.env` emas. Qo‘llanma: [docs/SELFHOST.md](docs/SELFHOST.md).
 - `deploy/` — muqobil variant: bitta VPS uchun docker compose, nginx, zaxira nusxa va tiklash ([deploy/README.md](deploy/README.md)). Docker faqat Render image'i va shu yerda ishlatiladi.
 - Ish boshlashdan oldin [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dagi joriy bosqichni va undagi belgilanmagan vazifalarni tekshiring.
 
@@ -30,6 +31,7 @@ Chorva mollarini auksion orqali sotish platformasi. Sotuvchi narx va vaqt belgil
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | bosqichlar va bog‘liqliklar |
 | [docs/SEO.md](docs/SEO.md) | sarlavhalar, Open Graph, sitemap, qidiruv tizimlariga qo‘shish |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | production: Vercel, Render, Nhost sozlash |
+| [docs/SELFHOST.md](docs/SELFHOST.md) | B reja: API va worker o‘z kompyuterda, ngrok, Nhost ↔ lokal baza ko‘chirish |
 | [docs/ANDROID.md](docs/ANDROID.md) | Android ilova (`android/`): WebView qobiq, FCM, ruxsatlar, chiqarish |
 
 **Hujjat va kod bir-biriga mos bo‘lishi shart.** Modelni, endpointni yoki biznes qoidani o‘zgartirsangiz, tegishli hujjatni o‘sha o‘zgarish ichida yangilang. Biznes qoidasini o‘zgartirish kerak bo‘lsa, avval mahsulot egasidan so‘rang. Uni o‘zingiz hal qilmang.

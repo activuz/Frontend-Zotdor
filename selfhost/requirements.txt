@@ -1,0 +1,4 @@
+# Self-hosted API on Windows (docs/SELFHOST.md). gunicorn does not run on Windows, so the
+# API is served by waitress (pure Python WSGI server) instead.
+-r ../backend/requirements.txt
+waitress==3.0.2

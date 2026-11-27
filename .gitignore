@@ -37,3 +37,8 @@ dist-ssr
 google-services.json
 *service-account*.json
 *firebase-adminsdk*.json
+
+# Self-hosted API (docs/SELFHOST.md)
+selfhost/logs/
+selfhost/backups/
+selfhost/run/

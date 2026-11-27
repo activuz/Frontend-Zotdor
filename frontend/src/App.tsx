@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { PERSIST_BUSTER, PERSIST_MAX_AGE, persister, shouldPersist } from './api/persist';
+import { NativeNavigation } from './features/notifications/NativeNavigation';
 import { AppLayout } from './components/layout/AppLayout';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { NotFound } from './components/layout/NotFound';
@@ -26,6 +29,8 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      // Restored answers must outlive the default 5 minutes, or they are dropped before use.
+      gcTime: PERSIST_MAX_AGE,
     },
   },
 });
@@ -34,9 +39,18 @@ const auth = (page: React.ReactNode) => <RequireAuth>{page}</RequireAuth>;
 
 /** Routes from docs/USER_FLOWS.md. */
 export const App: React.FC = () => (
-  <QueryClientProvider client={queryClient}>
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{
+      persister,
+      maxAge: PERSIST_MAX_AGE,
+      buster: PERSIST_BUSTER,
+      dehydrateOptions: { shouldDehydrateQuery: shouldPersist },
+    }}
+  >
     <BrowserRouter>
       <RouteSeo />
+      <NativeNavigation />
       <AppLayout>
         <ErrorBoundary>
           <Routes>
@@ -71,7 +85,7 @@ export const App: React.FC = () => (
         </ErrorBoundary>
       </AppLayout>
     </BrowserRouter>
-  </QueryClientProvider>
+  </PersistQueryClientProvider>
 );
 
 export default App;

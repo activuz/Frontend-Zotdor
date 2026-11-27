@@ -13,6 +13,11 @@ export type LeadIn = S["LeadInRequest"];
 export type LeadCreated = S["LeadCreated"];
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://api.zotdor.uz").replace(/\/$/, "");
+
+/** A free ngrok domain shows browsers a warning page unless this header is sent (docs/SELFHOST.md). */
+const EXTRA_HEADERS: Record<string, string> = /\.ngrok(-free)?\.(app|dev|io)(\/|$)/.test(API_URL)
+  ? { "ngrok-skip-browser-warning": "1" }
+  : {};
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://web.zotdor.uz").replace(/\/$/, "");
 
 /** Public address of this landing (canonical URL, sitemap, robots). */
@@ -41,7 +46,7 @@ async function parse<T>(response: Response): Promise<T> {
 /** Server-side GET, cached by Next and refreshed every `revalidate` seconds. */
 export async function apiGet<T>(path: string, revalidate = 60): Promise<T> {
   const response = await fetch(`${API_URL}/api/v1${path}`, {
-    headers: { Accept: "application/json" },
+    headers: { Accept: "application/json", ...EXTRA_HEADERS },
     next: { revalidate },
   });
   return parse<T>(response);
@@ -51,7 +56,7 @@ export async function apiGet<T>(path: string, revalidate = 60): Promise<T> {
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_URL}/api/v1${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "application/json", ...EXTRA_HEADERS },
     body: JSON.stringify(body),
     credentials: "omit",
   });

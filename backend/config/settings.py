@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import django_stubs_ext
+from corsheaders.defaults import default_headers as default_cors_headers
 from django.core.exceptions import ImproperlyConfigured
 
 from config import env
@@ -13,7 +15,9 @@ from config import env
 django_stubs_ext.monkeypatch()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-env.load_dotenv(BASE_DIR / ".env")
+# ZOTDOR_ENV_FILE: the self-hosted API reads selfhost/.env instead (docs/SELFHOST.md), so a
+# developer backend/.env that points at production is never mixed in.
+env.load_dotenv(Path(os.environ.get("ZOTDOR_ENV_FILE") or BASE_DIR / ".env"))
 
 DEBUG = env.get_bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env.get("DJANGO_SECRET_KEY")
@@ -111,9 +115,16 @@ if STORAGE_BACKEND == "nhost" and not (NHOST_STORAGE_URL and NHOST_ADMIN_SECRET)
 
 # --- Security -------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
+# Lax while the site and the API share zotdor.uz. "None" only when the API runs on a foreign
+# host such as a free ngrok domain (docs/SELFHOST.md): the cookies then become third-party.
+COOKIE_SAMESITE = env.get("COOKIE_SAMESITE", "Lax")
+if COOKIE_SAMESITE not in ("Lax", "Strict", "None"):
+    raise ImproperlyConfigured("COOKIE_SAMESITE must be Lax, Strict or None")
+if COOKIE_SAMESITE == "None" and DEBUG:
+    raise ImproperlyConfigured("COOKIE_SAMESITE=None needs DJANGO_DEBUG=false (secure cookies)")
+SESSION_COOKIE_SAMESITE = COOKIE_SAMESITE
 SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = COOKIE_SAMESITE
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_TRUSTED_ORIGINS = env.get_list("CSRF_TRUSTED_ORIGINS")
 # Split hosting (web.zotdor.uz → api.zotdor.uz): the SPA must read the CSRF cookie set by the
@@ -130,6 +141,9 @@ if not DEBUG:
 
 CORS_ALLOWED_ORIGINS = env.get_list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
+# The sites send this header only when the API is on a free ngrok domain, to skip its
+# browser warning page (docs/SELFHOST.md).
+CORS_ALLOW_HEADERS = (*default_cors_headers, "ngrok-skip-browser-warning")
 
 # --- API ------------------------------------------------------------------
 REST_FRAMEWORK = {

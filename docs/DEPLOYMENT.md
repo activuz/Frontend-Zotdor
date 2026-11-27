@@ -18,6 +18,8 @@ brauzer ──► web.zotdor.uz / panel.zotdor.uz (Vercel, statik)
    └──► *.storage.*.nhost.run (rasm va videoni to‘g‘ridan-to‘g‘ri o‘qish)
 ```
 
+> Render ishlamay qolsa: API va worker'ni o‘z kompyuterda ishga tushirish (B reja) — [SELFHOST.md](SELFHOST.md).
+
 **Nima uchun hammasi `zotdor.uz` ostida bo‘lishi shart:** sessiya cookie'si `api.zotdor.uz` da turadi. `web.zotdor.uz` va `api.zotdor.uz` bitta sayt (same-site) hisoblanadi, shuning uchun brauzer cookie'ni yuboradi. `*.vercel.app` yoki `*.onrender.com` manzillarida login **ishlamaydi** — faqat custom domenlar orqali sinang.
 
 Sozlash tartibi: **1. Nhost → 2. Render → 3. Vercel (ikki loyiha) → 4. DNS → 5. Telegram → 6. Click → 7. Birinchi admin → 8. Tekshirish.**

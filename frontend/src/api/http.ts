@@ -7,6 +7,22 @@
 
 export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
 
+/**
+ * A free ngrok domain answers browsers with a warning page unless this header is sent
+ * (docs/SELFHOST.md). Only added then: it makes every request need a CORS preflight.
+ */
+const EXTRA_HEADERS: Record<string, string> = /\.ngrok(-free)?\.(app|dev|io)$/.test(apiHost(API_BASE))
+  ? { 'ngrok-skip-browser-warning': '1' }
+  : {};
+
+function apiHost(base: string): string {
+  try {
+    return new URL(base).hostname;
+  } catch {
+    return '';
+  }
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -37,7 +53,7 @@ let csrfToken: Promise<string> | null = null;
  * the API's cookie. The cookie is still sent by the browser and checked by Django.
  */
 function getCsrfToken(): Promise<string> {
-  csrfToken ??= fetch(`${API_BASE}/api/v1/auth/csrf`, { credentials: 'include' })
+  csrfToken ??= fetch(`${API_BASE}/api/v1/auth/csrf`, { credentials: 'include', headers: EXTRA_HEADERS })
     .then((r) => (r.ok ? (r.json() as Promise<{ csrf_token?: string }>) : ({} as { csrf_token?: string })))
     .then((d) => d.csrf_token ?? readCookie('csrftoken') ?? '')
     .catch(() => {
@@ -67,7 +83,7 @@ export async function api<T>(method: Method, path: string, body?: unknown): Prom
 }
 
 async function send<T>(method: Method, path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' };
+  const headers: Record<string, string> = { Accept: 'application/json', ...EXTRA_HEADERS };
   if (method !== 'GET') {
     headers['X-CSRFToken'] = await getCsrfToken();
   }

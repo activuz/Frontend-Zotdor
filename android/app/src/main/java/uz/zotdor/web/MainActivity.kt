@@ -36,6 +36,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import org.json.JSONObject
 
 /**
  * The whole app: web.zotdor.uz in a WebView, with native parts around it (docs/ANDROID.md):
@@ -126,7 +127,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.hasExtra(EXTRA_URL) || intent.data != null) load(startUrl(intent))
+        if (intent.hasExtra(EXTRA_URL) || intent.data != null) open(startUrl(intent))
+    }
+
+    /**
+     * A notification or link while the site is already open: let the SPA switch pages in place
+     * (window.zotdorNavigate, NativeNavigation.tsx) instead of reloading the whole site. Falls
+     * back to a full load when the page is not ours, not ready, or is an older site build.
+     */
+    private fun open(url: String) {
+        val uri = Uri.parse(url)
+        val current = web.url?.let(Uri::parse)
+        if (!ready || offline.isVisible || current == null || !isOwn(current) || !isOwn(uri)) {
+            load(url)
+            return
+        }
+        val path = (uri.encodedPath ?: "/") + (uri.encodedQuery?.let { "?$it" } ?: "") +
+            (uri.encodedFragment?.let { "#$it" } ?: "")
+        val script = "(function(){try{return !!(window.zotdorNavigate && window.zotdorNavigate(" +
+            JSONObject.quote(path) + "));}catch(e){return false;}})()"
+        web.evaluateJavascript(script) { result -> if (result != "true") load(url) }
     }
 
     override fun onStart() {

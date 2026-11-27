@@ -10,6 +10,10 @@ if (process.env.VERCEL && !process.env.VITE_API_URL) {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    // Busts the on-device query cache (src/api/persist.ts) on every deploy.
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev'),
+  },
   plugins: [react()],
   resolve: {
     alias: {

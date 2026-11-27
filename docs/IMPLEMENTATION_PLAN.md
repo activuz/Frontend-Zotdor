@@ -102,6 +102,8 @@ Belgilar: ⛔ — tashqi omilga bog‘liq (mahsulot egasidan ma'lumot yoki shart
 - [ ] Xavfsizlik ko‘rigi (OWASP ASVS L1 ro‘yxati bo‘yicha)
 - [ ] Yuklama sinovi: bitta auksionga 50 ta bir vaqtdagi xaridor
 - [x] Production sxemasi tanlandi (2026-11-23): Vercel + Render + Nhost. Kod moslandi (`auctions/storage.py`, `render.yaml`, `vercel.json`), qo‘llanma: [DEPLOYMENT.md](DEPLOYMENT.md). VPS varianti `deploy/` da saqlangan
+- [x] Ilova va sayt tezligi (2026-11-27, D-13): service worker'da sayt qobig‘i, qurilmada lenta va ma'lumotnomalar keshi, bildirishnoma bosilganda sahifa qayta yuklanmaydi
+- [x] B reja: API va worker o‘z kompyuterda + ngrok (2026-11-27): `selfhost/`, Nhost ↔ lokal baza ko‘chirish skriptlari, qo‘llanma [SELFHOST.md](SELFHOST.md). Lokal baza bilan to‘liq sinov hali o‘tkazilmagan
 - [ ] Staging'da yopiq beta, keyin production ⛔ Nhost Pro, Render Starter, DNS yozuvlari va yangi bot tokeni kerak
 
 ## Mahsulot egasidan kerakli narsalar (⛔ ro‘yxati)
