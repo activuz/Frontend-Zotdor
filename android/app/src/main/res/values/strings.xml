@@ -20,4 +20,6 @@
     <string name="channel_wallet_desc">Balans toʻldirilsa, bonus va qaytarishlar</string>
     <string name="channel_general">Umumiy</string>
     <string name="channel_general_desc">Boshqa xabarlar</string>
+    <string name="channel_uploads">Fayllarni yuborish</string>
+    <string name="channel_uploads_desc">Auksion rasmlari va videolari fonda yuborilayotgani</string>
 </resources>

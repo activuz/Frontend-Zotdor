@@ -17,6 +17,15 @@ interface ZotdorAndroidBridge {
   requestNotificationPermission(): void;
   openNotificationSettings(): void;
   appVersion(): string;
+  // Background uploads (features/sell/uploads.ts, android UploadWorker). Optional: older apps lack them.
+  uploadBegin?(json: string): boolean;
+  uploadAppend?(id: string, base64: string): boolean;
+  uploadCommit?(id: string): boolean;
+  uploads?(auctionId: string): string;
+  uploadRetry?(id: string, csrf: string): void;
+  uploadRemove?(id: string): void;
+  submitWhenReady?(json: string): boolean;
+  pendingSubmit?(auctionId: string): boolean;
 }
 
 declare global {
@@ -27,7 +36,9 @@ declare global {
 
 export type NativeEvent =
   | { type: 'push-token'; token: string }
-  | { type: 'notification-permission'; value: 'granted' | 'denied' | 'default' };
+  | { type: 'notification-permission'; value: 'granted' | 'denied' | 'default' }
+  | { type: 'uploads'; auctionId: string }
+  | { type: 'submit-done'; auctionId: string; outcome: string };
 
 /** The app also marks its user agent, so this works before the bridge object is attached. */
 export function inNativeApp(): boolean {

@@ -48,5 +48,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    // Background uploads of the sell wizard that survive closing the app (UploadWorker).
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("com.google.firebase:firebase-messaging:24.1.0")
 }

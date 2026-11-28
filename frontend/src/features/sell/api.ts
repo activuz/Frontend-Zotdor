@@ -42,28 +42,6 @@ export function useOpenCaptureSession(auctionId: string) {
   });
 }
 
-export interface UploadInput {
-  file: File;
-  kind: 'photo' | 'video';
-  sessionId: string;
-  meta: Record<string, string | number>;
-}
-
-export function useUploadMedia(auctionId: string) {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: ({ file, kind, sessionId, meta }: UploadInput) => {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('kind', kind);
-      form.append('capture_session_id', sessionId);
-      form.append('client_meta', JSON.stringify(meta));
-      return api<Media>('POST', `/auctions/${auctionId}/media`, form);
-    },
-    onSuccess: () => void client.invalidateQueries({ queryKey: ['auction', auctionId] }),
-  });
-}
-
 export function useDeleteMedia(auctionId: string) {
   const client = useQueryClient();
   return useMutation({

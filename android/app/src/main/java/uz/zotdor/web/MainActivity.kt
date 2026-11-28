@@ -117,6 +117,13 @@ class MainActivity : ComponentActivity() {
         }
 
         PushStore.listener = { token -> bridge.emitPushToken(token) }
+        UploadEvents.listener = { event -> bridge.emit(event) }
+        // Files left by an earlier run (no network then, or the phone restarted): send them.
+        if (UploadStore.all(this).any { it.state == UploadStore.QUEUED || it.state == UploadStore.UPLOADING } ||
+            UploadStore.submits(this).isNotEmpty()
+        ) {
+            UploadStore.schedule(this)
+        }
 
         if (savedInstanceState != null && web.restoreState(savedInstanceState) != null) {
             ready = true
@@ -179,6 +186,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         PushStore.listener = null
+        UploadEvents.listener = null
         web.destroy()
         super.onDestroy()
     }

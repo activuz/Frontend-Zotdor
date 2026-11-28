@@ -32,8 +32,18 @@ Ilova — `web.zotdor.uz` ni ochadigan native qobiq (Kotlin). Sayt WebView ichid
 | `requestNotificationPermission()` | Android ruxsat oynasi yoki sozlamalar |
 | `openNotificationSettings()` | ilovaning bildirishnoma sozlamalari |
 | `appVersion()` | `1.0.0` |
+| `uploadBegin(json)`, `uploadAppend(id, base64)`, `uploadCommit(id)` | sotish ustasining faylini ilovaga bo‘laklab topshirish (`filesDir/uploads`), keyin `UploadWorker` yuboradi |
+| `uploads(auctionId)` | telefonda turgan fayllar: `[{id, kind, state: queued\|uploading\|failed, error}]` |
+| `uploadRetry(id, csrf)`, `uploadRemove(id)` | yuborib bo‘lmagan faylni qayta navbatga qo‘yish yoki o‘chirish |
+| `submitWhenReady(json)`, `pendingSubmit(auctionId)` | fayllar yuklanib, video tayyor bo‘lgach auksionni fonda yuborish |
 
-Ilova sahifaga `zotdor-native` hodisasini yuboradi: `{type: "push-token", token}` va `{type: "notification-permission", value}`. Sayt tokenni foydalanuvchi sessiyasi bilan `POST /me/devices` ga yuboradi, chiqishda `DELETE /me/devices`. User-Agent oxirida `ZotdorApp/<versiya>` turadi.
+Ilova sahifaga `zotdor-native` hodisasini yuboradi: `{type: "push-token", token}`, `{type: "notification-permission", value}`, `{type: "uploads", auctionId}` (navbat o‘zgardi) va `{type: "submit-done", auctionId, outcome}`.
+
+**Fonda yuklash (D-14).**
+- `UploadWorker` — WorkManager vazifasi, `dataSync` turidagi foreground bildirishnoma ("Fayllar yuborilmoqda", "Fayllarni yuborish" kanali) bilan ishlaydi. Ilova yopilsa, telefon qayta yonsa yoki internet uzilib qaytsa ham davom etadi. Tarmoq yoki server xatosida qayta urinadi (eksponensial kutish). 4xx javobda fayl `failed` bo‘ladi va server xabari saqlanadi.
+- So‘rovlar WebView cookie'lari (`CookieManager`), saytdan olingan CSRF tokeni va `Origin: web.zotdor.uz` bilan yuboriladi, xuddi sahifa yuborganidek.
+- `submitWhenReady`: hamma fayl yuklangach, `GET /auctions/{id}` bilan video tayyor bo‘lishi kutiladi (3 daqiqagacha, keyin qayta urinish). So‘ng `POST /auctions/{id}/submit` va natija bildirishnomasi: "Auksion eʼlon qilindi", "Tekshiruvga yuborildi" yoki "Eʼlonda tuzatish kerak". Bildirishnoma bosilsa, tegishli sahifa ochiladi.
+- Eski ilovada (`uploadBegin` yo‘q) sayt brauzerdagi navbatdan (IndexedDB) foydalanadi. Sayt tokenni foydalanuvchi sessiyasi bilan `POST /me/devices` ga yuboradi, chiqishda `DELETE /me/devices`. User-Agent oxirida `ZotdorApp/<versiya>` turadi.
 
 ## Firebase’ni ulash
 
@@ -73,3 +83,6 @@ Yoki ilovani o‘chirib qayta o‘rnating. Qo‘lda: Sozlamalar → Ilovalar →
 - Telefon raqami, Telegram, "Yandex Xaritada yo‘l" tashqi ilovada ochiladi.
 - "Orqaga" sahifalar bo‘yicha qaytadi; bosh sahifada ilovadan chiqadi.
 - Chiqish → shu telefonga bildirishnomalar kelmaydi.
+- Sotish ustasi: 4 ta rasm va video ketma-ket olinadi, kamera kutmaydi. Fayllar xira ko‘rinishda turadi va birin-ketin yo‘qolib, to‘rga tushadi.
+- "Eʼlon qilish" fayllar hali yuborilayotganda bosiladi, keyin ilova yopiladi. "Fayllar yuborilmoqda" bildirishnomasi turadi, oxirida natija bildirishnomasi keladi.
+- Fayl olinayotganda samolyot rejimi yoqiladi, keyin o‘chiriladi: yuborish o‘zi davom etadi.

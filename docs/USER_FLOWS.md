@@ -55,6 +55,12 @@ Foydalanuvchi nuqtasi ikki yo‘l bilan kiritiladi: "Joylashuvimni aniqlash" (br
 
 Qoralama avtomatik saqlanadi. Foydalanuvchi chiqib ketsa, keyin davom ettira oladi.
 
+**Kutmasdan ishlash (2026-11-28, D-14).**
+- **Bosqichlar:** "Saqlash va davom etish" qiymatlarni avval telefonda saqlaydi va darhol keyingi bosqichga o‘tadi. Server fonda saqlaydi, yuqorida kichik "Saqlanmoqda…" yozuvi turadi. Server rad etsa (masalan, noto‘g‘ri narx), qiymatlar telefonda qoladi va "Maʼlumotlar saqlanmadi: … Tuzatish" xabari chiqadi.
+- **Media:** rasm yoki video olinishi bilan telefonda saqlanadi va fonda yuboriladi, kamera tugmalari kutmaydi. Yuborilayotgan fayllar xira ko‘rinishda aylanayotgan belgi bilan alohida ko‘rsatiladi. Yuborib bo‘lmagan fayl ustida server xabari va "Qayta yuborish" / "O‘chirish" tugmalari bo‘ladi. Hisoblagich yuborilayotgan fayllarni ham sanaydi.
+- **Yuborish:** fayllar hali yuborilayotgan yoki video qayta ishlanayotgan bo‘lsa ham "Eʼlon qilish" bosiladi. Android ilovada ish ilovaga topshiriladi: fayllar yuklangach va video tayyor bo‘lgach, ilova auksionni o‘zi yuboradi va natijani bildirishnoma bilan aytadi. Ilova yopilsa ham ish davom etadi. Brauzerda sahifa o‘zi kutib turadi ("Sahifani yopmang"). Brauzer yopilsa, fayllar IndexedDB'da qoladi va sotish ustasi qayta ochilganda yuborilishi davom etadi.
+- **Kamera seansi:** fayl olinganda seans (20 daqiqa) yangilanadi. Fayl serverga seans tugaguncha yetib bormasa (masalan, uzoq vaqt internet bo‘lmasa), server "Kamera seansi tugadi" deb rad etadi va uni qaytadan olish kerak bo‘ladi (BR-14, `MediaFreshness`).
+
 ## F3. Taklif berish
 
 0. **Galereya.** Rasm va video svayp bilan yoki ikki yondagi oq dumaloq tugmalar bilan almashadi; yuqorida "2 / 5" hisoblagichi, pastda nuqtalar va eskizlar. Ko‘rinib turgan video Instagram'dagidek avtomatik, ovozsiz va takror ijro etiladi; boshqa slaydga o‘tilsa, sahifadan chiqib ketsa yoki tab yashirilsa, pauza qiladi. Videoga bosish ovozni yoqadi, ovoz tanlovi sessiya davomida saqlanadi. Brauzerda "trafikni tejash" yoqilgan bo‘lsa, video bosilgandagina yuklanadi. Rasmga bosilsa, to‘liq ekranli ko‘ruvchi ochiladi (Escape yoki ✕ bilan yopiladi). Nuqta belgilangan e'londa "Molning taxminiy joylashuvi" xaritasi (doira) va "Ulashish" tugmasi bor.

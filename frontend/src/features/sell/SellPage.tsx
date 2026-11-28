@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Check, MapPin } from 'lucide-react';
-import { useMe, useRegions } from '../auth/api';
+import { useMe, useRegions, type Region } from '../auth/api';
 import { useWallet } from '../wallet/api';
 import { commissionFor, usePublicConfig, useTaxonomy, type PublicConfig } from '../reference/api';
 import { useAuction, useMyAuctions, type AuctionDetail } from '../auctions/api';
@@ -16,6 +17,13 @@ import { CameraStep } from './Camera';
 import { LocationPicker } from '../location/LocationPicker';
 import { MapView } from '../location/MapView';
 import { useCreateDraft, useDeleteDraft, useSaveDraft, useSubmitAuction, type SubmitResult } from './api';
+import { flushDraft, pendingPatch, saveDraftLater, useDraftSync } from './draftSync';
+import { inAppUploads, pendingBackgroundSubmit, submitInBackground, useUploads } from './uploads';
+
+/** A value the server has not accepted yet (undefined = not in the pending patch). */
+function pick<T>(pending: T | null | undefined, server: T | null | undefined): T | null {
+  return pending !== undefined ? (pending ?? null) : (server ?? null);
+}
 
 /* ------------------------------------------------------------------ start screen */
 
@@ -126,6 +134,7 @@ const Wizard: React.FC<{ auction: AuctionDetail; config: PublicConfig; onSubmitt
     window.scrollTo(0, 0);
   };
   const index = STEPS.findIndex((s) => s.key === step);
+  const sync = useDraftSync(auction.id);
 
   return (
     <div className="max-w-xl mx-auto space-y-5">
@@ -147,6 +156,21 @@ const Wizard: React.FC<{ auction: AuctionDetail; config: PublicConfig; onSubmitt
           </li>
         ))}
       </ol>
+      {sync.error && sync.step && (
+        <Alert>
+          Maʼlumotlar saqlanmadi: {sync.error}{' '}
+          {sync.step !== step && (
+            <button type="button" className="font-semibold underline" onClick={() => go(sync.step as StepKey)}>
+              Tuzatish
+            </button>
+          )}
+        </Alert>
+      )}
+      {sync.saving && (
+        <p role="status" className="text-[13px] text-ink-muted">
+          Saqlanmoqda…
+        </p>
+      )}
       {step === 'details' && <DetailsStep auction={auction} onNext={() => go('time')} />}
       {step === 'time' && <TimeStep auction={auction} config={config} onNext={() => go('media')} />}
       {step === 'media' && (
@@ -170,20 +194,32 @@ const CONTACT_RE = /(\+?\d[\d\s()-]{6,}\d)|(@[a-z0-9_]{4,})|(t\.me\/)/i;
 const DetailsStep: React.FC<{ auction: AuctionDetail; onNext: () => void }> = ({ auction: a, onNext }) => {
   const taxonomy = useTaxonomy();
   const regions = useRegions();
-  const save = useSaveDraft(a.id);
-  const [direction, setDirection] = useState<number | null>(a.direction?.id ?? null);
-  const [type, setType] = useState<number | null>(a.animal_type?.id ?? null);
-  const [cls, setCls] = useState<number | null>(a.animal_class?.id ?? null);
-  const [breed, setBreed] = useState<number | 'other' | null>(a.breed?.id ?? (a.breed_other ? 'other' : null));
-  const [breedOther, setBreedOther] = useState(a.breed_other ?? '');
-  const [years, setYears] = useState(a.age_months != null ? Math.floor(a.age_months / 12) : 0);
-  const [months, setMonths] = useState(a.age_months != null ? a.age_months % 12 : 0);
-  const [weight, setWeight] = useState<string>(a.weight_kg ? String(a.weight_kg) : '');
-  const [estimated, setEstimated] = useState(a.weight_is_estimated ?? true);
-  const [price, setPrice] = useState<number | null>(a.asking_price ?? null);
-  const [description, setDescription] = useState(a.description ?? '');
-  const [region, setRegion] = useState<number | null>(a.region?.id ?? null);
-  const [district, setDistrict] = useState<number | null>(a.district?.id ?? null);
+  const queryClient = useQueryClient();
+  // Values the server has not accepted yet (a reload, or a rejected save) win over the server's.
+  const [p] = useState(() => pendingPatch(a.id) ?? {});
+  const ageInit = p.age_months !== undefined ? p.age_months : a.age_months;
+  const [direction, setDirection] = useState<number | null>(pick(p.direction_id, a.direction?.id));
+  const [type, setType] = useState<number | null>(pick(p.animal_type_id, a.animal_type?.id));
+  const [cls, setCls] = useState<number | null>(pick(p.animal_class_id, a.animal_class?.id));
+  const [breed, setBreed] = useState<number | 'other' | null>(
+    p.breed_id !== undefined || p.breed_other !== undefined
+      ? (p.breed_id ?? (p.breed_other ? 'other' : null))
+      : (a.breed?.id ?? (a.breed_other ? 'other' : null)),
+  );
+  const [breedOther, setBreedOther] = useState(p.breed_other ?? a.breed_other ?? '');
+  const [years, setYears] = useState(ageInit != null ? Math.floor(ageInit / 12) : 0);
+  const [months, setMonths] = useState(ageInit != null ? ageInit % 12 : 0);
+  const weightInit = p.weight_kg !== undefined ? p.weight_kg : a.weight_kg;
+  const [weight, setWeight] = useState<string>(weightInit ? String(weightInit) : '');
+  const [estimated, setEstimated] = useState(p.weight_is_estimated ?? a.weight_is_estimated ?? true);
+  const [price, setPrice] = useState<number | null>(pick(p.asking_price, a.asking_price));
+  const [description, setDescription] = useState(p.description ?? a.description ?? '');
+  const [district, setDistrict] = useState<number | null>(pick(p.district_id, a.district?.id));
+  const [region, setRegion] = useState<number | null>(() => {
+    if (p.district_id == null || p.district_id === a.district?.id) return a.region?.id ?? null;
+    const cached = queryClient.getQueryData<Region[]>(['regions']);
+    return cached?.find((r) => r.districts.some((d) => d.id === p.district_id))?.id ?? a.region?.id ?? null;
+  });
   const [tried, setTried] = useState(false);
 
   if (taxonomy.isPending || regions.isPending) return <PageLoading />;
@@ -210,7 +246,13 @@ const DetailsStep: React.FC<{ auction: AuctionDetail; onNext: () => void }> = ({
     e.preventDefault();
     setTried(true);
     if (invalid) return;
-    save.mutate(
+    const ref = (list: { id: number; name: string }[] | undefined, id: number | null) =>
+      list?.find((x) => x.id === id) ? { id: id as number, name: list.find((x) => x.id === id)!.name } : null;
+    const regionObj = regions.data.find((r) => r.id === region);
+    saveDraftLater(
+      queryClient,
+      a.id,
+      'details',
       {
         direction_id: direction,
         animal_type_id: type,
@@ -224,8 +266,22 @@ const DetailsStep: React.FC<{ auction: AuctionDetail; onNext: () => void }> = ({
         description,
         district_id: district,
       },
-      { onSuccess: onNext },
+      {
+        direction: ref(taxonomy.data.directions, direction),
+        animal_type: ref(taxonomy.data.animal_types, type),
+        animal_class: ref(typeObj?.classes, cls),
+        breed: typeof breed === 'number' ? ref(typeObj?.breeds, breed) : null,
+        breed_other: breed === 'other' ? breedOther.trim() : '',
+        age_months: ageMonths,
+        weight_kg: weight ? Number(weight) : null,
+        weight_is_estimated: estimated,
+        asking_price: price,
+        description,
+        region: regionObj ? { id: regionObj.id, name: regionObj.name } : null,
+        district: ref(regionObj?.districts, district),
+      },
     );
+    onNext();
   };
 
   const err = (k: keyof typeof missing, text: string) => (tried && missing[k] ? text : undefined);
@@ -374,10 +430,9 @@ const DetailsStep: React.FC<{ auction: AuctionDetail; onNext: () => void }> = ({
         }}
       />
 
-      {save.isError && <Alert>{save.error.message}</Alert>}
       {tried && invalid && <Alert>Belgilangan maydonlarni toʻldiring.</Alert>}
-      <Button type="submit" variant="primary" className="w-full" disabled={save.isPending}>
-        {save.isPending ? 'Saqlanmoqda…' : 'Saqlash va davom etish'}
+      <Button type="submit" variant="primary" className="w-full">
+        Saqlash va davom etish
       </Button>
     </form>
   );
@@ -467,10 +522,11 @@ const TimeStep: React.FC<{ auction: AuctionDetail; config: PublicConfig; onNext:
   config,
   onNext,
 }) => {
-  const save = useSaveDraft(a.id);
-  const [startNow, setStartNow] = useState(a.start_now ?? true);
-  const [startsAt, setStartsAt] = useState(toLocalInput(a.starts_at));
-  const [duration, setDuration] = useState<number>(a.duration_minutes ?? 60);
+  const queryClient = useQueryClient();
+  const [p] = useState(() => pendingPatch(a.id) ?? {});
+  const [startNow, setStartNow] = useState(p.start_now ?? a.start_now ?? true);
+  const [startsAt, setStartsAt] = useState(toLocalInput(p.starts_at !== undefined ? p.starts_at : a.starts_at));
+  const [duration, setDuration] = useState<number>(p.duration_minutes ?? a.duration_minutes ?? 60);
   const presets = PRESETS.filter((p) => p >= config.min_duration_min && p <= config.max_duration_min);
   const custom = !presets.includes(duration);
 
@@ -483,10 +539,13 @@ const TimeStep: React.FC<{ auction: AuctionDetail; config: PublicConfig; onNext:
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validStart || !validDuration) return;
-    save.mutate(
-      { start_now: startNow, starts_at: startNow ? null : new Date(startMs).toISOString(), duration_minutes: duration },
-      { onSuccess: onNext },
-    );
+    const patch = {
+      start_now: startNow,
+      starts_at: startNow ? null : new Date(startMs).toISOString(),
+      duration_minutes: duration,
+    };
+    saveDraftLater(queryClient, a.id, 'time', patch, patch);
+    onNext();
   };
 
   return (
@@ -554,9 +613,8 @@ const TimeStep: React.FC<{ auction: AuctionDetail; config: PublicConfig; onNext:
           {formatDuration(duration)} · {formatDateTime(end.toISOString())} da tugaydi
         </p>
       )}
-      {save.isError && <Alert>{save.error.message}</Alert>}
-      <Button type="submit" variant="primary" className="w-full" disabled={save.isPending || !validStart || !validDuration}>
-        {save.isPending ? 'Saqlanmoqda…' : 'Saqlash va davom etish'}
+      <Button type="submit" variant="primary" className="w-full" disabled={!validStart || !validDuration}>
+        Saqlash va davom etish
       </Button>
     </form>
   );
@@ -572,13 +630,55 @@ const ReviewStep: React.FC<{
 }> = ({ auction: a, config, onGo, onSubmitted }) => {
   const wallet = useWallet();
   const submit = useSubmitAuction(a.id);
+  const sync = useDraftSync(a.id);
+  const uploads = useUploads(a.id);
+  const [later, setLater] = useState(() => pendingBackgroundSubmit(a.id));
+  const [waitThenSubmit, setWaitThenSubmit] = useState(false);
+  const [prepError, setPrepError] = useState('');
   const price = a.asking_price ?? 0;
   const hold = commissionFor(price, config.commission_rate_bp);
-  const photos = a.media.filter((m) => m.kind === 'photo' && m.status === 'ready').length;
-  const videos = a.media.filter((m) => m.kind === 'video' && m.status === 'ready').length;
+  const onDevice = uploads.filter((u) => u.state !== 'failed');
+  const failedUploads = uploads.length - onDevice.length;
+  const notFailed = (kind: 'photo' | 'video') =>
+    a.media.filter((m) => m.kind === kind && m.status !== 'failed').length + onDevice.filter((u) => u.kind === kind).length;
+  const photos = notFailed('photo');
+  const videos = notFailed('video');
   const processing = a.media.some((m) => m.status === 'processing');
+  const busy = onDevice.length > 0 || processing;
   const short = wallet.data ? Math.max(0, hold - wallet.data.available) : 0;
   const cover = a.media.find((m) => m.kind === 'photo' && m.status === 'ready');
+
+  const publish = async () => {
+    setPrepError('');
+    try {
+      await flushDraft(a.id);
+    } catch (e) {
+      setPrepError(e instanceof Error ? e.message : 'Maʼlumotlarni saqlab boʻlmadi.');
+      return;
+    }
+    if (!busy) {
+      submit.mutate(undefined, { onSuccess: onSubmitted });
+    } else if (inAppUploads()) {
+      if (await submitInBackground(a.id)) setLater(true);
+      else setPrepError('Ilova eskirgan. Uni yangilang yoki fayllar yuklanishini kuting.');
+    } else {
+      setWaitThenSubmit(true);
+    }
+  };
+
+  // Browser: the page itself waits for the queue and the video, then submits once.
+  const fired = React.useRef(false);
+  React.useEffect(() => {
+    if (!waitThenSubmit || busy || fired.current) return;
+    fired.current = true;
+    submit.mutate(undefined, {
+      onSuccess: onSubmitted,
+      onError: () => {
+        fired.current = false;
+        setWaitThenSubmit(false);
+      },
+    });
+  }, [waitThenSubmit, busy, submit, onSubmitted]);
 
   const rows: [string, string, StepKey][] = [
     ['Mol', [a.animal_type?.name, a.animal_class?.name, a.breed?.name ?? a.breed_other].filter(Boolean).join(' · ') || '—', 'details'],
@@ -618,7 +718,27 @@ const ReviewStep: React.FC<{
           Kamida {config.photos_min} ta rasm va {config.videos_min} ta video kerak.
         </Alert>
       ) : null}
-      {processing && <Alert tone="info">Video qayta ishlanmoqda. Bir necha soniya kuting.</Alert>}
+      {failedUploads > 0 && (
+        <Alert>{failedUploads} ta faylni yuborib boʻlmadi. Media bosqichida qayta urining yoki oʻchiring.</Alert>
+      )}
+      {busy && !later && !waitThenSubmit && (
+        <Alert tone="info">
+          {onDevice.length > 0 ? `${onDevice.length} ta fayl yuborilmoqda.` : 'Video qayta ishlanmoqda.'} Kutish shart
+          emas: “Eʼlon qilish”ni bossangiz, tayyor boʻlishi bilan eʼlon oʻzi yuboriladi.
+        </Alert>
+      )}
+      {later && (
+        <Alert tone="info">
+          Fayllar yuklanib, video tayyor boʻlgach auksion avtomatik eʼlonga yuboriladi. Ilovani yopsangiz ham ish davom
+          etadi, natija bildirishnoma bilan keladi.
+        </Alert>
+      )}
+      {waitThenSubmit && (
+        <Alert tone="info">
+          Fayllar yuborilmoqda ({onDevice.length} ta qoldi). Tugashi bilan eʼlon avtomatik yuboriladi. Sahifani
+          yopmang.
+        </Alert>
+      )}
 
       <section className="rounded-2xl border border-line bg-surface p-4 space-y-1">
         <p className="text-[15px] text-ink">
@@ -637,11 +757,21 @@ const ReviewStep: React.FC<{
       </section>
 
       {submit.isError && <Alert>{submit.error.message}</Alert>}
+      {prepError && <Alert>{prepError}</Alert>}
       <Button
         variant="primary"
         className="w-full"
-        disabled={submit.isPending || processing || short > 0}
-        onClick={() => submit.mutate(undefined, { onSuccess: onSubmitted })}
+        disabled={
+          submit.isPending ||
+          short > 0 ||
+          failedUploads > 0 ||
+          Boolean(sync.error) ||
+          later ||
+          waitThenSubmit ||
+          photos < config.photos_min ||
+          videos < config.videos_min
+        }
+        onClick={() => void publish()}
       >
         {submit.isPending ? 'Tekshirilmoqda…' : 'Eʼlon qilish'}
       </Button>

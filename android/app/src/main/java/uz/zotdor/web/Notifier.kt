@@ -14,6 +14,9 @@ import androidx.core.content.ContextCompat
 
 /** Notification channels and drawing (FR-21). Channel ids match the backend's `fcm_channel()`. */
 object Notifier {
+    /** Silent progress of background uploads (UploadWorker); not used for server pushes. */
+    const val UPLOADS_CHANNEL = "uploads"
+
     private data class Channel(val id: String, val name: Int, val description: Int, val importance: Int)
 
     private val channels = listOf(
@@ -22,6 +25,7 @@ object Notifier {
         Channel("deals", R.string.channel_deals, R.string.channel_deals_desc, NotificationManager.IMPORTANCE_HIGH),
         Channel("wallet", R.string.channel_wallet, R.string.channel_wallet_desc, NotificationManager.IMPORTANCE_DEFAULT),
         Channel("general", R.string.channel_general, R.string.channel_general_desc, NotificationManager.IMPORTANCE_DEFAULT),
+        Channel(UPLOADS_CHANNEL, R.string.channel_uploads, R.string.channel_uploads_desc, NotificationManager.IMPORTANCE_LOW),
     )
     private val channelIds = channels.map { it.id }.toSet()
 

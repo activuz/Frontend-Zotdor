@@ -63,6 +63,16 @@ function getCsrfToken(): Promise<string> {
   return csrfToken;
 }
 
+/** The CSRF token, for the Android app's background uploads (features/sell/uploads.ts). */
+export function currentCsrfToken(): Promise<string> {
+  return getCsrfToken();
+}
+
+/** Absolute API origin: the app's native uploader cannot resolve a relative URL. */
+export function apiOrigin(): string {
+  return API_BASE ? new URL(API_BASE).origin : window.location.origin;
+}
+
 type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 interface ErrorBody {

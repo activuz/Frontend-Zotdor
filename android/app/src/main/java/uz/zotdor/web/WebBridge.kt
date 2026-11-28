@@ -35,6 +35,38 @@ class WebBridge(private val activity: MainActivity, private val web: WebView) {
     @JavascriptInterface
     fun appVersion(): String = BuildConfig.VERSION_NAME
 
+    // --- background uploads of the sell wizard (UploadStore, UploadWorker) ---------------------
+
+    @JavascriptInterface
+    fun uploadBegin(json: String): Boolean =
+        trusted() && runCatching { UploadStore.begin(activity, JSONObject(json)) }.getOrDefault(false)
+
+    @JavascriptInterface
+    fun uploadAppend(id: String, base64: String): Boolean = trusted() && UploadStore.append(activity, id, base64)
+
+    @JavascriptInterface
+    fun uploadCommit(id: String): Boolean = trusted() && UploadStore.commit(activity, id)
+
+    @JavascriptInterface
+    fun uploads(auctionId: String): String = if (trusted()) UploadStore.list(activity, auctionId) else "[]"
+
+    @JavascriptInterface
+    fun uploadRetry(id: String, csrf: String) {
+        if (trusted()) UploadStore.retry(activity, id, csrf)
+    }
+
+    @JavascriptInterface
+    fun uploadRemove(id: String) {
+        if (trusted()) UploadStore.remove(activity, id)
+    }
+
+    @JavascriptInterface
+    fun submitWhenReady(json: String): Boolean =
+        trusted() && runCatching { UploadStore.requestSubmit(activity, JSONObject(json)) }.getOrDefault(false)
+
+    @JavascriptInterface
+    fun pendingSubmit(auctionId: String): Boolean = trusted() && UploadStore.hasSubmit(activity, auctionId)
+
     /** Tell the page something changed: `window.addEventListener('zotdor-native', …)`. */
     fun emit(detail: JSONObject) {
         web.post {

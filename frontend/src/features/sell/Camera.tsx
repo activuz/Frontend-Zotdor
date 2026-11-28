@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera as CameraIcon, Circle, Copy, Square, Video } from 'lucide-react';
+import { Camera as CameraIcon, Circle, Copy, Loader2, RotateCcw, Square, Trash2, Video } from 'lucide-react';
 import { ApiError } from '../../api/http';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Field';
 import type { AuctionDetail } from '../auctions/api';
 import type { PublicConfig } from '../reference/api';
-import { useOpenCaptureSession, useUploadMedia, type CaptureSession } from './api';
+import { useOpenCaptureSession, type CaptureSession } from './api';
 import { MediaGrid } from './MediaGrid';
+import { enqueueUpload, previewOf, removeUpload, retryUpload, useUploads, type PendingUpload } from './uploads';
 
 const PHOTO_HINTS = [
   'Molni yonidan, toʻliq koʻrinadigan qilib oling',
@@ -32,26 +33,88 @@ const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
  */
 export const CameraStep: React.FC<{ auction: AuctionDetail; config: PublicConfig }> = ({ auction, config }) => {
   const [onThisDevice, setOnThisDevice] = useState(isTouchDevice);
+  const uploads = useUploads(auction.id);
   const media = auction.media.filter((m) => m.status !== 'failed');
   const failed = auction.media.filter((m) => m.status === 'failed');
-  const photos = media.filter((m) => m.kind === 'photo');
-  const videos = media.filter((m) => m.kind === 'video');
+  // Files still on the device count too: the seller keeps shooting without waiting for them.
+  const waiting = uploads.filter((u) => u.state !== 'failed');
+  const photos = media.filter((m) => m.kind === 'photo').length + waiting.filter((u) => u.kind === 'photo').length;
+  const videos = media.filter((m) => m.kind === 'video').length + waiting.filter((u) => u.kind === 'video').length;
 
   return (
     <div className="space-y-4">
       <p className="text-[17px] font-semibold text-ink tabular-nums" aria-live="polite">
-        Rasmlar {photos.length}/{config.photos_min}, video {videos.length}/{config.videos_min}
+        Rasmlar {photos}/{config.photos_min}, video {videos}/{config.videos_min}
       </p>
       {onThisDevice ? (
-        <LiveCamera auction={auction} config={config} photoCount={photos.length} videoCount={videos.length} />
+        <LiveCamera auction={auction} config={config} photoCount={photos} videoCount={videos} />
       ) : (
         <Handoff auctionId={auction.id} onUseHere={() => setOnThisDevice(true)} />
       )}
       {failed.length > 0 && (
         <Alert>Baʼzi fayllarni qayta ishlab boʻlmadi: {failed.map((m) => m.error).filter(Boolean).join(' ') || 'qaytadan oling.'}</Alert>
       )}
+      {uploads.length > 0 && <PendingUploads items={uploads} />}
       <MediaGrid auction={auction} />
     </div>
+  );
+};
+
+/** Taken but not on the server yet: sent in the background, kept on the device until then. */
+const PendingUploads: React.FC<{ items: PendingUpload[] }> = ({ items }) => {
+  const waiting = items.filter((u) => u.state !== 'failed').length;
+  return (
+    <section aria-label="Yuborilayotgan fayllar" className="space-y-2">
+      {waiting > 0 && (
+        <p role="status" className="text-[15px] text-ink-muted">
+          {waiting} ta fayl fonda yuborilmoqda. Davom etavering.
+        </p>
+      )}
+      <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {items.map((u) => {
+          const src = previewOf(u.id);
+          return (
+            <li key={u.id} className="relative aspect-square overflow-hidden rounded-xl border border-line bg-surface">
+              {src ? (
+                <img src={src} alt="" className="h-full w-full object-cover opacity-70" />
+              ) : (
+                <span className="flex h-full items-center justify-center text-[13px] text-ink">
+                  {u.kind === 'video' ? 'Video' : 'Rasm'}
+                </span>
+              )}
+              {u.state === 'failed' ? (
+                <div className="absolute inset-0 flex flex-col justify-end gap-1 bg-ink/60 p-1">
+                  <p className="text-[13px] leading-tight text-surface">{u.error || 'Yuborib boʻlmadi.'}</p>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => void retryUpload(u.id)}
+                      aria-label="Qayta yuborish"
+                      className="flex min-h-touch flex-1 items-center justify-center rounded-lg bg-surface text-ink"
+                    >
+                      <RotateCcw className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void removeUpload(u.id)}
+                      aria-label="Oʻchirish"
+                      className="flex min-h-touch flex-1 items-center justify-center rounded-lg bg-surface text-danger"
+                    >
+                      <Trash2 className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Loader2
+                  className="absolute inset-0 m-auto h-7 w-7 animate-spin text-surface drop-shadow"
+                  aria-label={u.state === 'uploading' ? 'Yuborilmoqda' : 'Navbatda'}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 };
 
@@ -102,7 +165,7 @@ const LiveCamera: React.FC<{
   const [session, setSession] = useState<CaptureSession | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const openSession = useOpenCaptureSession(auction.id);
-  const upload = useUploadMedia(auction.id);
+  const [saving, setSaving] = useState(0); // files being written to the device right now
 
   const photosFull = photoCount >= config.photos_max;
   const videosFull = videoCount >= config.videos_max;
@@ -157,16 +220,21 @@ const LiveCamera: React.FC<{
     setNotice(null);
     const ext = kind === 'photo' ? 'jpg' : blob.type.includes('mp4') ? 'mp4' : 'webm';
     const file = new File([blob], `${kind}-${Date.now()}.${ext}`, { type: blob.type });
+    setSaving((n) => n + 1);
     try {
       const s = await ensureSession();
-      await upload.mutateAsync({ file, kind, sessionId: s.id, meta: { ...meta, captured_at: new Date().toISOString() } });
+      await enqueueUpload({
+        auctionId: auction.id,
+        kind,
+        blob: file,
+        fileName: file.name,
+        sessionId: s.id,
+        meta: { ...meta, captured_at: new Date().toISOString() },
+      });
     } catch (e) {
-      if (e instanceof ApiError && e.code === 'capture_session_expired') {
-        setSession(null);
-        setNotice('Kamera seansi tugadi. Yana bir marta oling.');
-      } else {
-        setNotice(e instanceof Error ? e.message : 'Yuklab boʻlmadi. Qayta urinib koʻring.');
-      }
+      setNotice(e instanceof Error ? e.message : 'Faylni saqlab boʻlmadi. Qayta urinib koʻring.');
+    } finally {
+      setSaving((n) => n - 1);
     }
   };
 
@@ -273,7 +341,7 @@ const LiveCamera: React.FC<{
       {active && (
         <div className="flex gap-2">
           {mode === 'photo' ? (
-            <Button variant="primary" className="flex-1" onClick={takePhoto} disabled={photosFull || upload.isPending}>
+            <Button variant="primary" className="flex-1" onClick={takePhoto} disabled={photosFull}>
               <Circle className="w-5 h-5" aria-hidden="true" />
               {photosFull ? 'Rasmlar yetarli' : 'Rasmga olish'}
             </Button>
@@ -282,7 +350,7 @@ const LiveCamera: React.FC<{
               variant="primary"
               className="flex-1"
               onClick={toggleRecording}
-              disabled={(videosFull && recording === 0) || upload.isPending}
+              disabled={videosFull && recording === 0}
             >
               {recording > 0 ? <Square className="w-5 h-5" aria-hidden="true" /> : <Video className="w-5 h-5" aria-hidden="true" />}
               {recording > 0 ? 'Toʻxtatish' : videosFull ? 'Video yetarli' : 'Yozishni boshlash'}
@@ -293,9 +361,9 @@ const LiveCamera: React.FC<{
           </Button>
         </div>
       )}
-      {upload.isPending && (
+      {saving > 0 && (
         <p role="status" className="text-[15px] text-ink-muted">
-          Yuklanmoqda…
+          Saqlanmoqda…
         </p>
       )}
     </div>
